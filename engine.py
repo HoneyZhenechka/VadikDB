@@ -20,16 +20,15 @@ class DBManager:
         if db_file_path.exists():
             print("Overwriting database file! ", db_file_path)
         db_archive = zipfile.ZipFile(db_file_path, "w")
-        data_file = open("data.json", "w+")
-        data_file.close()
+        with open("data.json", "w+") as data_file:
+            pass
         db_archive.write("data.json")
         os.remove("data.json")
-        meta_file = open("meta.json", "w+")
-        json.dump({
-            "name": name,
-            "tables": []
-        }, meta_file)
+        with open("meta.json", "w+") as meta_file:
+            json.dump({
+                "name": name,
+                "tables": []
+            }, meta_file)
         db_archive.write("meta.json")
-        meta_file.close()
         os.remove("meta.json")
         db_archive.close()
