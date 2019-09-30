@@ -17,6 +17,20 @@ class DBManager:
             os.makedirs(str(db_directory))
         self.__current_directory = db_directory
 
+    def __exists_db(self, db_name):
+        if db_name not in self.__db_list:
+            raise exception.DBNotExists(db_name)
+
+    def __extract_db(self):
+        with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
+            db_archive.extractall()
+        os.remove(self.__db_file_path)
+
+    def __write_db(self):
+        with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
+            db_archive.write("meta.json")
+            db_archive.write("data.json")
+
     def create_db(self, db_name):
         db_file = db_name + ".vdb"
         self.__db_file_path = self.__current_directory / db_file
@@ -37,11 +51,8 @@ class DBManager:
         self.__db_list.append(db_name)
 
     def create_table(self, db_name, table_name):
-        if db_name not in self.__db_list:
-            raise exception.DBNotExists(db_name)
-        with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
-            db_archive.extractall()
-        os.remove(self.__db_file_path)
+        self.__exists_db(db_name)
+        self.__extract_db()
         with open("meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name in meta_data["tables"]:
@@ -54,8 +65,25 @@ class DBManager:
             data_json[table_name] = {}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
-        with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
-            db_archive.write("meta.json")
-            db_archive.write("data.json")
+        self.__write_db()
+        os.remove("meta.json")
+        os.remove("data.json")
+
+    def drop_table(self, db_name, table_name):
+        self.__exists_db(db_name)
+        self.__extract_db()
+        with open("meta.json", "r") as meta_file:
+            meta_data = json.load(meta_file)
+            if table_name not in meta_data["tables"]:
+                raise exception.TableNotExists(table_name)
+            meta_data["tables"].remove(table_name)
+        with open("meta.json", "w") as meta_file:
+            json.dump(meta_data, meta_file)
+        with open("data.json", "r") as data_file:
+            data_json = json.load(data_file)
+            data_json.pop(table_name)
+        with open("data.json", "w") as data_file:
+            json.dump(data_json, data_file)
+        self.__write_db()
         os.remove("meta.json")
         os.remove("data.json")
