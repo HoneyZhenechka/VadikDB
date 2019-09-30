@@ -22,27 +22,25 @@ class DBManager:
         self.__db_file_path = self.__current_directory / db_file
         if self.__db_file_path.exists():
             print("Overwriting database file! ", self.__db_file_path)
-        db_archive = zipfile.ZipFile(self.__db_file_path, "w")
-        with open("data.json", "w+") as data_file:
-            json.dump({}, data_file)
-        db_archive.write("data.json")
+        with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
+            with open("data.json", "w+") as data_file:
+                json.dump({}, data_file)
+            db_archive.write("data.json")
+            with open("meta.json", "w+") as meta_file:
+                json.dump({
+                    "name": db_name,
+                    "tables": []
+                }, meta_file)
+            db_archive.write("meta.json")
         os.remove("data.json")
-        with open("meta.json", "w+") as meta_file:
-            json.dump({
-                "name": db_name,
-                "tables": []
-            }, meta_file)
-        db_archive.write("meta.json")
         os.remove("meta.json")
-        db_archive.close()
         self.__db_list.append(db_name)
 
     def create_table(self, db_name, table_name):
         if db_name not in self.__db_list:
             raise exception.DBNotExists(db_name)
-        db_archive = zipfile.ZipFile(self.__db_file_path, "a")
-        db_archive.extractall()
-        db_archive.close()
+        with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
+            db_archive.extractall()
         os.remove(self.__db_file_path)
         with open("meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
@@ -56,8 +54,8 @@ class DBManager:
             data_json[table_name] = {}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
-        db_archive = zipfile.ZipFile(self.__db_file_path, "w")
-        db_archive.write("meta.json")
-        db_archive.write("data.json")
+        with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
+            db_archive.write("meta.json")
+            db_archive.write("data.json")
         os.remove("meta.json")
         os.remove("data.json")
