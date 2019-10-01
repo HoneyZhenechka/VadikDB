@@ -5,6 +5,8 @@ import exception
 from pathlib import Path
 
 
+# TODO: REFACTORING AND FIELDS
+
 class DBManager:
     __current_directory = ""
     __db_file_path = ""
@@ -98,6 +100,34 @@ class DBManager:
             os.remove(file)
         os.remove("db_meta.json")
         os.remove("data.json")
+
+    def show_create_table(self, db_name, table_name):
+        self.__exists_db(db_name)
+        self.__extract_db()
+        table_meta_file = "table_" + table_name + "_meta.json"
+        with open(table_meta_file, "r") as table_file:
+            table_meta = json.load(table_file)
+        fields = table_meta["fields"]
+        with open("db_meta.json", "r") as table_file:
+            meta_data = json.load(table_file)
+        files_tables_list = self.__get_files_tables_list(meta_data)
+        self.__write_db(files_tables_list)
+        for file in files_tables_list:
+            os.remove(file)
+        os.remove("db_meta.json")
+        os.remove("data.json")
+        query = (
+                "CREATE TABLE `" + table_name + "` (\n" +
+                "\t\t\t\t\t`" + '`, `'.join(fields) + "`\n"
+                                                      "\t\t\t\t" + ");"
+        )
+        print (
+                "===================================================" + "\n" +
+                '\t\tTable:\t"' + table_name + '"\n' +
+                "\t   Fields:\t" + '["' + '", "'.join(fields) + '"]' + "\n"
+                                                                       " Create Table:\t" + query + "\n" +
+                "==================================================="
+        )
 
     def drop_table(self, db_name, table_name):
         self.__exists_db(db_name)
