@@ -29,10 +29,20 @@ class DBManager:
             db_archive.extractall()
         os.remove(self.__db_file_path)
 
-    def __write_db(self):
+    def __write_db(self, table_meta_files=[]):
         with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
-            db_archive.write("meta.json")
+            db_archive.write("db_meta.json")
             db_archive.write("data.json")
+            if len(table_meta_files) > 0:
+                for file in table_meta_files:
+                    db_archive.write(file)
+
+    def __get_files_tables_list(self, metadata):
+        tables_list = metadata["tables"]
+        files_list = []
+        for table in tables_list:
+            files_list.append("table_" + table + "_meta.json")
+        return files_list
 
     def create_db(self, db_name):
         db_file = db_name + ".vdb"
@@ -43,53 +53,72 @@ class DBManager:
             with open("data.json", "w+") as data_file:
                 json.dump({}, data_file)
             db_archive.write("data.json")
-            with open("meta.json", "w+") as meta_file:
+            with open("db_meta.json", "w+") as meta_file:
                 json.dump({
                     "name": db_name,
                     "tables": []
                 }, meta_file)
-            db_archive.write("meta.json")
+            db_archive.write("db_meta.json")
         os.remove("data.json")
-        os.remove("meta.json")
+        os.remove("db_meta.json")
         self.__db_list.append(db_name)
 
-    def create_table(self, db_name, table_name, *fields):
+    def create_table(self, db_name, table_name, *fields):  # field - dictionary {name:type}
         self.__exists_db(db_name)
         self.__extract_db()
-        with open("meta.json", "r") as meta_file:
+        with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name in meta_data["tables"]:
                 raise exception.TableAlreadyExists(table_name)
             meta_data["tables"].append(table_name)
-        with open("meta.json", "w") as meta_file:
+        with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
+        table_meta_file = "table_" + table_name + "_meta.json"
+        with open(table_meta_file, "w+") as meta_file:
+            json.dump({
+                "name": table_name,
+                "fields": []
+            }, meta_file)
+        with open(table_meta_file, "r") as meta_file:
+            table_meta = json.load(meta_file)
         with open("data.json", "r") as data_file:
             data_json = json.load(data_file)
             data_json[table_name] = {}
             if not len(fields) == 0:
-                for field in fields:
+                for field, type_field in fields:
                     data_json[table_name] = {field: "null"}
+                    table_meta["fields"].append({field: type_field})
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
-        self.__write_db()
-        os.remove("meta.json")
+        with open(table_meta_file, "w") as meta_file:
+            json.dump(table_meta, meta_file)
+        files_tables_list = self.__get_files_tables_list(meta_data)
+        self.__write_db(files_tables_list)
+        for file in files_tables_list:
+            os.remove(file)
+        os.remove("db_meta.json")
         os.remove("data.json")
 
     def drop_table(self, db_name, table_name):
         self.__exists_db(db_name)
         self.__extract_db()
-        with open("meta.json", "r") as meta_file:
+        table_meta_file = "table_" + table_name + "_meta.json"
+        os.remove(table_meta_file)
+        with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name not in meta_data["tables"]:
                 raise exception.TableNotExists(table_name)
             meta_data["tables"].remove(table_name)
-        with open("meta.json", "w") as meta_file:
+        with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
         with open("data.json", "r") as data_file:
             data_json = json.load(data_file)
             data_json.pop(table_name)
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
-        self.__write_db()
-        os.remove("meta.json")
+        files_tables_list = self.__get_files_tables_list(meta_data)
+        self.__write_db(files_tables_list)
+        for file in files_tables_list:
+            os.remove(file)
+        os.remove("db_meta.json")
         os.remove("data.json")
