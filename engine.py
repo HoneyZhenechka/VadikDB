@@ -16,6 +16,9 @@ class DBManager:
         if not db_directory.exists():
             os.makedirs(str(db_directory))
         self.__current_directory = db_directory
+        for file in os.listdir(self.__current_directory):
+            if file.endswith(".vdb"):
+                self.__db_list.append(str(file).replace(".vdb", ""))
 
     def __exists_db(self, db_name):
         if db_name not in self.__db_list:
