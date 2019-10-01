@@ -53,7 +53,7 @@ class DBManager:
         os.remove("meta.json")
         self.__db_list.append(db_name)
 
-    def create_table(self, db_name, table_name):
+    def create_table(self, db_name, table_name, *fields):
         self.__exists_db(db_name)
         self.__extract_db()
         with open("meta.json", "r") as meta_file:
@@ -66,6 +66,9 @@ class DBManager:
         with open("data.json", "r") as data_file:
             data_json = json.load(data_file)
             data_json[table_name] = {}
+            if not len(fields) == 0:
+                for field in fields:
+                    data_json[table_name] = {field: "null"}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
         self.__write_db()
