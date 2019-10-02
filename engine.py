@@ -75,7 +75,7 @@ class DBManager:
         db_filename = db_name + ".vdb"
         self.__db_file_path = self.__current_directory / db_filename
 
-    def create_table(self, table_name, *fields):  # field - dictionary {name:type}
+    def create_table(self, table_name, *fields):
         self.__exists_db(self.__current_db)
         self.__extract_db()
         with open("db_meta.json", "r") as meta_file:
@@ -97,9 +97,9 @@ class DBManager:
             data_json = json.load(data_file)
             data_json[table_name] = {}
             if not len(fields) == 0:
-                for field, type_field in fields:
-                    data_json[table_name] = {field: "null"}
-                    table_meta["fields"].append({field: type_field})
+                for i in range(len(fields)):
+                    data_json[table_name] = {fields[i][0]: "null"}
+                    table_meta["fields"].append({fields[i][0]: fields[i][1]})  # {name:type}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
         with open(table_meta_file, "w") as meta_file:
