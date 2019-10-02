@@ -75,7 +75,7 @@ class DBManager:
         db_filename = db_name + ".vdb"
         self.__db_file_path = self.__current_directory / db_filename
 
-    def create_table(self, table_name, *fields):
+    def create_table(self, table_name, fields):
         self.__exists_db(self.__current_db)
         self.__extract_db()
         with open("db_meta.json", "r") as meta_file:
