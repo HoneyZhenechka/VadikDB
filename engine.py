@@ -98,7 +98,7 @@ class DBManager:
             data_json[table_name] = {}
             if not len(fields) == 0:
                 for i in range(len(fields)):
-                    data_json[table_name] = {fields[i][0]: "null"}
+                    data_json[table_name][fields[i][0]] = "null"
                     table_meta["fields"].append({fields[i][0]: fields[i][1]})  # {name:type}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
