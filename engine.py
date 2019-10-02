@@ -38,6 +38,10 @@ class DBManager:
             if len(table_meta_files) > 0:
                 for file in table_meta_files:
                     db_archive.write(file)
+            os.remove("db_meta.json")
+            os.remove("data.json")
+            for file in table_meta_files:
+                os.remove(file)
 
     def __get_files_tables_list(self, metadata):
         tables_list = metadata["tables"]
@@ -96,10 +100,6 @@ class DBManager:
             json.dump(table_meta, meta_file)
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
-        for file in files_tables_list:
-            os.remove(file)
-        os.remove("db_meta.json")
-        os.remove("data.json")
 
     def show_create_table(self, db_name, table_name):
         self.__exists_db(db_name)
@@ -112,10 +112,6 @@ class DBManager:
             meta_data = json.load(table_file)
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
-        for file in files_tables_list:
-            os.remove(file)
-        os.remove("db_meta.json")
-        os.remove("data.json")
         query = (
                 "CREATE TABLE `" + table_name + "` (\n" +
                 "\t\t\t\t\t`" + '`, `'.join(fields) + "`\n"
@@ -148,7 +144,4 @@ class DBManager:
             json.dump(data_json, data_file)
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
-        for file in files_tables_list:
-            os.remove(file)
-        os.remove("db_meta.json")
-        os.remove("data.json")
+
