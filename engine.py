@@ -5,10 +5,9 @@ import exception
 from pathlib import Path
 
 
-# TODO: REFACTORING AND FIELDS
-
 class DBManager:
     __current_directory = ""
+    __current_db = ""
     __db_file_path = ""
     __db_list = []
 
@@ -51,8 +50,9 @@ class DBManager:
         return files_list
 
     def create_db(self, db_name):
-        db_file = db_name + ".vdb"
-        self.__db_file_path = self.__current_directory / db_file
+        db_filename = db_name + ".vdb"
+        self.__current_db = db_name
+        self.__db_file_path = self.__current_directory / db_filename
         if self.__db_file_path.exists():
             print("Overwriting database file! ", self.__db_file_path)
         with zipfile.ZipFile(self.__db_file_path, "w") as db_archive:
@@ -69,8 +69,14 @@ class DBManager:
         os.remove("db_meta.json")
         self.__db_list.append(db_name)
 
-    def create_table(self, db_name, table_name, *fields):  # field - dictionary {name:type}
+    def change_db(self, db_name):
         self.__exists_db(db_name)
+        self.__current_db = db_name
+        db_filename = db_name + ".vdb"
+        self.__db_file_path = self.__current_directory / db_filename
+
+    def create_table(self, table_name, *fields):  # field - dictionary {name:type}
+        self.__exists_db(self.__current_db)
         self.__extract_db()
         with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
@@ -101,8 +107,8 @@ class DBManager:
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
 
-    def show_create_table(self, db_name, table_name):
-        self.__exists_db(db_name)
+    def show_create_table(self, table_name):
+        self.__exists_db(self.__current_db)
         self.__extract_db()
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
@@ -125,8 +131,8 @@ class DBManager:
                 "==================================================="
         )
 
-    def drop_table(self, db_name, table_name):
-        self.__exists_db(db_name)
+    def drop_table(self, table_name):
+        self.__exists_db(self.__current_db)
         self.__extract_db()
         table_meta_file = "table_" + table_name + "_meta.json"
         os.remove(table_meta_file)
