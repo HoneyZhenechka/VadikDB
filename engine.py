@@ -89,7 +89,7 @@ class DBManager:
         with open(table_meta_file, "w+") as meta_file:
             json.dump({
                 "name": table_name,
-                "fields": []
+                "fields": {}
             }, meta_file)
         with open(table_meta_file, "r") as meta_file:
             table_meta = json.load(meta_file)
@@ -99,7 +99,7 @@ class DBManager:
             if not len(fields) == 0:
                 for i in range(len(fields)):
                     data_json[table_name][fields[i][0]] = "null"
-                    table_meta["fields"].append({fields[i][0]: fields[i][1]})  # {name:type}
+                    table_meta["fields"][fields[i][0]] = fields[i][1]  # {name:type}
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
         with open(table_meta_file, "w") as meta_file:
@@ -114,20 +114,22 @@ class DBManager:
         with open(table_meta_file, "r") as table_file:
             table_meta = json.load(table_file)
         fields = table_meta["fields"]
+        fields_str = ""
+        for key in fields:
+            fields_str += key + " " + fields[key] + ", "
+        fields_str = fields_str[:-2]
         with open("db_meta.json", "r") as table_file:
             meta_data = json.load(table_file)
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
         query = (
-                "CREATE TABLE `" + table_name + "` (\n" +
-                "\t\t\t\t\t`" + '`, `'.join(fields) + "`\n"
-                                                      "\t\t\t\t" + ");"
+                "CREATE TABLE " + table_name + " (\n" +
+                "\t\t\t\t\t" + fields_str + "\n\t\t\t\t);"
         )
-        print (
-                "===================================================" + "\n" +
+        return (
+                "===================================================\n" +
                 '\t\tTable:\t"' + table_name + '"\n' +
-                "\t   Fields:\t" + '["' + '", "'.join(fields) + '"]' + "\n"
-                                                                       " Create Table:\t" + query + "\n" +
+                "Create Table:\t" + query + "\n" 
                 "==================================================="
         )
 
