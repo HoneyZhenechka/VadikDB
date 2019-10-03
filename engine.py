@@ -10,6 +10,7 @@ class DBManager:
     __current_db = ""
     __db_file_path = ""
     __db_list = []
+    __is_exception = False
 
     def __init__(self):
         self.__current_directory = Path.cwd()
@@ -23,7 +24,10 @@ class DBManager:
 
     def __exists_db(self, db_name):
         if db_name not in self.__db_list:
+            self.__is_exception = True
             raise exception.DBNotExists(db_name)
+        if self.__is_exception:
+            return
 
     def __extract_db(self):
         with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
@@ -81,7 +85,10 @@ class DBManager:
         with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name in meta_data["tables"]:
+                self.__is_exception = True
                 raise exception.TableAlreadyExists(table_name)
+            if self.__is_exception:
+                return
             meta_data["tables"].append(table_name)
         with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
@@ -113,7 +120,10 @@ class DBManager:
         with open("db_meta.json", "r") as table_file:
             meta_data = json.load(table_file)
             if table_name not in meta_data["tables"]:
+                self.__is_exception = True
                 raise exception.TableNotExists(table_name)
+        if self.__is_exception:
+            return
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
             table_meta = json.load(table_file)
@@ -141,7 +151,10 @@ class DBManager:
         with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name not in meta_data["tables"]:
+                self.__is_exception = True
                 raise exception.TableNotExists(table_name)
+            if self.__is_exception:
+                return
             meta_data["tables"].remove(table_name)
         table_meta_file = "table_" + table_name + "_meta.json"
         os.remove(table_meta_file)
