@@ -126,7 +126,7 @@ class DBManager:
                 "CREATE TABLE " + table_name + " (\n" +
                 "\t\t\t\t\t" + fields_str + "\n\t\t\t\t);"
         )
-        return (
+        print(
                 "===================================================\n" +
                 '\t\tTable:\t"' + table_name + '"\n' +
                 "Create Table:\t" + query + "\n" 
