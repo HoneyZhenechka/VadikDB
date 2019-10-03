@@ -27,7 +27,7 @@ class DBManager:
             self.__is_exception = True
             exception.DBNotExists(db_name)
         if self.__is_exception:
-            return "ERROR"
+            return
 
     def __extract_db(self):
         with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
@@ -90,7 +90,7 @@ class DBManager:
                 exception.TableAlreadyExists(table_name)
             if self.__is_exception:
                 self.__write_db(files_tables_list)
-                return "ERROR"
+                return
             meta_data["tables"].append(table_name)
         with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
@@ -114,7 +114,6 @@ class DBManager:
         with open(table_meta_file, "w") as meta_file:
             json.dump(table_meta, meta_file)
         self.__write_db(files_tables_list)
-        return "NOT ERROR"
 
     def show_create_table(self, table_name):
         self.__exists_db(self.__current_db)
@@ -127,7 +126,7 @@ class DBManager:
                 exception.TableNotExists(table_name)
         if self.__is_exception:
             self.__write_db(files_tables_list)
-            return "ERROR"
+            return
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
             table_meta = json.load(table_file)
@@ -147,7 +146,6 @@ class DBManager:
                 "Create Table:\t" + query + "\n" 
                 "==================================================="
         )
-        return "NOT ERROR"
 
     def drop_table(self, table_name):
         self.__exists_db(self.__current_db)
@@ -160,7 +158,7 @@ class DBManager:
                 exception.TableNotExists(table_name)
             if self.__is_exception:
                 self.__write_db(files_tables_list)
-                return "ERROR"
+                return
             meta_data["tables"].remove(table_name)
         table_meta_file = "table_" + table_name + "_meta.json"
         os.remove(table_meta_file)
@@ -172,5 +170,4 @@ class DBManager:
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
         self.__write_db(files_tables_list)
-        return "NOT ERROR"
 
