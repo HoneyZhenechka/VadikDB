@@ -2,7 +2,7 @@ import exception
 from pyparsing import Word, alphas, ZeroOrMore, Optional, nums
 
 
-def check_request(str):
+def check_request(sql_request):
 
     types = {101: "create", 102: "show", 103: "drop", 1001: "Error"}
 
@@ -10,7 +10,7 @@ def check_request(str):
 
     word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
     request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional("(") + ZeroOrMore(word) + Optional(")")
-    list_ = request.parseString(str)
+    list_ = request.parseString(sql_request)
 
     stateMatrix = [
         {"create": 1, "show": 7, "drop": 10},
@@ -46,17 +46,17 @@ def check_request(str):
 #print(check_request("create table VADIC ( i INT , j CHAR(10) )"))
 #print(check_request("show create table VADIC"))
 
-def init_parser(str):
+def init_parser(sql_request):
     tree = {}
 
-    type = check_request(str)
+    type = check_request(sql_request)
 
     if type == "create":
-        tree = create_table(str)
+        tree = create_table(sql_request)
     if type == "show":
-        tree = show_create_table(str)
+        tree = show_create_table(sql_request)
     if type == "drop":
-        tree = drop_table(str)
+        tree = drop_table(sql_request)
     if type == "Error":
         tree = {type: "Error"}
         exception.IncorrectSyntax()
@@ -64,7 +64,7 @@ def init_parser(str):
     return tree
 
 
-def create_table(str):
+def create_table(sql_request):
 
     result = {
         "type": "create",
@@ -79,7 +79,7 @@ def create_table(str):
     word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
     request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional(
         "(") + ZeroOrMore(word) + Optional(")")
-    list_ = request.parseString(str)
+    list_ = request.parseString(sql_request)
 
     values = []
 
@@ -110,7 +110,7 @@ def create_table(str):
     return result
 
 
-def show_create_table(str):
+def show_create_table(sql_request):
 
     result = {
         "type": "show",
@@ -124,7 +124,7 @@ def show_create_table(str):
 
     request = word
 
-    list_ = request.parseString(str)
+    list_ = request.parseString(sql_request)
     for i in range(len(list_)):
         if not (list_[i] in langWords) and not (list_[i] in langCommands):
                 result["name"] = list_[i]
@@ -132,7 +132,7 @@ def show_create_table(str):
     return result
 
 
-def drop_table(str):
+def drop_table(sql_request):
 
     langCommands = ["drop"]
     langWords = ["table"]
@@ -146,7 +146,7 @@ def drop_table(str):
 
     request = word
 
-    list_ = request.parseString(str)
+    list_ = request.parseString(sql_request)
     for i in range(len(list_)):
         if ((not (list_[i] in langWords) and not (list_[i] in langCommands))):
                 result["name"] = list_[i]
