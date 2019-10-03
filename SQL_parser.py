@@ -8,34 +8,37 @@ def check_request(sql_request):
 
     state = 0
 
-    word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
-    request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional("(") + ZeroOrMore(word) + Optional(")")
-    list_ = request.parseString(sql_request)
+    try:
+        word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
+        request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional("(") + ZeroOrMore(word) + Optional(")")
+        list_ = request.parseString(sql_request)
 
-    stateMatrix = [
-        {"create": 1, "show": 7, "drop": 10},
-        {"table": 2},
-        {"name": 3},
-        {"(": 4},
-        {"name": 5},
-        {"INT": 6, "CHAR(10)": 6},
-        {",": 4, ")": 101},
-        {"create": 8},
-        {"table": 9},
-        {"name": 102},
-        {"table": 11},
-        {"name": 103},
-    ]
+        stateMatrix = [
+            {"create": 1, "show": 7, "drop": 10},
+            {"table": 2},
+            {"name": 3},
+            {"(": 4},
+            {"name": 5},
+            {"INT": 6, "CHAR(10)": 6},
+            {",": 4, ")": 101},
+            {"create": 8},
+            {"table": 9},
+            {"name": 102},
+            {"table": 11},
+            {"name": 103},
+        ]
 
-    for i in range(len(list_)):
-        if state < 100:
-            if (list_[i] in stateMatrix[state]):
-                state = stateMatrix[state][list_[i]]
-            else:
-                if (state in [2, 4, 9, 11]):
-                    state = stateMatrix[state]["name"]
-        else:
-            state = 1001
+        for i in range(len(list_)):
+            if state < 100:
+                if (list_[i] in stateMatrix[state]):
+                    state = stateMatrix[state][list_[i]]
+                else:
+                    if (state in [2, 4, 9, 11]):
+                        state = stateMatrix[state]["name"]
+    except:
+        state = 1001
+    if state < 100:
+        state = 1001
 
     result = types[state]
 
@@ -58,7 +61,7 @@ def init_parser(sql_request):
     if type == "drop":
         tree = drop_table(sql_request)
     if type == "Error":
-        tree = {type: "Error"}
+        tree = {"type": "Error"}
         exception.IncorrectSyntax()
 
     return tree
