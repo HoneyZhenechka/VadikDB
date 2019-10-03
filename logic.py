@@ -1,14 +1,18 @@
-import parser
+import SQL_parser
+import engine
 
 def query(str):
-    if (str.find("create") != -1):
-        if (str.find("show") != -1):
-            tree = parser.show_create(str)
-        else:
-            tree = parser.create(str)
-    if (str.find("drop") != -1):
-        tree = parser.drop(str)
+    tree = SQL_parser.init_parser(str)
+    if (tree.type == "create"):
+        db.create_table(tree["name"], tree.fields)
+    if (tree.type == "show"):
+        db.show_create_table(tree["name"])
+    if (tree.type == "drop"):
+        db.drop_table(tree["name"])
 
+
+db = engine.DBManager()
+db.create_db("vadikcDB")
 
 request = ""
 

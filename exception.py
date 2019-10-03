@@ -11,3 +11,7 @@ class TableAlreadyExists(Exception):
 class TableNotExists(Exception):
     def __init__(self, table_name):
         print("Table " + table_name + "not exists!")
+
+class IncorrectSyntax():
+    def __init__(self):
+        print("Incorrect Syntax")
