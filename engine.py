@@ -25,7 +25,7 @@ class DBManager:
     def __exists_db(self, db_name):
         if db_name not in self.__db_list:
             self.__is_exception = True
-            raise exception.DBNotExists(db_name)
+            exception.DBNotExists(db_name)
         if self.__is_exception:
             return
 
@@ -86,7 +86,7 @@ class DBManager:
             meta_data = json.load(meta_file)
             if table_name in meta_data["tables"]:
                 self.__is_exception = True
-                raise exception.TableAlreadyExists(table_name)
+                exception.TableAlreadyExists(table_name)
             if self.__is_exception:
                 return
             meta_data["tables"].append(table_name)
@@ -121,7 +121,7 @@ class DBManager:
             meta_data = json.load(table_file)
             if table_name not in meta_data["tables"]:
                 self.__is_exception = True
-                raise exception.TableNotExists(table_name)
+                exception.TableNotExists(table_name)
         if self.__is_exception:
             return
         table_meta_file = "table_" + table_name + "_meta.json"
@@ -152,7 +152,7 @@ class DBManager:
             meta_data = json.load(meta_file)
             if table_name not in meta_data["tables"]:
                 self.__is_exception = True
-                raise exception.TableNotExists(table_name)
+                exception.TableNotExists(table_name)
             if self.__is_exception:
                 return
             meta_data["tables"].remove(table_name)
