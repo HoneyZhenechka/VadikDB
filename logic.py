@@ -17,4 +17,6 @@ class Logic:
             type = self.db.show_create_table(tree["name"])
         if tree["type"] == "drop":
             type = self.db.drop_table(tree["name"])
-        return [tree["type"], type]
+        if (tree["type"] == "Error" or type == "ERROR"):
+            return "Error"
+        return "Not Error"
