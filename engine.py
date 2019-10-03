@@ -110,6 +110,10 @@ class DBManager:
     def show_create_table(self, table_name):
         self.__exists_db(self.__current_db)
         self.__extract_db()
+        with open("db_meta.json", "r") as table_file:
+            meta_data = json.load(table_file)
+            if table_name not in meta_data["tables"]:
+                raise exception.TableNotExists(table_name)
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
             table_meta = json.load(table_file)
@@ -118,8 +122,6 @@ class DBManager:
         for key in fields:
             fields_str += key + " " + fields[key] + ", "
         fields_str = fields_str[:-2]
-        with open("db_meta.json", "r") as table_file:
-            meta_data = json.load(table_file)
         files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
         query = (
@@ -136,13 +138,13 @@ class DBManager:
     def drop_table(self, table_name):
         self.__exists_db(self.__current_db)
         self.__extract_db()
-        table_meta_file = "table_" + table_name + "_meta.json"
-        os.remove(table_meta_file)
         with open("db_meta.json", "r") as meta_file:
             meta_data = json.load(meta_file)
             if table_name not in meta_data["tables"]:
                 raise exception.TableNotExists(table_name)
             meta_data["tables"].remove(table_name)
+        table_meta_file = "table_" + table_name + "_meta.json"
+        os.remove(table_meta_file)
         with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
         with open("data.json", "r") as data_file:
