@@ -10,10 +10,11 @@ class Logic:
 
     def query(self, sql_request):
         tree = SQL_parser.init_parser(sql_request)
+        type = "NOT ERROR"
         if tree["type"] == "create":
-            self.db.create_table(tree["name"], tree["fields"])
+            type = self.db.create_table(tree["name"], tree["fields"])
         if tree["type"] == "show":
-            self.db.show_create_table(tree["name"])
+            type = self.db.show_create_table(tree["name"])
         if tree["type"] == "drop":
-            self.db.drop_table(tree["name"])
-        return tree["type"]
+            type = self.db.drop_table(tree["name"])
+        return [tree["type"], type]

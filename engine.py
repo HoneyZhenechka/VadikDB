@@ -88,7 +88,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableAlreadyExists(table_name)
             if self.__is_exception:
-                return
+                return "ERROR"
             meta_data["tables"].append(table_name)
         with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
@@ -123,7 +123,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
         if self.__is_exception:
-            return
+            return "ERROR"
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
             table_meta = json.load(table_file)
@@ -154,7 +154,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
             if self.__is_exception:
-                return
+                return "ERROR"
             meta_data["tables"].remove(table_name)
         table_meta_file = "table_" + table_name + "_meta.json"
         os.remove(table_meta_file)
