@@ -26,8 +26,6 @@ class DBManager:
         if db_name not in self.__db_list:
             self.__is_exception = True
             exception.DBNotExists(db_name)
-        if self.__is_exception:
-            return
 
     def __extract_db(self):
         with zipfile.ZipFile(self.__db_file_path, "a") as db_archive:
@@ -87,9 +85,11 @@ class DBManager:
             if table_name in meta_data["tables"]:
                 self.__is_exception = True
                 exception.TableAlreadyExists(table_name)
-            if self.__is_exception:
-                return "ERROR"
-            meta_data["tables"].append(table_name)
+        files_tables_list = self.__get_files_tables_list(meta_data)
+        if self.__is_exception:
+            self.__write_db(files_tables_list)
+            return "ERROR"
+        meta_data["tables"].append(table_name)
         with open("db_meta.json", "w") as meta_file:
             json.dump(meta_data, meta_file)
         table_meta_file = "table_" + table_name + "_meta.json"
@@ -111,7 +111,6 @@ class DBManager:
             json.dump(data_json, data_file)
         with open(table_meta_file, "w") as meta_file:
             json.dump(table_meta, meta_file)
-        files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
 
     def show_create_table(self, table_name):
@@ -122,7 +121,9 @@ class DBManager:
             if table_name not in meta_data["tables"]:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
+        files_tables_list = self.__get_files_tables_list(meta_data)
         if self.__is_exception:
+            self.__write_db(files_tables_list)
             return "ERROR"
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
@@ -132,7 +133,6 @@ class DBManager:
         for key in fields:
             fields_str += key + " " + fields[key] + ", "
         fields_str = fields_str[:-2]
-        files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
         query = (
                 "CREATE TABLE " + table_name + " (\n" +
@@ -153,9 +153,12 @@ class DBManager:
             if table_name not in meta_data["tables"]:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
-            if self.__is_exception:
-                return "ERROR"
-            meta_data["tables"].remove(table_name)
+        if self.__is_exception:
+            excp_files_tables_list = self.__get_files_tables_list(meta_data)
+            self.__write_db(excp_files_tables_list)
+            return "ERROR"
+        meta_data["tables"].remove(table_name)
+        files_tables_list = self.__get_files_tables_list(meta_data)
         table_meta_file = "table_" + table_name + "_meta.json"
         os.remove(table_meta_file)
         with open("db_meta.json", "w") as meta_file:
@@ -165,6 +168,5 @@ class DBManager:
             data_json.pop(table_name)
         with open("data.json", "w") as data_file:
             json.dump(data_json, data_file)
-        files_tables_list = self.__get_files_tables_list(meta_data)
         self.__write_db(files_tables_list)
 
