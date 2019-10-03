@@ -89,6 +89,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableAlreadyExists(table_name)
             if self.__is_exception:
+                self.__write_db(files_tables_list)
                 return "ERROR"
             meta_data["tables"].append(table_name)
         with open("db_meta.json", "w") as meta_file:
@@ -125,6 +126,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
         if self.__is_exception:
+            self.__write_db(files_tables_list)
             return "ERROR"
         table_meta_file = "table_" + table_name + "_meta.json"
         with open(table_meta_file, "r") as table_file:
@@ -157,6 +159,7 @@ class DBManager:
                 self.__is_exception = True
                 exception.TableNotExists(table_name)
             if self.__is_exception:
+                self.__write_db(files_tables_list)
                 return "ERROR"
             meta_data["tables"].remove(table_name)
         table_meta_file = "table_" + table_name + "_meta.json"
