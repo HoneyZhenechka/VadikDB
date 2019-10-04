@@ -3,10 +3,10 @@ import engine
 
 
 class Logic:
-    db = engine.DBManager()
+    db = engine.DBManager("db")
 
     def __init__(self):
-        self.db.create_db("testDB")
+        pass
 
     def query(self, sql_request):
         tree = SQL_parser.init_parser(sql_request)
