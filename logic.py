@@ -3,7 +3,7 @@ import engine
 
 
 class Logic:
-    db = engine.DBManager("db")
+    db = engine.DatabaseManager("db")
 
     def __init__(self):
         pass
