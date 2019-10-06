@@ -15,8 +15,13 @@ class Table:
         for key, value in self.table_meta["fields"].items():
             self.types.append(value)
             self.records[0].append(key)
-        for field, row in self.data_json[self.table_name].items():
-            self.records.append(row)
-
-    def get_rows(self, fields = [], expr = ""):
-        pass
+        for i in self.data_json[table_name][self.records[0][0]]:
+            self.records.append([])
+        temp_list = []
+        for key, value in self.data_json[table_name].items():
+            temp_list.append(value)
+        for i in range(len(temp_list)):
+            records_index = 1
+            for j in range(len(temp_list[i])):
+                self.records[records_index].append(temp_list[i][j])
+                records_index = records_index + 1
