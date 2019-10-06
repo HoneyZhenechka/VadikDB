@@ -154,9 +154,3 @@ class Database:
                     value_index = value_index + 1
         with open(self.__current_directory / "data.json", "w") as data_file:
             json.dump(data_json, data_file)
-
-
-db = Database("db")
-db.create_table("le", [["one", "bool"], ["two", "int"]])
-db.insert("le", [], ["False", "2"])
-db.insert("le", ["one"], ["True"])
