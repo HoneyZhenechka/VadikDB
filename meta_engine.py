@@ -7,6 +7,43 @@ from pathlib import Path
 class Database:
     __current_directory = ""
 
+    def __to_bool(self, value):
+        if value.lower() in ("true", "1"):
+            return True
+        if value.lower() in ("false", "0"):
+            return False
+        raise Exception('Invalid value for boolean conversion: ' + value)
+
+    def __check_type(self, table_meta, fields, values):
+        value_index = 0
+        if len(fields) == 0:
+            for key, value in table_meta["fields"].items():
+                if value == "int":
+                    try:
+                        int(values[value_index])
+                    except Exception:
+                        raise exception.InvalidDataType()
+                if value == "bool":
+                    try:
+                        self.__to_bool(values[value_index])
+                    except Exception:
+                        raise exception.InvalidDataType()
+                value_index = value_index + 1
+        else:
+            for field in fields:
+                for key, value in table_meta["fields"].items():
+                    if (value == "int") and (key == field):
+                        try:
+                            int(values[value_index])
+                        except Exception:
+                            raise exception.InvalidDataType()
+                    if (value == "bool") and (key == field):
+                        try:
+                            self.__to_bool(values[value_index])
+                        except Exception:
+                            raise exception.InvalidDataType()
+                    value_index = value_index + 1
+
     def __init__(self, database_name):
         self.__current_directory = Path.cwd()
         db_directory = self.__current_directory / database_name
@@ -42,7 +79,7 @@ class Database:
             data_json[table_name] = {}
             if not len(fields) == 0:
                 for i in range(len(fields)):
-                    data_json[table_name][fields[i][0]] = "null"
+                    data_json[table_name][fields[i][0]] = []
                     table_meta["fields"][fields[i][0]] = fields[i][1]  # {name:type}
         with open(self.__current_directory / "data.json", "w") as data_file:
             json.dump(data_json, data_file)
@@ -88,3 +125,38 @@ class Database:
             data_json.pop(table_name)
         with open(self.__current_directory / "data.json", "w") as data_file:
             json.dump(data_json, data_file)
+
+    def insert(self, table_name, fields, values):
+        with open(self.__current_directory / "db_meta.json", "r") as meta_file:
+            meta_data = json.load(meta_file)
+            if table_name not in meta_data["tables"]:
+                raise exception.TableNotExists(table_name)
+        with open(self.__current_directory / "data.json", "r") as data_file:
+            data_json = json.load(data_file)
+        for field in fields:
+            if field not in data_json[table_name]:
+                raise exception.FieldNotExists(field)
+        table_meta_file = "table_" + table_name + "_meta.json"
+        with open(self.__current_directory / table_meta_file, "r") as table_file:
+            table_meta = json.load(table_file)
+        self.__check_type(table_meta, fields, values)
+        value_index = 0
+        if len(fields) == 0:
+            for key in data_json[table_name]:
+                data_json[table_name][key].append(values[value_index])
+                value_index = value_index + 1
+        else:
+            for key in data_json[table_name]:
+                if key not in fields:
+                    data_json[table_name][key].append("NULL")
+                else:
+                    data_json[table_name][key].append(values[value_index])
+                    value_index = value_index + 1
+        with open(self.__current_directory / "data.json", "w") as data_file:
+            json.dump(data_json, data_file)
+
+
+db = Database("db")
+db.create_table("le", [["one", "bool"], ["two", "int"]])
+db.insert("le", [], ["False", "2"])
+db.insert("le", ["one"], ["True"])
