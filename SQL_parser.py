@@ -1,157 +1,253 @@
-import exception
-from pyparsing import Word, alphas, ZeroOrMore, Optional, nums
+from SQL_lexer import tokens
+import ply.yacc as yacc
 
 
-def check_request(sql_request):
+class Struct:
 
-    types = {101: "create", 102: "show", 103: "drop", 1001: "Error"}
+    def __init__(self, **dictionary):
+        self.__dict__.update(dictionary)
 
-    state = 0
+    def __getitem__(self, name):
+        return self.__dict__[name]
 
-    try:
-        word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
-        request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional("(") + ZeroOrMore(word) + Optional(")")
-        list_ = request.parseString(sql_request)
+    def __setitem__(self, name, value):
+        self.__dict__[name] = value
 
-        stateMatrix = [
-            {"create": 1, "show": 7, "drop": 10},
-            {"table": 2},
-            {"name": 3},
-            {"(": 4},
-            {"name": 5},
-            {"INT": 6, "CHAR(10)": 6},
-            {",": 4, ")": 101},
-            {"create": 8},
-            {"table": 9},
-            {"name": 102},
-            {"table": 11},
-            {"name": 103},
-        ]
-
-        for i in range(len(list_)):
-            if state < 100:
-                if (list_[i] in stateMatrix[state]):
-                    state = stateMatrix[state][list_[i]]
-                else:
-                    if (state in [2, 4, 9, 11]):
-                        state = stateMatrix[state]["name"]
-    except:
-        state = 1001
-    if state < 100:
-        state = 1001
-
-    result = types[state]
-
-    return result
+    def __iter__(self):
+        for i in self.__dict__.keys():
+            yield i
 
 
-#print(check_request("drop table VADIC"))
-#print(check_request("create table VADIC ( i INT , j CHAR(10) )"))
-#print(check_request("show create table VADIC"))
+class PCreate(Struct):
 
-def init_parser(sql_request):
-    tree = {}
-
-    type = check_request(sql_request)
-
-    if type == "create":
-        tree = create_table(sql_request)
-    if type == "show":
-        tree = show_create_table(sql_request)
-    if type == "drop":
-        tree = drop_table(sql_request)
-    if type == "Error":
-        tree = {"type": "Error"}
-        exception.IncorrectSyntax()
-
-    return tree
+    def __init__(self, name="", values=[]):
+        self.name = name
+        self.type = "create"
+        self.values = values
 
 
-def create_table(sql_request):
+class PShow(Struct):
 
-    result = {
-        "type": "create",
-        "name": "",
-        "fields": []
-    }
-
-    langCommands = ["create"]
-    langWords = ["table"]
-    bracketIsOpen = False
-
-    word = Word(alphas + "," + "(" + ")" + nums).ignore('"').ignore("'")
-    request = Optional("create") + Optional("show") + Optional("create") + Optional("drop") + "table" + word + Optional(
-        "(") + ZeroOrMore(word) + Optional(")")
-    list_ = request.parseString(sql_request)
-
-    values = []
-
-    i = 0
-    while i < len(list_):
-
-        if (list_[i] == "("):
-            bracketIsOpen = True
-            i = i + 1
-            continue
-
-        if (list_[i] == ")"):
-            bracketIsOpen = False
-            i = i + 1
-            continue
-
-        if ((not (list_[i] in langWords) and not (list_[i] in langCommands) and not (bracketIsOpen))):
-            result["name"] = list_[i]
-
-        if ((not (list_[i] in langWords) and not (list_[i] in langCommands) and (bracketIsOpen)) and not(list_[i] == ",")):
-            temp = [list_[i], list_[i+1]]
-            values.append(temp)
-            i = i + 1
-        i = i + 1
-
-    result["fields"] = values
-
-    return result
+    def __init__(self, name=""):
+        self.name = name
+        self.type = "show"
 
 
-def show_create_table(sql_request):
+class PDrop(Struct):
 
-    result = {
-        "type": "show",
-        "name": ""
-    }
-
-    langCommands = ["show"]
-    langWords = ["table"]
-
-    word = ZeroOrMore(Word(alphas).ignore(",").ignore('"').ignore("'"))
-
-    request = word
-
-    list_ = request.parseString(sql_request)
-    for i in range(len(list_)):
-        if not (list_[i] in langWords) and not (list_[i] in langCommands):
-                result["name"] = list_[i]
-
-    return result
+    def __init__(self, name=""):
+        self.name = name
+        self.type = "drop"
 
 
-def drop_table(sql_request):
+class PSelect(Struct):
 
-    langCommands = ["drop"]
-    langWords = ["table"]
+    def __init__(self, select_body):
+        self.type = "select"
+        self.select = select_body
 
-    word = ZeroOrMore(Word(alphas).ignore(",").ignore('"').ignore("'"))
 
-    result = {
-        "type": "drop",
-        "name": ""
-    }
+class PSelectBody(Struct):
 
-    request = word
+    def __init__(self, name="", fields=[], condition=[]):
+        self.name = name
+        self.fields = fields
+        self.condition = condition
 
-    list_ = request.parseString(sql_request)
-    for i in range(len(list_)):
-        if ((not (list_[i] in langWords) and not (list_[i] in langCommands))):
-                result["name"] = list_[i]
+
+class PInsert(Struct):
+
+    def __init__(self, insert_body):
+        self.type = "insert"
+        self.insert = insert_body
+
+
+class PInsertBody(Struct):
+
+    def __init__(self, name="", fields=[], values=[]):
+        self.name = name
+        self.fields = fields
+        self.values = values
+
+
+class PUpdate(Struct):
+
+    def __init__(self, name="", set=[], condition=[]):
+        self.name = name
+        self.type = "update"
+        self.set = set
+        self.condition = condition
+
+
+class PDelete(Struct):
+
+    def __init__(self, name="", condition=[]):
+        self.name = name
+        self.type = "delete"
+        self.condition = condition
+
+
+def p_start(p):
+    '''start : create
+             | show
+             | drop
+             | select
+             | insert
+             | update
+             | delete'''
+
+    p[0] = p[1]
+
+
+def p_create(p):
+    '''create : CREATE create_body ENDREQUEST'''
+
+    p[0] = p[2]
+
+
+def p_create_body(p):
+    '''create_body : TABLE NAME LBRACKET values RBRACKET'''
+
+    p[0] = PCreate(p[2], p[4])
+
+
+def p_values(p):
+    '''values : NAME type
+              | values COMMA NAME type'''
+
+    if len(p) == 3:
+        p[0] = []
+        p[0].append([p[1], p[2]])
+    else:
+        p[0] = p[1]
+        p[0].append([p[3], p[4]])
+
+
+def p_show(p):
+    '''show : SHOW CREATE TABLE NAME ENDREQUEST'''
+
+    p[0] = PShow(p[4])
+
+
+def p_drop(p):
+    '''drop : DROP TABLE NAME ENDREQUEST'''
+
+    p[0] = PDrop(p[3])
+
+
+def p_select(p):
+    '''select : SELECT select_body ENDREQUEST'''
+
+    p[0] = PSelect(p[2])
+
+
+def p_select_body(p):
+    '''select_body : fields FROM NAME
+                   | fields FROM NAME condition'''
+
+    if len(p) != 4:
+        p[0] = PSelectBody(p[3], p[1], p[4])
+    else:
+        p[0] = PSelectBody(p[3], p[1], [])
+
+
+def p_insert(p):
+    '''insert : INSERT insert_body ENDREQUEST'''
+
+    p[0] = PInsert(p[2])
+
+
+def p_insert_body(p):
+    '''insert_body : INTO NAME VALUES LBRACKET fields RBRACKET
+                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET'''
+
+    if len(p) == 7:
+        p[0] = PInsertBody(p[2], [], p[5])
+    else:
+        p[0] = PInsertBody(p[2], p[4], p[8])
+
+
+def p_update(p):
+    '''update : UPDATE update_body ENDREQUEST'''
+
+    p[0] = p[2]
+
+
+def p_update_body(p):
+    '''update_body : NAME SET expression
+                   | NAME SET expression condition'''
+
+    if len(p) == 4:
+        p[0] = PUpdate(p[1], p[3], [])
+    else:
+        p[0] = PUpdate(p[1], p[3], p[4])
+
+
+def p_expression(p):
+    '''expression : field operator field
+                  | expression COMMA field operator field'''
+
+    if len(p) == 4:
+        p[0] = []
+        p[0].append([p[1], p[3]])
+    else:
+        p[0] = p[1]
+        p[0].append([p[3], p[5]])
+
+
+def p_delete(p):
+    '''delete : DELETE FROM NAME ENDREQUEST
+              | DELETE FROM NAME condition ENDREQUEST'''
+
+    if len(p) == 5:
+        p[0] = PDelete(p[3], [])
+    else:
+        p[0] = PDelete(p[3], p[4])
+
+
+def p_fields(p):
+    '''fields : NAME
+              | fields COMMA NAME'''
+
+    if len(p) == 2:
+        p[0] = []
+        p[0].append(p[1])
+    else:
+        p[0] = p[1]
+        p[0].append(p[3])
+
+
+def p_field(p):
+    '''field : NAME'''
+
+    p[0] = p[1]
+
+
+def p_operator(p):
+    '''operator : EQUAL'''
+
+    p[0] = p[1]
+
+def p_condition(p):
+    '''condition : WHERE field operator field'''
+
+    p[0] = [p[2], p[4]]
+
+
+def p_type(p):
+    '''type : int
+            | str
+            | bol
+            | bool'''
+
+    p[0] = p[1]
+
+
+parser = yacc.yacc()
+
+
+def build_tree(code):
+
+    result = parser.parse(code)
 
     return result
