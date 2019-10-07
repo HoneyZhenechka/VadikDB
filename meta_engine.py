@@ -155,3 +155,19 @@ class Database:
                     value_index = value_index + 1
         with open(self.__current_directory / "data.json", "w") as data_file:
             json.dump(data_json, data_file)
+
+    def delete(self, table_name, where_field="", where_value=""):
+        current_table = table.Table()
+        current_table.load_from_file(table_name, self.__current_directory)
+        if(where_field == "") and (where_value == ""):
+            for i in range(1, len(current_table.rows), 1):
+                current_table.rows.pop()
+        else:
+            field_index = current_table.rows[0].index(where_field)
+            i = 1
+            while i < len(current_table.rows):
+                if current_table.rows[i][field_index] == where_value:
+                    current_table.rows.pop(i)
+                    i = i - 1
+                i = i + 1
+        current_table.save_to_file(self.__current_directory)
