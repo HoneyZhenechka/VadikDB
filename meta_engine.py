@@ -53,7 +53,7 @@ class Database:
     def show_create_table(self, table_name):
         current_table = table.Table()
         current_table.load_from_file(table_name, self.__current_directory)
-        fields_str = ", ".join(current_table.table_matrix[0])
+        fields_str = ", ".join(current_table.matrix[0])
         query = (
                 "CREATE TABLE " + current_table.table_name + " (\n" +
                 "\t\t\t\t\t" + fields_str + "\n\t\t\t\t);"
@@ -89,37 +89,70 @@ class Database:
             values_types = current_table.types
         else:
             for field in fields:
-                if field not in current_table.table_matrix[0]:
+                if field not in current_table.matrix[0]:
                     raise exception.FieldNotExists(field)
                 values_types.append(current_table.get_type(field))
         for i in range(len(values)):
             current_table.check_value(values[i], values_types[i])
         if len(fields) == 0:
-            current_table.table_matrix.append(values)
+            current_table.matrix.append(values)
         else:
             inserted_index = 0
             inserted_values = []
-            for i in range(len(current_table.table_matrix[0])):
-                if current_table.table_matrix[0][i] not in fields:
+            for i in range(len(current_table.matrix[0])):
+                if current_table.matrix[0][i] not in fields:
                     inserted_values.append("NULL")
                 else:
                     inserted_values.append(values[inserted_index])
                     inserted_index = inserted_index + 1
-            current_table.table_matrix.append(inserted_values)
+            current_table.matrix.append(inserted_values)
         current_table.save_to_file(self.__current_directory)
 
     def delete(self, table_name, where_field="", where_value=""):
         current_table = table.Table()
         current_table.load_from_file(table_name, self.__current_directory)
         if(where_field == "") and (where_value == ""):
-            for i in range(1, len(current_table.table_matrix), 1):
-                current_table.table_matrix.pop()
+            for i in range(1, len(current_table.matrix), 1):
+                current_table.matrix.pop()
         else:
-            field_index = current_table.table_matrix[0].index(where_field)
+            try:
+                field_index = current_table.matrix[0].index(where_field)
+            except ValueError:
+                raise exception.FieldNotExists
+            where_type = current_table.get_type(where_field)
+            current_table.check_value(where_value, where_type)
             i = 1
-            while i < len(current_table.table_matrix):
-                if current_table.table_matrix[i][field_index] == where_value:
-                    current_table.table_matrix.pop(i)
+            while i < len(current_table.matrix):
+                if current_table.matrix[i][field_index] == where_value:
+                    current_table.matrix.pop(i)
                     i = i - 1
                 i = i + 1
+        current_table.save_to_file(self.__current_directory)
+
+    def update(self, table_name, fields, values, where_field="", where_value=""):
+        current_table = table.Table()
+        current_table.load_from_file(table_name, self.__current_directory)
+        fields_types = []
+        for i in range(len(fields)):
+            fields_types.append(current_table.get_type(fields[i]))
+        for i in range(len(values)):
+            current_table.check_value(values[i], fields_types[i])
+        fields_indexes = []
+        for field in fields:
+            fields_indexes.append(current_table.matrix[0].index(field))
+        if(where_field == "") and (where_value == ""):
+            for i in range(1, len(current_table.matrix), 1):
+                for j in range(len(fields_indexes)):
+                    current_table.matrix[i][fields_indexes[j]] = values[j]
+        else:
+            where_type = current_table.get_type(where_field)
+            current_table.check_value(where_value, where_type)
+            where_index = current_table.matrix[0].index(where_field)
+            rows_indexes = []
+            for i in range(1, len(current_table.matrix), 1):
+                if current_table.matrix[i][where_index] == where_value:
+                    rows_indexes.append(i)
+            for index in rows_indexes:
+                for j in range(len(fields_indexes)):
+                    current_table.matrix[index][fields_indexes[j]] = values[j]
         current_table.save_to_file(self.__current_directory)
