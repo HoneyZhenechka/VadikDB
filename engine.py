@@ -29,8 +29,14 @@ class DatabaseManager:
         except Exception:
             return "ERROR"
 
-    def delete(self, table_name, where_field, where_value):
+    def delete(self, table_name, where_field="", where_value=""):
         try:
             self.meta_db.delete(table_name, where_field, where_value)
+        except Exception:
+            return "ERROR"
+
+    def update(self, table_name, fields, values, where_field="", where_value=""):
+        try:
+            self.meta_db.update(table_name, fields, values, where_field, where_value)
         except Exception:
             return "ERROR"
