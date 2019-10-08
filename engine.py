@@ -43,6 +43,12 @@ class DatabaseManager:
 
     def select(self, table_name, fields=[], for_print=False, all_rows=False, where_field="", where_value=""):
         try:
-            self.select(table_name, fields, for_print, all_rows, where_field, where_value)
+            self.meta_db.select(table_name, fields, for_print, all_rows, where_field, where_value)
+        except Exception:
+            return "ERROR"
+
+    def get_cursor(self, selected_table):
+        try:
+            return self.meta_db.get_cursor(selected_table)
         except Exception:
             return "ERROR"

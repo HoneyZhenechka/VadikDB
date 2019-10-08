@@ -52,15 +52,15 @@ class Table:
                 rows_indexes.append(i)
         return rows_indexes
 
-    def check_value(self, value, value_type):
+    def check_value(self, value, field_type):
         if value == "NULL":
             return
-        if value_type == "int":
+        if field_type == "int":
             try:
                 int(value)
             except ValueError:
                 raise exception.InvalidDataType()
-        if value_type == "bool":
+        if field_type == "bool":
             try:
                 self.__to_bool(value)
             except Exception:
@@ -89,3 +89,40 @@ class Table:
             json.dump(table_meta, meta_file)
         with open(path / "data.json", "w") as data_file:
             json.dump(data_json, data_file)
+
+
+class Cursor:
+    __row_index = 1
+
+    def __init__(self, selected_table):
+        self.__current_table = selected_table
+        self.__table_length = len(selected_table.matrix)
+
+    def next(self):
+        self.__row_index = self.__row_index + 1
+        if self.__row_index == self.__table_length:
+            self.close()
+
+    def update(self, fields, values):
+        fields_indexes = []
+        for i in range(len(fields)):
+            if fields[i] in self.__current_table.matrix[0]:
+                fields_indexes.append(self.__current_table.matrix[0].index(fields[i]))
+        fields_types = []
+        for field in fields:
+            fields_types.append(self.__current_table.get_type(field))
+        for i in range(len(values)):
+            self.__current_table.check_value(values[i], fields_types[i])
+        i = 0
+        for index in fields_indexes:
+            self.__current_table.matrix[self.__row_index][index] = values[i]
+            i = i + 1
+
+    def delete(self):
+        del self.__current_table.matrix[self.__row_index]
+
+    def commit(self):
+        return self.__current_table
+
+    def close(self):
+        del self

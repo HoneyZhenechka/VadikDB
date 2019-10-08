@@ -163,7 +163,7 @@ class Database:
                     current_table.matrix[index][fields_indexes[j]] = values[j]
         current_table.save_to_file(self.__current_directory)
 
-    def select(self, table_name, fields=[], for_cursor=False, all_rows=False, where_field="", where_value=""):
+    def select(self, table_name, fields=[], for_print=False, all_rows=False, where_field="", where_value=""):
         current_table = table.Table()
         current_table.load_from_file(table_name, self.__current_directory)
         result_table = table.Table()
@@ -200,6 +200,9 @@ class Database:
                     row_index = row_index + 1
                 for result_list in result_matrix:
                     result_table.matrix.append(result_list)
-        if not for_cursor:
+        if not for_print:
             self.__print_matrix(result_table.matrix)
         return result_table
+
+    def get_cursor(self, selected_table):
+        return table.Cursor(selected_table)
