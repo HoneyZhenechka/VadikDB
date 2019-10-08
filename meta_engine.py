@@ -8,6 +8,18 @@ from pathlib import Path
 class Database:
     __current_directory = ""
 
+    def __print_matrix(self, s):
+        for j in range(len(s[0])):
+            print("%s " % s[0][j], end="")
+        print()
+        for j in range(len(s[0])):
+            print("------", end="")
+        print()
+        for i in range(1, len(s), 1):
+            for j in range(len(s[1])):
+                print("%s " % (s[i][j]), end="")
+            print()
+
     def __init__(self, database_name):
         self.__current_directory = Path.cwd()
         db_directory = self.__current_directory / database_name
@@ -145,14 +157,49 @@ class Database:
                 for j in range(len(fields_indexes)):
                     current_table.matrix[i][fields_indexes[j]] = values[j]
         else:
-            where_type = current_table.get_type(where_field)
-            current_table.check_value(where_value, where_type)
-            where_index = current_table.matrix[0].index(where_field)
-            rows_indexes = []
-            for i in range(1, len(current_table.matrix), 1):
-                if current_table.matrix[i][where_index] == where_value:
-                    rows_indexes.append(i)
+            rows_indexes = current_table.get_rows_indexes(where_field, where_value)
             for index in rows_indexes:
                 for j in range(len(fields_indexes)):
                     current_table.matrix[index][fields_indexes[j]] = values[j]
         current_table.save_to_file(self.__current_directory)
+
+    def select(self, table_name, fields=[], for_cursor=False, all_rows=False, where_field="", where_value=""):
+        current_table = table.Table()
+        current_table.load_from_file(table_name, self.__current_directory)
+        result_table = table.Table()
+        if all_rows:
+            result_table.matrix = current_table.matrix
+            result_table.types = current_table.types
+        else:
+            for field in fields:
+                if field not in current_table.matrix[0]:
+                    raise exception.FieldNotExists(field)
+            fields_indexes = []
+            for i in range(len(fields)):
+                if fields[i] in current_table.matrix[0]:
+                    fields_indexes.append(current_table.matrix[0].index(fields[i]))
+            for index in fields_indexes:
+                result_table.types.append(current_table.types[index])
+            result_table.matrix[0] = fields
+            if(where_field == "") and (where_value == ""):
+                for i in range(1, len(current_table.matrix), 1):
+                    result_table.matrix.append([])
+                    for j in range(len(fields_indexes)):
+                        result_table.matrix[i][j] = current_table.matrix[i][fields_indexes[j]]
+            else:
+                rows_indexes = current_table.get_rows_indexes(where_field, where_value)
+                result_matrix = []
+                row_index = 0
+                while row_index < len(rows_indexes):
+                    column_index = 0
+                    temp_list = []
+                    while column_index < len(fields_indexes):
+                        temp_list.append(current_table.matrix[rows_indexes[row_index]][fields_indexes[column_index]])
+                        column_index = column_index + 1
+                    result_matrix.append(temp_list)
+                    row_index = row_index + 1
+                for result_list in result_matrix:
+                    result_table.matrix.append(result_list)
+        if not for_cursor:
+            self.__print_matrix(result_table.matrix)
+        return result_table

@@ -40,3 +40,9 @@ class DatabaseManager:
             self.meta_db.update(table_name, fields, values, where_field, where_value)
         except Exception:
             return "ERROR"
+
+    def select(self, table_name, fields=[], for_print=False, all_rows=False, where_field="", where_value=""):
+        try:
+            self.select(table_name, fields, for_print, all_rows, where_field, where_value)
+        except Exception:
+            return "ERROR"

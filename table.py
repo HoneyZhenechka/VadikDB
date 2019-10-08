@@ -18,8 +18,11 @@ class Table:
     def load_from_file(self, table_name, path):
         self.table_name = table_name
         table_meta_file = "table_" + self.table_name + "_meta.json"
-        with open(path / table_meta_file, "r") as meta_file:
-            table_meta = json.load(meta_file)
+        try:
+            with open(path / table_meta_file, "r") as meta_file:
+                table_meta = json.load(meta_file)
+        except OSError:
+            raise exception.TableNotExists(table_name)
         with open(path / "data.json", "r") as data_file:
             data_json = json.load(data_file)
         for key, value in table_meta["fields"].items():
@@ -39,7 +42,19 @@ class Table:
     def get_type(self, field):
         return self.types[self.matrix[0].index(field)]
 
+    def get_rows_indexes(self, field, field_value):
+        field_type = self.get_type(field)
+        self.check_value(field_value, field_type)
+        where_index = self.matrix[0].index(field)
+        rows_indexes = []
+        for i in range(1, len(self.matrix), 1):
+            if self.matrix[i][where_index] == field_value:
+                rows_indexes.append(i)
+        return rows_indexes
+
     def check_value(self, value, value_type):
+        if value == "NULL":
+            return
         if value_type == "int":
             try:
                 int(value)
