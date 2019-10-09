@@ -1,23 +1,32 @@
-class TableAlreadyExists(Exception):
+class DBException(Exception):
+    error_code = ""
+
+
+class TableAlreadyExists(DBException):
     def __init__(self, table_name):
-        print("Table " + table_name + " already exists!")
+        self.error_code = "00"
+        print("Error code: " + self.error_code + " -- Table " + table_name + " already exists!")
 
 
-class TableNotExists(Exception):
+class TableNotExists(DBException):
     def __init__(self, table_name):
-        print("Table " + table_name + " not exists!")
+        self.error_code = "01"
+        print("Error code: " + self.error_code + " -- Table " + table_name + " not exists!")
 
 
-class FieldNotExists(Exception):
+class FieldNotExists(DBException):
     def __init__(self, field_name):
-        print("Table " + field_name + " not exists!")
+        self.error_code = "02"
+        print("Error code: " + self.error_code + " -- Table " + field_name + " not exists!")
 
 
-class InvalidDataType(Exception):
+class InvalidDataType(DBException):
     def __init__(self):
-        print("Invalid Data Type")
+        self.error_code = "03"
+        print("Error code: " + self.error_code + " -- Invalid Data Type")
 
 
-class IncorrectSyntax(Exception):
+class IncorrectSyntax(DBException):
     def __init__(self):
-        print("Incorrect Syntax")
+        self.error_code = "04"
+        print("Error code: " + self.error_code + " -- Code Incorrect Syntax")
