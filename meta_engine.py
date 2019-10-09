@@ -172,14 +172,16 @@ class Database:
             if (where_field == "") and (where_value == ""):
                 result_table.matrix = current_table.matrix
             else:
+                result_table.matrix[0] = current_table.matrix[0]
                 where_type = current_table.get_type(where_field)
                 current_table.check_value(where_value, where_type)
                 rows_indexes = current_table.get_rows_indexes(where_field, where_value)
-                result_index = 0
+                result_index = 1
                 for index in rows_indexes:
+                    result_table.matrix.append([])
                     for j in range(len(current_table.matrix[0])):
-                        result_table.matrix[result_index][j] = current_table.matrix[index][j]
-                        result_index = result_index + 1
+                        result_table.matrix[result_index].append(current_table.matrix[index][j])
+                    result_index = result_index + 1
         else:
             for field in fields:
                 if field not in current_table.matrix[0]:
