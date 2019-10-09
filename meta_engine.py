@@ -197,7 +197,7 @@ class Database:
                 for i in range(1, len(current_table.matrix), 1):
                     result_table.matrix.append([])
                     for j in range(len(fields_indexes)):
-                        result_table.matrix[i][j] = current_table.matrix[i][fields_indexes[j]]
+                        result_table.matrix[i].append(current_table.matrix[i][fields_indexes[j]])
             else:
                 rows_indexes = current_table.get_rows_indexes(where_field, where_value)
                 result_matrix = []
@@ -212,7 +212,7 @@ class Database:
                     row_index = row_index + 1
                 for result_list in result_matrix:
                     result_table.matrix.append(result_list)
-        if not for_print:
+        if for_print:
             self.__print_matrix(result_table.matrix)
         return result_table
 

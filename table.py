@@ -55,12 +55,12 @@ class Table:
     def check_value(self, value, field_type):
         if value == "NULL":
             return
-        if field_type == "int":
+        if field_type.lower() == "int":
             try:
                 int(value)
             except ValueError:
                 raise exception.InvalidDataType()
-        if field_type == "bool":
+        if field_type.lower() == "bool":
             try:
                 self.__to_bool(value)
             except Exception:
