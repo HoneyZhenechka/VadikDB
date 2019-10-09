@@ -10,7 +10,8 @@ tokens = (
     'NAME', 'VALUES',
     'int', 'str', 'bol', 'bool',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'ENDREQUEST'
+    'LBRACKET', 'COMMA', 'ENDREQUEST',
+    'STAR'
 )
 
 ident = r'[a-z a-zA-Z0-9_ \- \+]\w*'
@@ -35,6 +36,7 @@ t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
 t_COMMA = r','
 t_ENDREQUEST = r'\;'
+t_STAR = r'\*'
 
 t_EQUAL = r'\=\=|\=|"IS"'
 

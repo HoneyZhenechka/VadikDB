@@ -1,4 +1,4 @@
-from SQL_lexer import tokens
+from SQL_parser.SQL_lexer import tokens
 import ply.yacc as yacc
 
 
@@ -42,17 +42,18 @@ class PDrop(Struct):
 
 class PSelect(Struct):
 
-    def __init__(self, select_body):
+    def __init__(self, select_body, condition=["", ""]):
         self.type = "select"
         self.select = select_body
+        self.condition = condition
 
 
 class PSelectBody(Struct):
 
-    def __init__(self, name="", fields=[], condition=[]):
+    def __init__(self, name="", fields=[], isStar=False):
         self.name = name
         self.fields = fields
-        self.condition = condition
+        self.isStar = isStar
 
 
 class PInsert(Struct):
@@ -72,16 +73,17 @@ class PInsertBody(Struct):
 
 class PUpdate(Struct):
 
-    def __init__(self, name="", set=[], condition=[]):
+    def __init__(self, name="", set=[[], []], condition=["", ""]):
         self.name = name
         self.type = "update"
-        self.set = set
+        self.fields = set[0]
+        self.values = set[1]
         self.condition = condition
 
 
 class PDelete(Struct):
 
-    def __init__(self, name="", condition=[]):
+    def __init__(self, name="", condition=["", ""]):
         self.name = name
         self.type = "delete"
         self.condition = condition
@@ -136,19 +138,25 @@ def p_drop(p):
 
 
 def p_select(p):
-    '''select : SELECT select_body ENDREQUEST'''
-
-    p[0] = PSelect(p[2])
+    '''select : SELECT select_body ENDREQUEST
+              | SELECT select_body condition ENDREQUEST'''
+    if (len(p) == 4):
+        p[0] = PSelect(p[2])
+    else:
+        p[0] = PSelect(p[2], p[3])
 
 
 def p_select_body(p):
     '''select_body : fields FROM NAME
-                   | fields FROM NAME condition'''
+                   | STAR COMMA fields FROM NAME
+                   | STAR FROM NAME'''
 
-    if len(p) != 4:
-        p[0] = PSelectBody(p[3], p[1], p[4])
-    else:
-        p[0] = PSelectBody(p[3], p[1], [])
+    if (len(p) == 4) and (p[1] != '*'):
+        p[0] = PSelectBody(p[3], p[1])
+    elif (len(p) == 4) and (p[1] == '*'):
+        p[0] = PSelectBody(p[3], [], True)
+    elif (len(p) == 6):
+        p[0] = PSelectBody(p[5], p[3], True)
 
 
 def p_insert(p):
@@ -178,7 +186,7 @@ def p_update_body(p):
                    | NAME SET expression condition'''
 
     if len(p) == 4:
-        p[0] = PUpdate(p[1], p[3], [])
+        p[0] = PUpdate(p[1], p[3])
     else:
         p[0] = PUpdate(p[1], p[3], p[4])
 
@@ -188,11 +196,13 @@ def p_expression(p):
                   | expression COMMA field operator field'''
 
     if len(p) == 4:
-        p[0] = []
-        p[0].append([p[1], p[3]])
+        p[0] = [[],[]]
+        p[0][0].append(p[1])
+        p[0][1].append(p[3])
     else:
         p[0] = p[1]
-        p[0].append([p[3], p[5]])
+        p[0][0].append(p[3])
+        p[0][1].append(p[5])
 
 
 def p_delete(p):
@@ -200,7 +210,7 @@ def p_delete(p):
               | DELETE FROM NAME condition ENDREQUEST'''
 
     if len(p) == 5:
-        p[0] = PDelete(p[3], [])
+        p[0] = PDelete(p[3])
     else:
         p[0] = PDelete(p[3], p[4])
 

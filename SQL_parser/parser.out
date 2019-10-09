@@ -1,0 +1,912 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> start
+Rule 1     start -> create
+Rule 2     start -> show
+Rule 3     start -> drop
+Rule 4     start -> select
+Rule 5     start -> insert
+Rule 6     start -> update
+Rule 7     start -> delete
+Rule 8     create -> CREATE create_body ENDREQUEST
+Rule 9     create_body -> TABLE NAME LBRACKET values RBRACKET
+Rule 10    values -> NAME type
+Rule 11    values -> values COMMA NAME type
+Rule 12    show -> SHOW CREATE TABLE NAME ENDREQUEST
+Rule 13    drop -> DROP TABLE NAME ENDREQUEST
+Rule 14    select -> SELECT select_body ENDREQUEST
+Rule 15    select -> SELECT select_body condition ENDREQUEST
+Rule 16    select_body -> fields FROM NAME
+Rule 17    select_body -> STAR COMMA fields FROM NAME
+Rule 18    select_body -> STAR FROM NAME
+Rule 19    insert -> INSERT insert_body ENDREQUEST
+Rule 20    insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET
+Rule 21    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+Rule 22    update -> UPDATE update_body ENDREQUEST
+Rule 23    update_body -> NAME SET expression
+Rule 24    update_body -> NAME SET expression condition
+Rule 25    expression -> field operator field
+Rule 26    expression -> expression COMMA field operator field
+Rule 27    delete -> DELETE FROM NAME ENDREQUEST
+Rule 28    delete -> DELETE FROM NAME condition ENDREQUEST
+Rule 29    fields -> NAME
+Rule 30    fields -> fields COMMA NAME
+Rule 31    field -> NAME
+Rule 32    operator -> EQUAL
+Rule 33    condition -> WHERE field operator field
+Rule 34    type -> int
+Rule 35    type -> str
+Rule 36    type -> bol
+Rule 37    type -> bool
+
+Terminals, with rules where they appear
+
+COMMA                : 11 17 26 30
+CREATE               : 8 12
+DELETE               : 27 28
+DROP                 : 13
+ENDREQUEST           : 8 12 13 14 15 19 22 27 28
+EQUAL                : 32
+FROM                 : 16 17 18 27 28
+INSERT               : 19
+INTO                 : 20 21
+LBRACKET             : 9 20 21 21
+NAME                 : 9 10 11 12 13 16 17 18 20 21 23 24 27 28 29 30 31
+RBRACKET             : 9 20 21 21
+SELECT               : 14 15
+SET                  : 23 24
+SHOW                 : 12
+STAR                 : 17 18
+TABLE                : 9 12 13
+UPDATE               : 22
+VALUES               : 20 21
+WHERE                : 33
+bol                  : 36
+bool                 : 37
+error                : 
+int                  : 34
+str                  : 35
+
+Nonterminals, with rules where they appear
+
+condition            : 15 24 28
+create               : 1
+create_body          : 8
+delete               : 7
+drop                 : 3
+expression           : 23 24 26
+field                : 25 25 26 26 33 33
+fields               : 16 17 20 21 21 30
+insert               : 5
+insert_body          : 19
+operator             : 25 26 33
+select               : 4
+select_body          : 14 15
+show                 : 2
+start                : 0
+type                 : 10 11
+update               : 6
+update_body          : 22
+values               : 9 11
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . start
+    (1) start -> . create
+    (2) start -> . show
+    (3) start -> . drop
+    (4) start -> . select
+    (5) start -> . insert
+    (6) start -> . update
+    (7) start -> . delete
+    (8) create -> . CREATE create_body ENDREQUEST
+    (12) show -> . SHOW CREATE TABLE NAME ENDREQUEST
+    (13) drop -> . DROP TABLE NAME ENDREQUEST
+    (14) select -> . SELECT select_body ENDREQUEST
+    (15) select -> . SELECT select_body condition ENDREQUEST
+    (19) insert -> . INSERT insert_body ENDREQUEST
+    (22) update -> . UPDATE update_body ENDREQUEST
+    (27) delete -> . DELETE FROM NAME ENDREQUEST
+    (28) delete -> . DELETE FROM NAME condition ENDREQUEST
+
+    CREATE          shift and go to state 9
+    SHOW            shift and go to state 10
+    DROP            shift and go to state 11
+    SELECT          shift and go to state 12
+    INSERT          shift and go to state 13
+    UPDATE          shift and go to state 14
+    DELETE          shift and go to state 15
+
+    start                          shift and go to state 1
+    create                         shift and go to state 2
+    show                           shift and go to state 3
+    drop                           shift and go to state 4
+    select                         shift and go to state 5
+    insert                         shift and go to state 6
+    update                         shift and go to state 7
+    delete                         shift and go to state 8
+
+state 1
+
+    (0) S' -> start .
+
+
+
+state 2
+
+    (1) start -> create .
+
+    $end            reduce using rule 1 (start -> create .)
+
+
+state 3
+
+    (2) start -> show .
+
+    $end            reduce using rule 2 (start -> show .)
+
+
+state 4
+
+    (3) start -> drop .
+
+    $end            reduce using rule 3 (start -> drop .)
+
+
+state 5
+
+    (4) start -> select .
+
+    $end            reduce using rule 4 (start -> select .)
+
+
+state 6
+
+    (5) start -> insert .
+
+    $end            reduce using rule 5 (start -> insert .)
+
+
+state 7
+
+    (6) start -> update .
+
+    $end            reduce using rule 6 (start -> update .)
+
+
+state 8
+
+    (7) start -> delete .
+
+    $end            reduce using rule 7 (start -> delete .)
+
+
+state 9
+
+    (8) create -> CREATE . create_body ENDREQUEST
+    (9) create_body -> . TABLE NAME LBRACKET values RBRACKET
+
+    TABLE           shift and go to state 17
+
+    create_body                    shift and go to state 16
+
+state 10
+
+    (12) show -> SHOW . CREATE TABLE NAME ENDREQUEST
+
+    CREATE          shift and go to state 18
+
+
+state 11
+
+    (13) drop -> DROP . TABLE NAME ENDREQUEST
+
+    TABLE           shift and go to state 19
+
+
+state 12
+
+    (14) select -> SELECT . select_body ENDREQUEST
+    (15) select -> SELECT . select_body condition ENDREQUEST
+    (16) select_body -> . fields FROM NAME
+    (17) select_body -> . STAR COMMA fields FROM NAME
+    (18) select_body -> . STAR FROM NAME
+    (29) fields -> . NAME
+    (30) fields -> . fields COMMA NAME
+
+    STAR            shift and go to state 23
+    NAME            shift and go to state 22
+
+    select_body                    shift and go to state 20
+    fields                         shift and go to state 21
+
+state 13
+
+    (19) insert -> INSERT . insert_body ENDREQUEST
+    (20) insert_body -> . INTO NAME VALUES LBRACKET fields RBRACKET
+    (21) insert_body -> . INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+
+    INTO            shift and go to state 25
+
+    insert_body                    shift and go to state 24
+
+state 14
+
+    (22) update -> UPDATE . update_body ENDREQUEST
+    (23) update_body -> . NAME SET expression
+    (24) update_body -> . NAME SET expression condition
+
+    NAME            shift and go to state 27
+
+    update_body                    shift and go to state 26
+
+state 15
+
+    (27) delete -> DELETE . FROM NAME ENDREQUEST
+    (28) delete -> DELETE . FROM NAME condition ENDREQUEST
+
+    FROM            shift and go to state 28
+
+
+state 16
+
+    (8) create -> CREATE create_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 29
+
+
+state 17
+
+    (9) create_body -> TABLE . NAME LBRACKET values RBRACKET
+
+    NAME            shift and go to state 30
+
+
+state 18
+
+    (12) show -> SHOW CREATE . TABLE NAME ENDREQUEST
+
+    TABLE           shift and go to state 31
+
+
+state 19
+
+    (13) drop -> DROP TABLE . NAME ENDREQUEST
+
+    NAME            shift and go to state 32
+
+
+state 20
+
+    (14) select -> SELECT select_body . ENDREQUEST
+    (15) select -> SELECT select_body . condition ENDREQUEST
+    (33) condition -> . WHERE field operator field
+
+    ENDREQUEST      shift and go to state 33
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 34
+
+state 21
+
+    (16) select_body -> fields . FROM NAME
+    (30) fields -> fields . COMMA NAME
+
+    FROM            shift and go to state 36
+    COMMA           shift and go to state 37
+
+
+state 22
+
+    (29) fields -> NAME .
+
+    FROM            reduce using rule 29 (fields -> NAME .)
+    COMMA           reduce using rule 29 (fields -> NAME .)
+    RBRACKET        reduce using rule 29 (fields -> NAME .)
+
+
+state 23
+
+    (17) select_body -> STAR . COMMA fields FROM NAME
+    (18) select_body -> STAR . FROM NAME
+
+    COMMA           shift and go to state 38
+    FROM            shift and go to state 39
+
+
+state 24
+
+    (19) insert -> INSERT insert_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 40
+
+
+state 25
+
+    (20) insert_body -> INTO . NAME VALUES LBRACKET fields RBRACKET
+    (21) insert_body -> INTO . NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+
+    NAME            shift and go to state 41
+
+
+state 26
+
+    (22) update -> UPDATE update_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 42
+
+
+state 27
+
+    (23) update_body -> NAME . SET expression
+    (24) update_body -> NAME . SET expression condition
+
+    SET             shift and go to state 43
+
+
+state 28
+
+    (27) delete -> DELETE FROM . NAME ENDREQUEST
+    (28) delete -> DELETE FROM . NAME condition ENDREQUEST
+
+    NAME            shift and go to state 44
+
+
+state 29
+
+    (8) create -> CREATE create_body ENDREQUEST .
+
+    $end            reduce using rule 8 (create -> CREATE create_body ENDREQUEST .)
+
+
+state 30
+
+    (9) create_body -> TABLE NAME . LBRACKET values RBRACKET
+
+    LBRACKET        shift and go to state 45
+
+
+state 31
+
+    (12) show -> SHOW CREATE TABLE . NAME ENDREQUEST
+
+    NAME            shift and go to state 46
+
+
+state 32
+
+    (13) drop -> DROP TABLE NAME . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 47
+
+
+state 33
+
+    (14) select -> SELECT select_body ENDREQUEST .
+
+    $end            reduce using rule 14 (select -> SELECT select_body ENDREQUEST .)
+
+
+state 34
+
+    (15) select -> SELECT select_body condition . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 48
+
+
+state 35
+
+    (33) condition -> WHERE . field operator field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 49
+
+state 36
+
+    (16) select_body -> fields FROM . NAME
+
+    NAME            shift and go to state 51
+
+
+state 37
+
+    (30) fields -> fields COMMA . NAME
+
+    NAME            shift and go to state 52
+
+
+state 38
+
+    (17) select_body -> STAR COMMA . fields FROM NAME
+    (29) fields -> . NAME
+    (30) fields -> . fields COMMA NAME
+
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 53
+
+state 39
+
+    (18) select_body -> STAR FROM . NAME
+
+    NAME            shift and go to state 54
+
+
+state 40
+
+    (19) insert -> INSERT insert_body ENDREQUEST .
+
+    $end            reduce using rule 19 (insert -> INSERT insert_body ENDREQUEST .)
+
+
+state 41
+
+    (20) insert_body -> INTO NAME . VALUES LBRACKET fields RBRACKET
+    (21) insert_body -> INTO NAME . LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+
+    VALUES          shift and go to state 55
+    LBRACKET        shift and go to state 56
+
+
+state 42
+
+    (22) update -> UPDATE update_body ENDREQUEST .
+
+    $end            reduce using rule 22 (update -> UPDATE update_body ENDREQUEST .)
+
+
+state 43
+
+    (23) update_body -> NAME SET . expression
+    (24) update_body -> NAME SET . expression condition
+    (25) expression -> . field operator field
+    (26) expression -> . expression COMMA field operator field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    expression                     shift and go to state 57
+    field                          shift and go to state 58
+
+state 44
+
+    (27) delete -> DELETE FROM NAME . ENDREQUEST
+    (28) delete -> DELETE FROM NAME . condition ENDREQUEST
+    (33) condition -> . WHERE field operator field
+
+    ENDREQUEST      shift and go to state 59
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 60
+
+state 45
+
+    (9) create_body -> TABLE NAME LBRACKET . values RBRACKET
+    (10) values -> . NAME type
+    (11) values -> . values COMMA NAME type
+
+    NAME            shift and go to state 61
+
+    values                         shift and go to state 62
+
+state 46
+
+    (12) show -> SHOW CREATE TABLE NAME . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 63
+
+
+state 47
+
+    (13) drop -> DROP TABLE NAME ENDREQUEST .
+
+    $end            reduce using rule 13 (drop -> DROP TABLE NAME ENDREQUEST .)
+
+
+state 48
+
+    (15) select -> SELECT select_body condition ENDREQUEST .
+
+    $end            reduce using rule 15 (select -> SELECT select_body condition ENDREQUEST .)
+
+
+state 49
+
+    (33) condition -> WHERE field . operator field
+    (32) operator -> . EQUAL
+
+    EQUAL           shift and go to state 65
+
+    operator                       shift and go to state 64
+
+state 50
+
+    (31) field -> NAME .
+
+    EQUAL           reduce using rule 31 (field -> NAME .)
+    ENDREQUEST      reduce using rule 31 (field -> NAME .)
+    COMMA           reduce using rule 31 (field -> NAME .)
+    WHERE           reduce using rule 31 (field -> NAME .)
+
+
+state 51
+
+    (16) select_body -> fields FROM NAME .
+
+    ENDREQUEST      reduce using rule 16 (select_body -> fields FROM NAME .)
+    WHERE           reduce using rule 16 (select_body -> fields FROM NAME .)
+
+
+state 52
+
+    (30) fields -> fields COMMA NAME .
+
+    FROM            reduce using rule 30 (fields -> fields COMMA NAME .)
+    COMMA           reduce using rule 30 (fields -> fields COMMA NAME .)
+    RBRACKET        reduce using rule 30 (fields -> fields COMMA NAME .)
+
+
+state 53
+
+    (17) select_body -> STAR COMMA fields . FROM NAME
+    (30) fields -> fields . COMMA NAME
+
+    FROM            shift and go to state 66
+    COMMA           shift and go to state 37
+
+
+state 54
+
+    (18) select_body -> STAR FROM NAME .
+
+    ENDREQUEST      reduce using rule 18 (select_body -> STAR FROM NAME .)
+    WHERE           reduce using rule 18 (select_body -> STAR FROM NAME .)
+
+
+state 55
+
+    (20) insert_body -> INTO NAME VALUES . LBRACKET fields RBRACKET
+
+    LBRACKET        shift and go to state 67
+
+
+state 56
+
+    (21) insert_body -> INTO NAME LBRACKET . fields RBRACKET VALUES LBRACKET fields RBRACKET
+    (29) fields -> . NAME
+    (30) fields -> . fields COMMA NAME
+
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 68
+
+state 57
+
+    (23) update_body -> NAME SET expression .
+    (24) update_body -> NAME SET expression . condition
+    (26) expression -> expression . COMMA field operator field
+    (33) condition -> . WHERE field operator field
+
+    ENDREQUEST      reduce using rule 23 (update_body -> NAME SET expression .)
+    COMMA           shift and go to state 70
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 69
+
+state 58
+
+    (25) expression -> field . operator field
+    (32) operator -> . EQUAL
+
+    EQUAL           shift and go to state 65
+
+    operator                       shift and go to state 71
+
+state 59
+
+    (27) delete -> DELETE FROM NAME ENDREQUEST .
+
+    $end            reduce using rule 27 (delete -> DELETE FROM NAME ENDREQUEST .)
+
+
+state 60
+
+    (28) delete -> DELETE FROM NAME condition . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 72
+
+
+state 61
+
+    (10) values -> NAME . type
+    (34) type -> . int
+    (35) type -> . str
+    (36) type -> . bol
+    (37) type -> . bool
+
+    int             shift and go to state 74
+    str             shift and go to state 75
+    bol             shift and go to state 76
+    bool            shift and go to state 77
+
+    type                           shift and go to state 73
+
+state 62
+
+    (9) create_body -> TABLE NAME LBRACKET values . RBRACKET
+    (11) values -> values . COMMA NAME type
+
+    RBRACKET        shift and go to state 78
+    COMMA           shift and go to state 79
+
+
+state 63
+
+    (12) show -> SHOW CREATE TABLE NAME ENDREQUEST .
+
+    $end            reduce using rule 12 (show -> SHOW CREATE TABLE NAME ENDREQUEST .)
+
+
+state 64
+
+    (33) condition -> WHERE field operator . field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 80
+
+state 65
+
+    (32) operator -> EQUAL .
+
+    NAME            reduce using rule 32 (operator -> EQUAL .)
+
+
+state 66
+
+    (17) select_body -> STAR COMMA fields FROM . NAME
+
+    NAME            shift and go to state 81
+
+
+state 67
+
+    (20) insert_body -> INTO NAME VALUES LBRACKET . fields RBRACKET
+    (29) fields -> . NAME
+    (30) fields -> . fields COMMA NAME
+
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 82
+
+state 68
+
+    (21) insert_body -> INTO NAME LBRACKET fields . RBRACKET VALUES LBRACKET fields RBRACKET
+    (30) fields -> fields . COMMA NAME
+
+    RBRACKET        shift and go to state 83
+    COMMA           shift and go to state 37
+
+
+state 69
+
+    (24) update_body -> NAME SET expression condition .
+
+    ENDREQUEST      reduce using rule 24 (update_body -> NAME SET expression condition .)
+
+
+state 70
+
+    (26) expression -> expression COMMA . field operator field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 84
+
+state 71
+
+    (25) expression -> field operator . field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 85
+
+state 72
+
+    (28) delete -> DELETE FROM NAME condition ENDREQUEST .
+
+    $end            reduce using rule 28 (delete -> DELETE FROM NAME condition ENDREQUEST .)
+
+
+state 73
+
+    (10) values -> NAME type .
+
+    RBRACKET        reduce using rule 10 (values -> NAME type .)
+    COMMA           reduce using rule 10 (values -> NAME type .)
+
+
+state 74
+
+    (34) type -> int .
+
+    RBRACKET        reduce using rule 34 (type -> int .)
+    COMMA           reduce using rule 34 (type -> int .)
+
+
+state 75
+
+    (35) type -> str .
+
+    RBRACKET        reduce using rule 35 (type -> str .)
+    COMMA           reduce using rule 35 (type -> str .)
+
+
+state 76
+
+    (36) type -> bol .
+
+    RBRACKET        reduce using rule 36 (type -> bol .)
+    COMMA           reduce using rule 36 (type -> bol .)
+
+
+state 77
+
+    (37) type -> bool .
+
+    RBRACKET        reduce using rule 37 (type -> bool .)
+    COMMA           reduce using rule 37 (type -> bool .)
+
+
+state 78
+
+    (9) create_body -> TABLE NAME LBRACKET values RBRACKET .
+
+    ENDREQUEST      reduce using rule 9 (create_body -> TABLE NAME LBRACKET values RBRACKET .)
+
+
+state 79
+
+    (11) values -> values COMMA . NAME type
+
+    NAME            shift and go to state 86
+
+
+state 80
+
+    (33) condition -> WHERE field operator field .
+
+    ENDREQUEST      reduce using rule 33 (condition -> WHERE field operator field .)
+
+
+state 81
+
+    (17) select_body -> STAR COMMA fields FROM NAME .
+
+    ENDREQUEST      reduce using rule 17 (select_body -> STAR COMMA fields FROM NAME .)
+    WHERE           reduce using rule 17 (select_body -> STAR COMMA fields FROM NAME .)
+
+
+state 82
+
+    (20) insert_body -> INTO NAME VALUES LBRACKET fields . RBRACKET
+    (30) fields -> fields . COMMA NAME
+
+    RBRACKET        shift and go to state 87
+    COMMA           shift and go to state 37
+
+
+state 83
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET . VALUES LBRACKET fields RBRACKET
+
+    VALUES          shift and go to state 88
+
+
+state 84
+
+    (26) expression -> expression COMMA field . operator field
+    (32) operator -> . EQUAL
+
+    EQUAL           shift and go to state 65
+
+    operator                       shift and go to state 89
+
+state 85
+
+    (25) expression -> field operator field .
+
+    COMMA           reduce using rule 25 (expression -> field operator field .)
+    WHERE           reduce using rule 25 (expression -> field operator field .)
+    ENDREQUEST      reduce using rule 25 (expression -> field operator field .)
+
+
+state 86
+
+    (11) values -> values COMMA NAME . type
+    (34) type -> . int
+    (35) type -> . str
+    (36) type -> . bol
+    (37) type -> . bool
+
+    int             shift and go to state 74
+    str             shift and go to state 75
+    bol             shift and go to state 76
+    bool            shift and go to state 77
+
+    type                           shift and go to state 90
+
+state 87
+
+    (20) insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .
+
+    ENDREQUEST      reduce using rule 20 (insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .)
+
+
+state 88
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET fields RBRACKET
+
+    LBRACKET        shift and go to state 91
+
+
+state 89
+
+    (26) expression -> expression COMMA field operator . field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 92
+
+state 90
+
+    (11) values -> values COMMA NAME type .
+
+    RBRACKET        reduce using rule 11 (values -> values COMMA NAME type .)
+    COMMA           reduce using rule 11 (values -> values COMMA NAME type .)
+
+
+state 91
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET . fields RBRACKET
+    (29) fields -> . NAME
+    (30) fields -> . fields COMMA NAME
+
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 93
+
+state 92
+
+    (26) expression -> expression COMMA field operator field .
+
+    COMMA           reduce using rule 26 (expression -> expression COMMA field operator field .)
+    WHERE           reduce using rule 26 (expression -> expression COMMA field operator field .)
+    ENDREQUEST      reduce using rule 26 (expression -> expression COMMA field operator field .)
+
+
+state 93
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields . RBRACKET
+    (30) fields -> fields . COMMA NAME
+
+    RBRACKET        shift and go to state 94
+    COMMA           shift and go to state 37
+
+
+state 94
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET .
+
+    ENDREQUEST      reduce using rule 21 (insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET .)
+
