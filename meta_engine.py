@@ -168,8 +168,18 @@ class Database:
         current_table.load_from_file(table_name, self.__current_directory)
         result_table = table.Table()
         if all_rows:
-            result_table.matrix = current_table.matrix
             result_table.types = current_table.types
+            if (where_field == "") and (where_value == ""):
+                result_table.matrix = current_table.matrix
+            else:
+                where_type = current_table.get_type(where_field)
+                current_table.check_value(where_value, where_type)
+                rows_indexes = current_table.get_rows_indexes(where_field, where_value)
+                result_index = 0
+                for index in rows_indexes:
+                    for j in range(len(current_table.matrix[0])):
+                        result_table.matrix[result_index][j] = current_table.matrix[index][j]
+                        result_index = result_index + 1
         else:
             for field in fields:
                 if field not in current_table.matrix[0]:
