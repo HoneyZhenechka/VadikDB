@@ -107,7 +107,10 @@ def t_NAME(t):
 
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
+    Error = exception.DBException()
+    Error.error_code = "02"
     t.lexer.skip(1)
+    raise exception.IncorrectSyntax(Error)
 
 
 

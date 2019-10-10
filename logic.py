@@ -27,6 +27,8 @@ class Logic:
                 type = self.db.delete(tree.name, tree.condition[0], tree.condition[1])
         except:
             type = "ERROR"
+        if type != "ERROR":
+            type = "NOT ERROR"
         return type
 
 #request = ""
@@ -35,8 +37,8 @@ class Logic:
     #request = input()
     #if (request != "exit"):
         #obj.query(request)
-
-#print(check.query("SHOW TABLE VADIC;"))
+#check = Logic()
+#print(check.query("CREATE TABLE VADIC(id INT, name str);"))
 #temp = (pars.build_tree("CREATE TABLE VADIC(id INT, name str);"))
 #print(temp.type, temp.values)
 #temp = (pars.build_tree("SHOW CREATE TABLE VADIC;"))
