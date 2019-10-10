@@ -8,6 +8,11 @@ from pathlib import Path
 class Database:
     __current_directory = ""
 
+    def __check_duplicate_fields(self, fields):
+        set_fields = set(fields)
+        if len(set_fields) != len(fields):
+            raise exception.DuplicateFields(fields)
+
     def __print_matrix(self, s):
         for j in range(len(s[0])):
             print("%s " % s[0][j], end="")
@@ -100,6 +105,7 @@ class Database:
         if len(fields) == 0:
             values_types = current_table.types
         else:
+            self.__check_duplicate_fields(fields)
             for field in fields:
                 if field not in current_table.matrix[0]:
                     raise exception.FieldNotExists(field)
@@ -144,6 +150,7 @@ class Database:
     def update(self, table_name, fields, values, where_field="", where_value=""):
         current_table = table.Table()
         current_table.load_from_file(table_name, self.__current_directory)
+        self.__check_duplicate_fields(fields)
         fields_types = []
         for i in range(len(fields)):
             fields_types.append(current_table.get_type(fields[i]))
@@ -183,6 +190,7 @@ class Database:
                         result_table.matrix[result_index].append(current_table.matrix[index][j])
                     result_index = result_index + 1
         else:
+            self.__check_duplicate_fields(fields)
             for field in fields:
                 if field not in current_table.matrix[0]:
                     raise exception.FieldNotExists(field)

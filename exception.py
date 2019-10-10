@@ -30,3 +30,9 @@ class IncorrectSyntax(DBException):
     def __init__(self):
         self.error_code = "04"
         print("Error code: " + self.error_code + " -- Code Incorrect Syntax")
+
+class DuplicateFields(DBException):
+    def __init__(self, fields):
+        self.error_code = "05"
+        print("Error code: " + self.error_code + " -- Code Incorrect Syntax: " + str(fields))
+
