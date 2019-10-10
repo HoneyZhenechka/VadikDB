@@ -40,7 +40,7 @@ class Logic:
 #check = Logic()
 #print(check.query("афафыафыаы;"))
 #print(check.query("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
-print(pars.build_tree("CREATE VADIC(id INT, name str);"))
+#print(pars.build_tree("CREATE VADIC(id INT, name str);"))
 #print(temp.type, temp.values)
 #temp = (pars.build_tree("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
 #print(temp)
