@@ -133,6 +133,7 @@ class Database:
             for i in range(1, len(current_table.matrix), 1):
                 current_table.matrix.pop()
         else:
+            value_exists = False
             try:
                 field_index = current_table.matrix[0].index(where_field)
             except ValueError:
@@ -140,15 +141,14 @@ class Database:
             where_type = current_table.get_type(where_field)
             current_table.check_value(where_value, where_type)
             i = 1
-            value_exists = False
             while i < len(current_table.matrix):
                 if current_table.matrix[i][field_index] == where_value:
                     value_exists = True
                     current_table.matrix.pop(i)
                     i = i - 1
                 i = i + 1
-        if not value_exists:
-            raise exception.FieldNotExists(where_value)
+            if not value_exists:
+                raise exception.FieldNotExists(where_value)
         current_table.save_to_file(self.__current_directory)
 
     def update(self, table_name, fields, values, where_field="", where_value=""):
