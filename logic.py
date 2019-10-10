@@ -10,28 +10,33 @@ class Logic:
 
     def query(self, sql_request):
         tree = pars.build_tree(sql_request)
-        if tree.type.lower() == "create":
-            self.db.create_table(tree.name, tree.values)
-        elif tree.type.lower() == "show":
-            self.db.show_create_table(tree.name)
-        elif tree.type.lower() == "drop":
-            self.db.drop_table(tree.name)
-        elif tree.type.lower() == "select":
-            self.db.select(tree.select.name, tree.select.fields, True, tree.select.isStar, tree.condition[0], tree.condition[1])
-        elif tree.type.lower() == "insert":
-            self.db.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
-        elif tree.type.lower() == "update":
-            self.db.update(tree.name, tree.fields, tree.values, tree.condition[0], tree.condition[1])
-        elif tree.type.lower() == "delete":
-            self.db.delete(tree.name, tree.condition[0], tree.condition[1])
+        try:
+            if tree.type.lower() == "create":
+                type = self.db.create_table(tree.name, tree.values)
+            elif tree.type.lower() == "show":
+                type = self.db.show_create_table(tree.name)
+            elif tree.type.lower() == "drop":
+                type = self.db.drop_table(tree.name)
+            elif tree.type.lower() == "select":
+                type = self.db.select(tree.select.name, tree.select.fields, True, tree.select.isStar, tree.condition[0], tree.condition[1])
+            elif tree.type.lower() == "insert":
+                type = self.db.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
+            elif tree.type.lower() == "update":
+                type = self.db.update(tree.name, tree.fields, tree.values, tree.condition[0], tree.condition[1])
+            elif tree.type.lower() == "delete":
+                type = self.db.delete(tree.name, tree.condition[0], tree.condition[1])
+        except:
+            type = "ERROR"
+        return type
 
-request = ""
-obj = Logic()
-while request != "exit":
-    request = input()
-    if (request != "exit"):
-        obj.query(request)
-
+#request = ""
+#obj = Logic()
+#while request != "exit":
+    #request = input()
+    #if (request != "exit"):
+        #obj.query(request)
+check = Logic()
+print(check.query("SHOW TABLE VADIC;"))
 #temp = (pars.build_tree("CREATE TABLE VADIC(id INT, name str);"))
 #print(temp.type, temp.values)
 #temp = (pars.build_tree("SHOW CREATE TABLE VADIC;"))
