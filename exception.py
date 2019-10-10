@@ -17,7 +17,7 @@ class TableNotExists(DBException):
 class FieldNotExists(DBException):
     def __init__(self, field_name):
         self.error_code = "02"
-        print("Error code: " + self.error_code + " -- Table " + field_name + " not exists!")
+        print("Error code: " + self.error_code + " -- Field " + field_name + " not exists!")
 
 
 class InvalidDataType(DBException):
@@ -31,8 +31,14 @@ class IncorrectSyntax(DBException):
         self.error_code = "04"
         print("Error code: " + self.error_code + " -- Code Incorrect Syntax")
 
+
 class DuplicateFields(DBException):
     def __init__(self, fields):
         self.error_code = "05"
-        print("Error code: " + self.error_code + " -- Code Incorrect Syntax: " + str(fields))
+        print("Error code: " + self.error_code + " -- Duplicate fields: " + str(fields))
 
+
+class ValueNotExists(DBException):
+    def __init__(self, value):
+        self.error_code = "06"
+        print("Error code: " + self.error_code + " -- Value not exists: " + str(value))
