@@ -35,8 +35,8 @@ class Logic:
     #request = input()
     #if (request != "exit"):
         #obj.query(request)
-check = Logic()
-print(check.query("SHOW TABLE VADIC;"))
+
+#print(check.query("SHOW TABLE VADIC;"))
 #temp = (pars.build_tree("CREATE TABLE VADIC(id INT, name str);"))
 #print(temp.type, temp.values)
 #temp = (pars.build_tree("SHOW CREATE TABLE VADIC;"))
