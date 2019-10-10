@@ -38,9 +38,9 @@ class Logic:
     #if (request != "exit"):
         #obj.query(request)
 #check = Logic()
-#print(check.query("CREATE TABLE VADIC(id INT, name str);"))
+#print(check.query("афафыафыаы;"))
 #print(check.query("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
-#temp = (pars.build_tree("CREATE TABLE VADIC(id INT, name str);"))
+print(pars.build_tree("CREATE VADIC(id INT, name str);"))
 #print(temp.type, temp.values)
 #temp = (pars.build_tree("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
 #print(temp)

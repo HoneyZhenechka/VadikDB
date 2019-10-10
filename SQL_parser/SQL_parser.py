@@ -1,4 +1,5 @@
 from SQL_parser.SQL_lexer import tokens
+import exception
 import ply.yacc as yacc
 
 
@@ -251,6 +252,9 @@ def p_type(p):
             | bool'''
 
     p[0] = p[1]
+
+def p_error(p):
+    raise exception.IncorrectSyntax(p.lexpos)
 
 
 parser = yacc.yacc()

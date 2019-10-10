@@ -27,9 +27,10 @@ class InvalidDataType(DBException):
 
 
 class IncorrectSyntax(DBException):
-    def __init__(self):
+    def __init__(self, pos):
         self.error_code = "04"
         print("Error code: " + self.error_code + " -- Code Incorrect Syntax")
+        print("The position of error: " + str(pos))
 
 
 class DuplicateFields(DBException):

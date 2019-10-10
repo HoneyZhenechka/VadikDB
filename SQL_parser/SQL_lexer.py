@@ -1,5 +1,4 @@
 import ply.lex as lex
-import exception
 from ply.lex import TOKEN
 import re
 
