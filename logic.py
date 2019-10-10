@@ -30,39 +30,3 @@ class Logic:
         if isError != "ERROR":
             isError = "NOT ERROR"
         return isError
-
-#request = ""
-#obj = Logic()
-#while request != "exit":
-    #request = input()
-    #if (request != "exit"):
-        #obj.query(request)
-#check = Logic()
-#print(check.query("афафыафыаы;"))
-#print(check.query("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
-#print(pars.build_tree("CREATE VADIC(id INT, name str);"))
-#print(temp.type, temp.values)
-#temp = (pars.build_tree("SHOW CREATE TABLE SHOW CREATE TABLE VADIC;"))
-#print(temp)
-#temp = (pars.build_tree("DROP TABLE VADIC;"))
-#print(temp.type, temp.name)
-#temp = (pars.build_tree("SELECT * FROM users;"))
-#print(temp.type, temp.select.name, temp.select.fields, temp.condition, temp.select.isStar)
-#temp = (pars.build_tree("SELECT *, agb FROM users;"))
-#print(temp.type, temp.select.name, temp.select.fields, temp.condition, temp.select.isStar)
-#temp = (pars.build_tree("SELECT * FROM users WHERE admin = lah;"))
-#print(temp.type, temp.select.name, temp.select.fields, temp.condition, temp.select.isStar)
-#temp = (pars.build_tree("SELECT id, name FROM users WHERE admin = lax;"))
-#print(temp.type, temp.select.name, temp.select.fields, temp.condition, temp.select.isStar)
-#temp = (pars.build_tree("INSERT INTO users VALUES (1, 'admin', '123');"))
-#print(temp.type, temp.insert.name, temp.insert.values)
-#temp = (pars.build_tree("INSERT INTO users (id, name, status) VALUES (1, 'admin', '123');"))
-#print(temp.type, temp.insert.name, temp.insert.fields, temp.insert.values)
-#temp = (pars.build_tree("UPDATE tv_series SET genre = 'drama';"))
-#print(temp.type, temp.name, temp.fields, temp.values, temp.condition)
-#temp = (pars.build_tree("UPDATE tv_series SET genre = 'drama' WHERE name = 'GameofThrones';"))
-#print(temp.type, temp.name, temp.fields, temp.values, temp.condition)
-#temp = (pars.build_tree("DELETE FROM tv_series;"))
-#print(temp.type, temp.name, temp.condition)
-#temp = (pars.build_tree("DELETE FROM tv_series WHERE id = 4;"))
-#print(temp.type, temp.name, temp.condition)

@@ -253,8 +253,13 @@ def p_type(p):
 
     p[0] = p[1]
 
+
+
 def p_error(p):
-    raise exception.IncorrectSyntax(p.lexpos)
+    try:
+        raise exception.IncorrectSyntax(p.lexpos)
+    except Exception as ex:
+        print(ex)
 
 
 parser = yacc.yacc()
