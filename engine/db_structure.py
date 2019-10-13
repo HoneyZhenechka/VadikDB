@@ -1,17 +1,52 @@
 import engine.bin_file
+import exception
 
 
 class Database:
-    def __init__(self):
-        pass
+    def __init__(self, file: engine.bin_file.BinFile):
+        self.tables_count = 0
+        self.signature = "#VDBSignature"
+        self.tables = []
+        self.file = file
+
+    def write_file(self):
+        signature_len = 13
+        self.file.write_integer(signature_len, 0, 1)
+        self.file.write_str(self.signature, 1, 13)
+        self.file.write_integer(self.tables_count, 14, 2)
+        for table in self.tables:
+            table.write_file()
+
+    def write_table_count(self, count):
+        self.file.write_integer(count, 14, 2)
+        self.tables_count = count
+
+    def read_file(self):
+        signature_len = self.file.read_integer(0, 1)
+        signature_result = self.file.read_str(1, signature_len)
+        if self.signature != signature_result:
+            raise exception.WrongFileFormat()
+        for i in range(self.tables_count):
+            table_obj = Table(self.file)
+            table_obj.index = 16 + i * table_obj.size
+            table_obj.read_file()
+            self.tables.append(table_obj)
 
 
 class Table:
-    def __init__(self, name, file: engine.bin_file.BinFile):
+    def __init__(self, file: engine.bin_file.BinFile):
+        fields_count = 14
         self.rows_length = 0
         self.index = -1
-        self.name = name
+        self.name = ""
         self.file = file
+        self.size = 32 + 22 + fields_count * 24
+
+    def write_file(self):
+        pass
+
+    def read_file(self):
+        pass
 
 
 class Page:
@@ -35,7 +70,7 @@ class Page:
         self.table.file.write_integer(self.table.index, self.index, 3)
         self.table.file.write_integer(self.rows_count, self.index + 3, 3)
         self.table.file.write_integer(self.previous_page, self.index + 6, 3)
-        self.table.file.write_integer(self.next_page, sself.index + 9, 3)
+        self.table.file.write_integer(self.next_page, self.index + 9, 3)
 
     def write_file(self):
         self.update_file()
