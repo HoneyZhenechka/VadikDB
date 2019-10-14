@@ -1,5 +1,5 @@
 import SQL_parser.SQL_parser as pars
-import engine
+import preprocessor
 
 
 class Logic:
@@ -10,23 +10,22 @@ class Logic:
 
     def query(self, sql_request):
         tree = pars.build_tree(sql_request)
+        is_error = "NOT ERROR"
         try:
             if tree.type.lower() == "create":
-                isError = self.db.create_table(tree.name, tree.values)
+                is_error = self.db.create_table(tree.name, tree.fields)
             elif tree.type.lower() == "show":
-                isError = self.db.show_create_table(tree.name)
+                is_error = self.db.show_create_table(tree.name)
             elif tree.type.lower() == "drop":
-                isError = self.db.drop_table(tree.name)
+                is_error = self.db.drop_table(tree.name)
             elif tree.type.lower() == "select":
-                isError = self.db.select(tree.select.name, tree.select.fields, True, tree.select.isStar, tree.condition[0], tree.condition[1])
+                is_error = self.db.select(tree.select.name, tree.select.fields, tree.select.isStar, tree.condition)
             elif tree.type.lower() == "insert":
-                isError = self.db.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
+                is_error = self.db.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
             elif tree.type.lower() == "update":
-                isError = self.db.update(tree.name, tree.fields, tree.values, tree.condition[0], tree.condition[1])
+                is_error = self.db.update(tree.name, tree.fields, tree.values, tree.condition)
             elif tree.type.lower() == "delete":
-                isError = self.db.delete(tree.name, tree.condition[0], tree.condition[1])
+                is_error = self.db.delete(tree.name, tree.condition)
         except:
-            isError = "ERROR"
-        if isError != "ERROR":
-            isError = "NOT ERROR"
-        return isError
+            is_error = "ERROR"
+        return is_error
