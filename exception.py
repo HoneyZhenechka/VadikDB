@@ -49,3 +49,8 @@ class ValueNotExists(DBException):
     def __init__(self, value):
         self.error_code = "07"
         print("Error code: " + self.error_code + " -- Value not exists: " + str(value))
+
+class WrongFieldType(DBException):
+    def __init__(self, field):
+        self.error_code = "08"
+        print("Error code: " + self.error_code + " -- Wrong Field Type: " + str(field[0]) + ":" + str(field[1]))
