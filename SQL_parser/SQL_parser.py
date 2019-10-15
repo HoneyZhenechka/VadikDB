@@ -21,10 +21,10 @@ class Struct:
 
 class PCreate(Struct):
 
-    def __init__(self, name="", values=[]):
+    def __init__(self, name="", fields=[]):
         self.name = name
         self.type = "create"
-        self.values = values
+        self.fields = fields
 
 
 class PShow(Struct):
