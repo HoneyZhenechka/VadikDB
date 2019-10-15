@@ -3,11 +3,11 @@ import exception
 
 
 class Database:
-    def __init__(self, file: engine.bin_file.BinFile):
+    def __init__(self):
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
-        self.file = file
+        self.file = engine.bin_file.BinFile("zhavoronkov.vdb")
 
     def write_file(self):
         signature_len = 13
@@ -41,7 +41,7 @@ class Table:
         self.name = ""
         self.file = file
         self.first_page_index = 0
-        self.fields = []
+        self.fields = {}
         self.types = []
         self.positions = {}
         self.size = 32 + 22 + fields_count * 24
@@ -76,6 +76,15 @@ class Table:
 
     def update_pages_info(self):
         pass
+
+    def get_write_position(self):
+        for page in self.get_pages():
+            position = page.get_write_position()
+            if position:
+                return position, page
+        else:
+            new_page = self.create_page()
+            return new_page.get_write_position(), new_page
 
     def write_file(self):
         pass
