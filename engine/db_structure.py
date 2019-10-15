@@ -32,6 +32,7 @@ class Database:
             table_obj.read_file()
             self.tables.append(table_obj)
 
+
 class Table:
     def __init__(self, file: engine.bin_file.BinFile):
         fields_count = 14
@@ -39,10 +40,42 @@ class Table:
         self.index = -1
         self.name = ""
         self.file = file
+        self.first_page_index = 0
         self.fields = []
         self.types = []
         self.positions = {}
         self.size = 32 + 22 + fields_count * 24
+
+    def create_page(self):
+        pages = self.get_pages()
+        self.file.seek(0, 2)
+        previous_index = 0
+        page_index = self.file.tell()
+        if not len(pages):
+            self.first_page_index = page_index
+            self.update_pages_info()
+        else:
+            last_page = pages[-1]
+            last_page.next_page = page_index
+            last_page.update_file()
+            previous_index = last_page.index
+        result_page = Page(page_index, self)
+        result_page.previous_page = previous_index
+        result_page.write_file()
+        return result_page
+
+    def get_pages(self):
+        pages = []
+        page_index = self.first_page_index
+        while page_index != 0:
+            current_page = Page(page_index, self)
+            current_page.read_file()
+            page_index = current_page.next_page
+            pages.append(current_page)
+        return pages
+
+    def update_pages_info(self):
+        pass
 
     def write_file(self):
         pass
@@ -145,5 +178,6 @@ class Row:
 
 
 class Type:
-    def __init__(self):
-        pass
+    def __init__(self, name, size):
+        self.name = name
+        self.size = size
