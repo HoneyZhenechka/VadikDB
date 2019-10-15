@@ -81,9 +81,6 @@ class Table:
             pages.append(current_page)
         return pages
 
-    def update_pages_info(self):
-        pass
-
     def get_write_position(self):
         for page in self.get_pages():
             position = page.get_write_position()
@@ -94,8 +91,14 @@ class Table:
             return new_page.get_write_position(), new_page
 
     def write_file(self):
+        # Table meta
         self.file.write_str(self.name, self.index, 32)
-        self.update_pages_info()
+        self.file.write_integer(self.row_count, self.index + 32, 3)
+        self.file.write_integer(self.removed_rows_count, self.index + 32 + 3, 3)
+        self.file.write_integer(self.first_page_index, self.index + 32 + 6, 3)
+        self.file.write_integer(self.first_element_index, self.index + 32 + 9, 3)
+        self.file.write_integer(self.last_element_index, self.index + 32 + 12, 3)
+        self.file.write_integer(self.last_removed_index, self.index + 32 + 15, 3)
         self.file.write_integer(self.row_length, self.index + 32 + 18, 2)
         self.file.write_integer(self.fields_count, self.index + 32 + 20, 2)
         current_position = self.index + 32 + 22
@@ -106,6 +109,7 @@ class Table:
         self.file.write_str("", current_position, bytes_count)
 
     def read_file(self):
+        # Table meta
         self.name = self.file.read_str(self.index, 32)
         self.row_count = self.file.read_integer(self.index + 32, 3)
         self.removed_rows_count = self.file.read_integer(self.index + 32 + 3, 3)
@@ -223,5 +227,3 @@ class Type:
     def __init__(self, name, size):
         self.name = name
         self.size = size
-
-
