@@ -35,16 +35,23 @@ class Database:
 
 class Table:
     def __init__(self, file: engine.bin_file.BinFile):
-        fields_count = 14
-        self.rows_length = 0
+        max_fields_count = 14
+        self.row_length = 0
+        self.removed_rows_count = 0
         self.index = -1
         self.name = ""
         self.file = file
         self.first_page_index = 0
-        self.fields = {}
+        self.first_element_index = 0
+        self.last_element_index = 0
+        self.last_removed_index = 0
+        self.fields = []
+        self.fields_count = 0
+        self.row_count = 0
         self.types = []
+        self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
         self.positions = {}
-        self.size = 32 + 22 + fields_count * 24
+        self.size = 32 + 22 + max_fields_count * 24
 
     def create_page(self):
         pages = self.get_pages()
@@ -87,10 +94,36 @@ class Table:
             return new_page.get_write_position(), new_page
 
     def write_file(self):
-        pass
+        self.file.write_str(self.name, self.index, 32)
+        self.update_pages_info()
+        self.file.write_integer(self.row_length, self.index + 32 + 18, 2)
+        self.file.write_integer(self.fields_count, self.index + 32 + 20, 2)
+        current_position = self.index + 32 + 22
+        for index, field in enumerate(self.fields):
+            self.file.write_str(field + self.types[index].name, current_position, 24)
+            current_position += 24
+        bytes_count = self.size - (current_position - self.index)
+        self.file.write_str("", current_position, bytes_count)
 
     def read_file(self):
-        pass
+        self.name = self.file.read_str(self.index, 32)
+        self.row_count = self.file.read_integer(self.index + 32, 3)
+        self.removed_rows_count = self.file.read_integer(self.index + 32 + 3, 3)
+        self.first_page_index = self.file.read_integer(self.index + 32 + 6, 3)
+        self.first_element_index = self.file.read_integer(self.index + 32 + 9, 3)
+        self.last_element_index = self.file.read_integer(self.index + 32 + 12, 3)
+        self.last_removed_index = self.file.read_integer(self.index + 32 + 15, 3)
+        self.row_length = self.file.read_integer(self.index + 32 + 18, 2)
+        self.fields_count = self.file.read_integer(self.index + 32 + 20, 2)
+        current_position = self.index + 32 + 22
+        field_position = 4
+        for i in range(self.fields_count):
+            field = self.file.read_str(current_position + i * 24, 21)
+            field_type = self.types_dict[self.file.read_str(current_position + i * 24 + 21, 3)]
+            self.fields.append(field)
+            self.types.append(field_type)
+            self.positions[field] = field_position
+            field_position += field_type.size
 
     def get_fields(self, fields=[], replace=False):
         return fields
@@ -110,7 +143,7 @@ class Page:
             return False
         else:
             start_pos = self.index + 12
-            new_pos = self.rows_count * self.table.rows_length
+            new_pos = self.rows_count * self.table.row_length
             return start_pos + new_pos
 
     def update_file(self):
@@ -121,7 +154,7 @@ class Page:
 
     def write_file(self):
         self.update_file()
-        current_page_size = 512 * self.table.rows_length
+        current_page_size = 512 * self.table.row_length
         self.table.file.write_integer(0, self.index, current_page_size)
 
     def read_file(self):
@@ -141,14 +174,14 @@ class Row:
         self.row_available = 0
 
     def write_info(self):
-        row_size = self.row_index + self.table.rows_length
+        row_size = self.row_index + self.table.row_length
         self.table.file.write_integer(self.row_available, self.row_index, 1)
         self.table.file.write_integer(self.row_id, self.row_index + 1, 3)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
 
     def read_info(self):
-        row_size = self.row_index + self.table.rows_length
+        row_size = self.row_index + self.table.row_length
         self.row_available = self.table.file.read_integer(self.row_index, 1)
         self.row_id = self.table.file.read_integer(self.row_index + 1, 3)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
@@ -190,3 +223,5 @@ class Type:
     def __init__(self, name, size):
         self.name = name
         self.size = size
+
+
