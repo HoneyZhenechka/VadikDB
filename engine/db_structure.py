@@ -60,7 +60,7 @@ class Table:
         page_index = self.file.tell()
         if not len(pages):
             self.first_page_index = page_index
-            self.update_pages_info()
+            self.write_meta_info()
         else:
             last_page = pages[-1]
             last_page.next_page = page_index
@@ -182,6 +182,10 @@ class Table:
             self.last_removed_index = removed_row.next_index
         return position
 
+    def get_fields(self, fields=[], replace=False):
+        return fields
+
+
 class Page:
     def __init__(self, start_index, table: Table):
         self.table = table
@@ -259,6 +263,17 @@ class Row:
             value_type = self.table.types[value_index]
             value_position = self.table.positions[value]
             self.table.file.write_by_type(value_type, value, self.index_in_file + value_position, value_type.size)
+
+    def read_row_from_file(self, fields):
+        fields = self.table.get_fields(fields, replace=True)
+        self.read_info()
+        for field, pos in self.table.positions.items():
+            if field not in fields:
+                continue
+            index = self.table.fields.index(field)
+            value_type = self.table.types[index]
+            self.values = []
+            self.values.append(self.table.file.read_by_type(value_type.name, self.index_in_file + pos, value_type.size))
 
 
 class Type:
