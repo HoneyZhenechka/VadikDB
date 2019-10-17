@@ -1,4 +1,4 @@
-import engine.bin_file
+import engine.bin_file as bin_py
 import exception
 
 
@@ -7,7 +7,7 @@ class Database:
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
-        self.file = engine.bin_file.BinFile("zhavoronkov.vdb")
+        self.file = bin_py.BinFile("zhavoronkov.vdb")
 
     def write_file(self):
         signature_len = 13
@@ -34,7 +34,7 @@ class Database:
 
 
 class Table:
-    def __init__(self, file: engine.bin_file.BinFile):
+    def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
         self.row_length = 0
         self.removed_rows_count = 0
@@ -189,6 +189,20 @@ class Table:
             self.positions[field] = self.row_length
             self.row_length += self.types[index].size
         self.row_length += 6
+
+    def fill_table_fields(self, fields_dict={}):
+        fields_list = list(fields_dict.keys())
+        types_list = list(fields_dict.values())
+        if len(types_list) != len(fields_list):
+            raise exception.DifferentCount()
+        self.types = types_list
+        self.fields = fields_list
+        for index, type_name in enumerate(self.types):
+            if type_name in self.types_dict:
+                self.types[index] = self.types_dict[type_name]
+            else:
+                raise exception.TypeNotExists(type_name)
+        self.fields_count = len(self.fields)
 
     def get_fields(self, fields=[], replace=False):
         return fields

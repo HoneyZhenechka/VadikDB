@@ -50,7 +50,20 @@ class ValueNotExists(DBException):
         self.error_code = "07"
         print("Error code: " + self.error_code + " -- Value not exists: " + str(value))
 
+
 class WrongFieldType(DBException):
     def __init__(self, field):
         self.error_code = "08"
         print("Error code: " + self.error_code + " -- Wrong Field Type: " + str(field[0]) + ":" + str(field[1]))
+
+
+class DifferentCount(DBException):
+    def __init__(self):
+        self.error_code = "09"
+        print("Error code: " + self.error_code + " -- Different count fields and types!")
+
+
+class TypeNotExists(DBException):
+    def __init__(self, type_name):
+        self.error_code = "10"
+        print("Error code: " + self.error_code + " -- Type not exists: " + str(type_name))
