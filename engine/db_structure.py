@@ -50,7 +50,7 @@ class Table:
         self.row_count = 0
         self.types = []
         self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
-        self.positions = {}
+        self.positions = {"row_id": 1}
         self.size = 32 + 22 + max_fields_count * 24
 
     def create_page(self):
@@ -182,6 +182,14 @@ class Table:
             self.last_removed_index = removed_row.next_index
         return position
 
+    def calc_row_size(self):
+        self.row_length = 4
+        self.positions = {"row_id": 1}
+        for index, field in enumerate(self.fields):
+            self.positions[field] = self.row_length
+            self.row_length += self.types[index].size
+        self.row_length += 6
+
     def get_fields(self, fields=[], replace=False):
         return fields
 
@@ -264,7 +272,7 @@ class Row:
             value_position = self.table.positions[value]
             self.table.file.write_by_type(value_type, value, self.index_in_file + value_position, value_type.size)
 
-    def read_row_from_file(self, fields):
+    def read_row_from_file(self, fields=[]):
         fields = self.table.get_fields(fields, replace=True)
         self.read_info()
         for field, pos in self.table.positions.items():
