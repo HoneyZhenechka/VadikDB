@@ -204,8 +204,15 @@ class Table:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
 
-    def get_fields(self, fields=[], replace=False):
-        return fields
+    def get_fields(self, fields=[], replace_fields=False):
+        is_all = replace_fields and (not fields or type(fields) != list)
+        if ("*" in fields) or is_all:
+            return self.fields
+        result_fields = []
+        for field in fields:
+            if (field in ["id", "row_id"]) or (field in self.fields):
+                result_fields.append(field)
+        return result_fields
 
 
 class Page:
