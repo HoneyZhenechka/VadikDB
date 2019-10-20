@@ -42,8 +42,8 @@ class Table:
         self.name = ""
         self.file = file
         self.first_page_index = 0
-        self.first_element_index = 0
-        self.last_element_index = 0
+        self.first_row_index = 0
+        self.last_row_index = 0
         self.last_removed_index = 0
         self.fields = []
         self.fields_count = 0
@@ -94,8 +94,8 @@ class Table:
         self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
         self.file.write_integer(self.removed_rows_count, self.index_in_file + 32 + 3, 3)
         self.file.write_integer(self.first_page_index, self.index_in_file + 32 + 6, 3)
-        self.file.write_integer(self.first_element_index, self.index_in_file + 32 + 9, 3)
-        self.file.write_integer(self.last_element_index, self.index_in_file + 32 + 12, 3)
+        self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
+        self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
         self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
 
     def write_file(self):
@@ -117,8 +117,8 @@ class Table:
         self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
         self.removed_rows_count = self.file.read_integer(self.index_in_file + 32 + 3, 3)
         self.first_page_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
-        self.first_element_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
-        self.last_element_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
+        self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
+        self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
         self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
         self.row_length = self.file.read_integer(self.index_in_file + 32 + 18, 2)
         self.fields_count = self.file.read_integer(self.index_in_file + 32 + 20, 2)
@@ -144,11 +144,25 @@ class Table:
         result_string += "--------------------------------------------------------"
         return result_string
 
+    def delete(self, rows_indexes=[]):
+        if not len(rows_indexes):
+            row_index = self.first_row_index
+            while row_index != 0:
+                current_row = Row(self, row_index)
+                current_row.read_info()
+                self.delete_row(current_row)
+                row_index = current_row.next_index
+        else:
+            for index in rows_indexes:
+                current_row = Row(self, index)
+                current_row.read_info()
+                self.delete_row(current_row)
+
     def delete_row(self, row):
-        if row.index_in_file == self.first_element_index:
-            self.first_element_index = row.next_index
-        if row.index_in_file == self.last_element_index:
-            self.last_element_index = row.previous_index
+        if row.index_in_file == self.first_row_index:
+            self.first_row_index = row.next_index
+        if row.index_in_file == self.last_row_index:
+            self.last_row_index = row.previous_index
         row.read_info()
         row.drop_row()
         row.row_available = 2
