@@ -108,6 +108,7 @@ site
 
 #VadikDB
 db
+TestResults
 .vs
 *.pyproj
 *.user
