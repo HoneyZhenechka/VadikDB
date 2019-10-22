@@ -319,6 +319,14 @@ class Row:
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
 
+    def select_row(self, fields=[]):
+        fields = self.table.get_fields(fields)
+        result = {}
+        for field in fields:
+            if fields in self.fields_values_dict:
+                result[field] = self.fields_values_dict[field]
+        self.fields_values_dict = result
+
     def drop_row(self):
         if self.next_index:
             next_row = Row(self.table, self.next_index)
