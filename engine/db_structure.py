@@ -180,7 +180,7 @@ class Table:
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
-        new_row.values = {value:values[index] for index, value in enumerate(fields)}
+        new_row.fields_values_dict = {value:values[index] for index, value in enumerate(fields)}
         new_row.write_row_to_file()
         if self.last_row_index == insert_index:
             self.last_row_index = position
@@ -297,7 +297,7 @@ class Row:
     def __init__(self, table: Table, index=0):
         self.index_in_file = index
         self.table = table
-        self.values = []
+        self.fields_values_dict = {}
         self.row_id = 0
         self.previous_index = 0
         self.next_index = 0
@@ -331,22 +331,21 @@ class Row:
 
     def write_row_to_file(self):
         self.write_info()
-        for value in self.values:
-            value_index = self.table.fields.index(value)
-            value_type = self.table.types[value_index]
-            value_position = self.table.positions[value]
-            self.table.file.write_by_type(value_type, value, self.index_in_file + value_position, value_type.size)
+        for field in self.fields_values_dict:
+            field_index = self.table.fields.index(field)
+            field_type = self.table.types[field_index]
+            value_position = self.table.positions[field]
+            self.table.file.write_by_type(field_type, self.fields_values_dict[field], self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self, fields=[]):
-        fields = self.table.get_fields(fields, replace=True)
+        fields = self.table.get_fields(fields, True)
         self.read_info()
         for field, pos in self.table.positions.items():
             if field not in fields:
                 continue
             index = self.table.fields.index(field)
-            value_type = self.table.types[index]
-            self.values = []
-            self.values.append(self.table.file.read_by_type(value_type.name, self.index_in_file + pos, value_type.size))
+            field_type = self.table.types[index]
+            self.fields_values_dict[field] = self.table.file.read_by_type(field_type.name, self.index_in_file + pos, field_type.size)
 
 
 class Type:
