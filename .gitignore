@@ -110,3 +110,5 @@ site
 db
 .vs
 *.pyproj
+*.user
+*.sln
