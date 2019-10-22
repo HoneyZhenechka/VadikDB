@@ -158,6 +158,36 @@ class Table:
                 current_row.read_info()
                 self.delete_row(current_row)
 
+    def insert(self, fields=[], values=[], insert_index=self.last_row_index):
+        position = self.get_free_row()
+        saved_next_index = 0
+        if self.first_row_index == 0:
+            self.first_row_index = position
+            self.write_meta_info()
+        if insert_index != 0:
+            previous_row = Row(self, insert_index)
+            previous_row.read_info()
+            saved_next_index = previous_row.next_index
+            previous_row.next = position
+            previous_row.write_info()
+        if saved_next_index != 0:
+            next_row = Row(self, saved_next_index)
+            next_row.read_info()
+            next_row.previous_index = position
+            next_row.write_info()
+        new_row = Row(self, position)
+        new_row.row_id = self.row_count
+        new_row.row_available = 1
+        new_row.next = saved_next_index
+        new_row.previous_index = insert_index
+        new_row.values = {value:values[index] for index, value in enumerate(fields)}
+        new_row.write_row_to_file()
+        if self.last_row_index == insert_index:
+            self.last_row_index = position
+            self.write_meta_info()
+        self.row_count += 1
+        return new_row, position
+
     def delete_row(self, row):
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
