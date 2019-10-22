@@ -108,3 +108,5 @@ site
 
 #VadikDB
 db
+.vs
+*.pyproj
