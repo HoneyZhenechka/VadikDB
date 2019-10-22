@@ -158,8 +158,10 @@ class Table:
                 current_row.read_info()
                 self.delete_row(current_row)
 
-    def insert(self, fields=[], values=[], insert_index=self.last_row_index):
+    def insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
+        if insert_index == -1:
+            insert_index = self.last_row_index
         saved_next_index = 0
         if self.first_row_index == 0:
             self.first_row_index = position
@@ -180,7 +182,7 @@ class Table:
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
-        new_row.fields_values_dict = {value:values[index] for index, value in enumerate(fields)}
+        new_row.fields_values_dict = {field: values[index] for index, field in enumerate(fields)}
         new_row.write_row_to_file()
         if self.last_row_index == insert_index:
             self.last_row_index = position
