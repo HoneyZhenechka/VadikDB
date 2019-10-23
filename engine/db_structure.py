@@ -34,12 +34,13 @@ class Database:
 
 
 class Table:
-    def __init__(self, file: bin_py.BinFile):
+    def __init__(self, file: bin_py.BinFile, name: str, table_count):
         max_fields_count = 14
+        self.size = 32 + 22 + max_fields_count * 24
         self.row_length = 0
         self.removed_rows_count = 0
-        self.index_in_file = -1
-        self.name = ""
+        self.index_in_file = 16 + table_count * self.size
+        self.name = name
         self.file = file
         self.first_block_index = 0
         self.first_row_index = 0
@@ -51,7 +52,6 @@ class Table:
         self.types = []
         self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
         self.positions = {"row_id": 1}
-        self.size = 32 + 22 + max_fields_count * 24
 
     def create_block(self):
         blocks = self.get_blocks()
