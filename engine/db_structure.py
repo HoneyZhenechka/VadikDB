@@ -41,7 +41,7 @@ class Table:
         self.index_in_file = -1
         self.name = ""
         self.file = file
-        self.first_page_index = 0
+        self.first_block_index = 0
         self.first_row_index = 0
         self.last_row_index = 0
         self.last_removed_index = 0
@@ -53,47 +53,47 @@ class Table:
         self.positions = {"row_id": 1}
         self.size = 32 + 22 + max_fields_count * 24
 
-    def create_page(self):
-        pages = self.get_pages()
+    def create_block(self):
+        blocks = self.get_blocks()
         self.file.seek(0, 2)
         previous_index = 0
-        page_index = self.file.tell()
-        if not len(pages):
-            self.first_page_index = page_index
+        block_index = self.file.tell()
+        if not len(blocks):
+            self.first_block_index = block_index
             self.write_meta_info()
         else:
-            last_page = pages[-1]
-            last_page.next_page = page_index
-            last_page.update_file()
-            previous_index = last_page.index_in_file
-        result_page = Page(page_index, self)
-        result_page.previous_page = previous_index
-        result_page.write_file()
-        return result_page
+            last_block = blocks[-1]
+            last_block.next_block = block_index
+            last_block.update_file()
+            previous_index = last_block.index_in_file
+        result_block = Block(block_index, self)
+        result_block.previous_block = previous_index
+        result_block.write_file()
+        return result_block
 
-    def get_pages(self):
-        pages = []
-        page_index = self.first_page_index
-        while page_index != 0:
-            current_page = Page(page_index, self)
-            current_page.read_file()
-            page_index = current_page.next_page
-            pages.append(current_page)
-        return pages
+    def get_blocks(self):
+        blocks = []
+        block_index = self.first_block_index
+        while block_index != 0:
+            current_block = Block(block_index, self)
+            current_block.read_file()
+            block_index = current_block.next_block
+            blocks.append(current_block)
+        return blocks
 
     def get_write_position(self):
-        for page in self.get_pages():
-            position = page.get_write_position()
+        for block in self.get_blocks():
+            position = block.get_write_position()
             if position:
-                return position, page
+                return position, block
         else:
-            new_page = self.create_page()
-            return new_page.get_write_position(), new_page
+            new_block = self.create_block()
+            return new_block.get_write_position(), new_block
 
     def write_meta_info(self):
         self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
         self.file.write_integer(self.removed_rows_count, self.index_in_file + 32 + 3, 3)
-        self.file.write_integer(self.first_page_index, self.index_in_file + 32 + 6, 3)
+        self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 6, 3)
         self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
         self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
         self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
@@ -116,7 +116,7 @@ class Table:
         self.name = self.file.read_str(self.index_in_file, 32)
         self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
         self.removed_rows_count = self.file.read_integer(self.index_in_file + 32 + 3, 3)
-        self.first_page_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
+        self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
         self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
         self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
         self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
@@ -213,9 +213,9 @@ class Table:
 
     def get_free_row(self):
         if not self.last_removed_index:
-            position, page = self.get_write_position()
-            page.rows_count += 1
-            page.update_file()
+            position, block = self.get_write_position()
+            block.rows_count += 1
+            block.update_file()
         else:
             removed_row = Row(self, self.last_removed_index)
             removed_row.read_info()
@@ -261,17 +261,17 @@ class Table:
         return result_fields
 
 
-class Page:
+class Block:
     def __init__(self, start_index, table: Table):
         self.table = table
-        self.page_size = 512
+        self.block_size = 512
         self.rows_count = 0
-        self.previous_page = 0
-        self.next_page = 0
+        self.previous_block = 0
+        self.next_block = 0
         self.index_in_file = start_index
 
     def get_write_position(self):
-        if self.rows_count >= self.page_size:
+        if self.rows_count >= self.block_size:
             return False
         else:
             start_pos = self.index_in_file + 12
@@ -281,18 +281,18 @@ class Page:
     def update_file(self):
         self.table.file.write_integer(self.table.index_in_file, self.index_in_file, 3)
         self.table.file.write_integer(self.rows_count, self.index_in_file + 3, 3)
-        self.table.file.write_integer(self.previous_page, self.index_in_file + 6, 3)
-        self.table.file.write_integer(self.next_page, self.index_in_file + 9, 3)
+        self.table.file.write_integer(self.previous_block, self.index_in_file + 6, 3)
+        self.table.file.write_integer(self.next_block, self.index_in_file + 9, 3)
 
     def write_file(self):
         self.update_file()
-        current_page_size = 512 * self.table.row_length
-        self.table.file.write_integer(0, self.index_in_file, current_page_size)
+        current_block_size = 512 * self.table.row_length
+        self.table.file.write_integer(0, self.index_in_file, current_block_size)
 
     def read_file(self):
         self.rows_count = self.table.file.read_integer(self.index_in_file + 3, 3)
-        self.previous_page = self.table.file.read_integer(self.index_in_file + 6, 3)
-        self.next_page = self.table.file.read_integer(self.index_in_file + 9, 3)
+        self.previous_block = self.table.file.read_integer(self.index_in_file + 6, 3)
+        self.next_block = self.table.file.read_integer(self.index_in_file + 9, 3)
 
 
 class Row:
