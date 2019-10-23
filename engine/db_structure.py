@@ -158,6 +158,13 @@ class Table:
                 current_row.read_info()
                 self.delete_row(current_row)
 
+    def select(self, fields, rows):
+        selected_rows = []
+        for row in rows:
+            row.select_row(fields)
+            selected_rows.append(row)
+        return  selected_rows
+
     def update(self, fields, values, rows):
         updated_rows = []
         for row in rows:
