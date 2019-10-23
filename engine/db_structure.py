@@ -47,6 +47,7 @@ class Table:
         self.last_row_index = 0
         self.last_removed_index = 0
         self.fields = []
+        self.rows = []
         self.fields_count = 0
         self.row_count = 0
         self.types = []
@@ -210,8 +211,13 @@ class Table:
         while row_index != 0:
             current_row = Row(self, row_index)
             current_row.read_info()
+            yield current_row
 
-
+    def get_rows(self):
+        for row in self.iter_rows():
+            row.read_row_from_file()
+            self.rows.append(row)
+        return self.rows
 
     def delete_row(self, row):
         if row.index_in_file == self.first_row_index:
