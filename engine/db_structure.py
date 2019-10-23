@@ -205,6 +205,14 @@ class Table:
         self.row_count += 1
         return new_row, position
 
+    def iter_rows(self):
+        row_index = self.first_row_index
+        while row_index != 0:
+            current_row = Row(self, row_index)
+            current_row.read_info()
+
+
+
     def delete_row(self, row):
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
