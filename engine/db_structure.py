@@ -345,7 +345,8 @@ class Row:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            self.table.file.write_by_type(field_type, self.fields_values_dict[field], self.index_in_file + value_position, field_type.size)
+            self.table.file.write_by_type(field_type, self.fields_values_dict[field],
+                                          self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self, fields=[]):
         fields = self.table.get_fields(fields, True)
@@ -355,7 +356,8 @@ class Row:
                 continue
             index = self.table.fields.index(field)
             field_type = self.table.types[index]
-            self.fields_values_dict[field] = self.table.file.read_by_type(field_type.name, self.index_in_file + pos, field_type.size)
+            self.fields_values_dict[field] = self.table.file.read_by_type(field_type.name, self.index_in_file + pos,
+                                                                          field_type.size)
 
 
 class Type:
