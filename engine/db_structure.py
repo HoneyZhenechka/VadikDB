@@ -163,7 +163,7 @@ class Table:
         for row in rows:
             row.select_row(fields)
             selected_rows.append(row)
-        return  selected_rows
+        return selected_rows
 
     def update(self, fields, values, rows):
         updated_rows = []
