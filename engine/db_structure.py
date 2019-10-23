@@ -327,6 +327,11 @@ class Row:
                 result[field] = self.fields_values_dict[field]
         self.fields_values_dict = result
 
+    def update_row(self, fields=[], values=[]):
+        for index, field in enumerate(fields):
+            self.fields_values_dict[field] = values[index]
+        self.write_row_to_file()
+
     def drop_row(self):
         if self.next_index:
             next_row = Row(self.table, self.next_index)
