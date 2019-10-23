@@ -158,6 +158,14 @@ class Table:
                 current_row.read_info()
                 self.delete_row(current_row)
 
+    def update(self, fields, values, rows):
+        updated_rows = []
+        for row in rows:
+            row.select_row(fields)
+            row.update_row(fields, values)
+            updated_rows.append(row)
+        return updated_rows
+
     def insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
         if insert_index == -1:
