@@ -32,15 +32,31 @@ class Database:
             table_obj.read_file()
             self.tables.append(table_obj)
 
+    def create_table(self, table_name, tables_count, fields, recreate_table=False):
+        if recreate_table or not self.file.is_file_exist():
+            self.file.open("w+")
+            self.file.close()
+        self.file.open("r+")
+        self.file.seek(0, 2)
+        new_table = Table(self.file)
+        new_table.index_in_file = 16 + tables_count * new_table.size
+        new_table.fill_table_fields(fields)
+        new_table.calc_row_size()
+        new_table.write_file()
+        self.tables.append(new_table)
+        self.write_table_count(tables_count + 1)
+        table_index = self.tables.index(new_table)
+        self.tables[table_index].create_block()
+
 
 class Table:
-    def __init__(self, file: bin_py.BinFile, name: str, table_count):
+    def __init__(self, file: bin_py.BinFile, table_count):
         max_fields_count = 14
         self.size = 32 + 22 + max_fields_count * 24
         self.row_length = 0
         self.removed_rows_count = 0
-        self.index_in_file = 16 + table_count * self.size
-        self.name = name
+        self.index_in_file = -1
+        self.name = ""
         self.file = file
         self.first_block_index = 0
         self.first_row_index = 0
