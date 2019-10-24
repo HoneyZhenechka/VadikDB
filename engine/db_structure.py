@@ -211,11 +211,11 @@ class Table:
         while row_index != 0:
             current_row = Row(self, row_index)
             current_row.read_info()
+            current_row.read_row_from_file()
             yield current_row
 
     def get_rows(self):
         for row in self.iter_rows():
-            row.read_row_from_file()
             self.rows.append(row)
         return self.rows
 
