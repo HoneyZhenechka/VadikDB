@@ -50,7 +50,7 @@ class Database:
 
 
 class Table:
-    def __init__(self, file: bin_py.BinFile, table_count):
+    def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
         self.size = 32 + 22 + max_fields_count * 24
         self.row_length = 0
