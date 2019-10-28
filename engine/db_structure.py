@@ -32,13 +32,14 @@ class Database:
             table_obj.read_file()
             self.tables.append(table_obj)
 
-    def create_table(self, table_name, tables_count, fields, recreate_table=False):
-        if recreate_table or not self.file.is_file_exist():
+    def create_table(self, table_name, tables_count, fields, recreate_file=False):
+        if recreate_file or not self.file.is_file_exist():
             self.file.open("w+")
             self.file.close()
         self.file.open("r+")
         self.file.seek(0, 2)
         new_table = Table(self.file)
+        new_table.name = table_name
         new_table.index_in_file = 16 + tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
@@ -47,6 +48,7 @@ class Database:
         self.write_table_count(tables_count + 1)
         table_index = self.tables.index(new_table)
         self.tables[table_index].create_block()
+        return self.tables[table_index]
 
 
 class Table:
@@ -69,6 +71,12 @@ class Table:
         self.types = []
         self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
         self.positions = {"row_id": 1}
+
+    def __eq__(self, other):
+        if not isinstance(other, Table):
+            return NotImplemented
+        return (self.name, self.fields, self.fields_count, self.types, self.positions, self.row_length) == \
+               (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
 
     def create_block(self):
         blocks = self.get_blocks()
@@ -127,6 +135,7 @@ class Table:
             current_position += 24
         bytes_count = self.size - (current_position - self.index_in_file)
         self.file.write_str("", current_position, bytes_count)
+        self.file.seek(current_position, 0)
 
     def read_file(self):
         # Table meta
@@ -414,3 +423,8 @@ class Type:
     def __init__(self, name, size):
         self.name = name
         self.size = size
+
+    def __eq__(self, other):
+        if not isinstance(other, Type):
+            return NotImplemented
+        return self.__dict__ == other.__dict__

@@ -1,4 +1,5 @@
 import engine.bin_file as bin_py
+import engine.db_structure as db_py
 import os
 
 
@@ -16,3 +17,16 @@ def test_binfile():
     assert result_int == 22
     assert not result_bool
     assert result_str == "vadik"
+
+
+def test_create():
+    db = db_py.Database()
+    excepted_table = db_py.Table(db.file)
+    excepted_table.name = "vadik_table"
+    excepted_table.fields = ["zhenya1", "zhenya2"]
+    excepted_table.fields_count = 2
+    excepted_table.types = [db_py.Type("int", 4), db_py.Type("str", 256)]
+    excepted_table.positions = {"row_id": 1, "zhenya1": 4, "zhenya2": 8}
+    excepted_table.row_length = 270
+    result_table = db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"}, True)
+    assert excepted_table == result_table
