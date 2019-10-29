@@ -80,7 +80,6 @@ class Table:
 
     def create_block(self):
         blocks = self.get_blocks()
-        self.file.seek(0, 2)
         previous_index = 0
         block_index = self.file.tell()
         if not len(blocks):
@@ -241,8 +240,10 @@ class Table:
             yield current_row
 
     def get_rows(self):
+        new_rows_list = []
         for row in self.iter_rows():
-            self.rows.append(row)
+            new_rows_list.append(row)
+        self.rows = new_rows_list
 
     def delete_row(self, row):
         if row.index_in_file == self.first_row_index:

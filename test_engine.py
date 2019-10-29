@@ -39,3 +39,10 @@ def test_insert():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 2
+
+
+def test_delete():
+    db.tables[0].delete([db.tables[0].rows[0].index_in_file])
+    db.tables[0].get_rows()
+    assert len(db.tables[0].rows)
+    assert not db.tables[0].rows[0].next_index
