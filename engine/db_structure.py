@@ -211,7 +211,7 @@ class Table:
             previous_row = Row(self, insert_index)
             previous_row.read_info()
             saved_next_index = previous_row.next_index
-            previous_row.next = position
+            previous_row.next_index = position
             previous_row.write_info()
         if saved_next_index != 0:
             next_row = Row(self, saved_next_index)
@@ -237,12 +237,12 @@ class Table:
             current_row = Row(self, row_index)
             current_row.read_info()
             current_row.read_row_from_file()
+            row_index = current_row.next_index
             yield current_row
 
     def get_rows(self):
         for row in self.iter_rows():
             self.rows.append(row)
-        return self.rows
 
     def delete_row(self, row):
         if row.index_in_file == self.first_row_index:

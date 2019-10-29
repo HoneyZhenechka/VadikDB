@@ -30,3 +30,12 @@ def test_create():
     excepted_table.row_length = 270
     result_table = db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"}, True)
     assert excepted_table == result_table
+
+
+def test_insert():
+    db = db_py.Database()
+    db.create_table("vadik_table", 0, {"f1": "int", "f2": "str"}, True)
+    db.tables[0].insert(["f2"], ["test_string_123"])
+    db.tables[0].insert(["f1", "f2"], [99, "test_string_123"])
+    db.tables[0].get_rows()
+    assert len(db.tables[0].rows) == 2
