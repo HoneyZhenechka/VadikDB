@@ -80,6 +80,7 @@ class Table:
 
     def create_block(self):
         blocks = self.get_blocks()
+        self.file.seek(0, 2)
         previous_index = 0
         block_index = self.file.tell()
         if not len(blocks):
@@ -254,7 +255,7 @@ class Table:
         row.drop_row()
         row.row_available = 2
         row.previous_index = 0
-        row.next_index = self.last_removed_index
+        row.next_index = 0
         row.write_info()
         if self.last_removed_index:
             previous_row = Row(self, self.last_removed_index)

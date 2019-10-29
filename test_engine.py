@@ -46,3 +46,6 @@ def test_delete():
     db.tables[0].get_rows()
     assert len(db.tables[0].rows)
     assert not db.tables[0].rows[0].next_index
+    db.tables[0].delete()
+    db.tables[0].get_rows()
+    assert not len(db.tables[0].rows)
