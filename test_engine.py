@@ -3,6 +3,9 @@ import engine.db_structure as db_py
 import os
 
 
+db = db_py.Database()
+
+
 def test_binfile():
     test_file = bin_py.BinFile("test.bin")
     test_file.open("w+")
@@ -20,7 +23,6 @@ def test_binfile():
 
 
 def test_create():
-    db = db_py.Database()
     excepted_table = db_py.Table(db.file)
     excepted_table.name = "vadik_table"
     excepted_table.fields = ["zhenya1", "zhenya2"]
@@ -33,9 +35,7 @@ def test_create():
 
 
 def test_insert():
-    db = db_py.Database()
-    db.create_table("vadik_table", 0, {"f1": "int", "f2": "str"}, True)
-    db.tables[0].insert(["f2"], ["test_string_123"])
-    db.tables[0].insert(["f1", "f2"], [99, "test_string_123"])
+    db.tables[0].insert(["zhenya2"], ["test_string_123"])
+    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 2
