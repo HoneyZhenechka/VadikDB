@@ -34,6 +34,23 @@ def test_create():
     assert excepted_table == result_table
 
 
+def test_show_create():
+    fields_names = ["zhenya1", "zhenya2"]
+    types_names = ["int", "str"]
+    fields = [
+        "'" + v + "' " + types_names[i]
+        for i, v in enumerate(fields_names)
+    ]
+    table_name = "vadik_table"
+    excepted_string = "--------------------------------------------------------\n"
+    excepted_string += "Create table: \n"
+    excepted_string += "CREATE TABLE '" + table_name + "' ("
+    excepted_string += ", ".join(fields) + ")\n"
+    excepted_string += "--------------------------------------------------------"
+    result_string = db.tables[0].show_create()
+    assert result_string == excepted_string
+
+
 def test_insert():
     db.tables[0].insert(["zhenya2"], ["test_string_123"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
