@@ -38,6 +38,7 @@ def test_insert():
     db.tables[0].insert(["zhenya2"], ["test_string_123"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
     db.tables[0].get_rows()
+    assert db.tables[0].rows[1].fields_values_dict["zhenya2"] == "test_string_123"
     assert len(db.tables[0].rows) == 2
 
 
@@ -49,3 +50,12 @@ def test_delete():
     db.tables[0].delete()
     db.tables[0].get_rows()
     assert not len(db.tables[0].rows)
+
+
+def test_update():
+    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
+    db.tables[0].get_rows()
+    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
+    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
+    db.tables[0].get_rows()
+    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"

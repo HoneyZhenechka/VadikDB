@@ -379,7 +379,7 @@ class Row:
         fields = self.table.get_fields(fields)
         result = {}
         for field in fields:
-            if fields in self.fields_values_dict:
+            if field in self.fields_values_dict:
                 result[field] = self.fields_values_dict[field]
         self.fields_values_dict = result
 
@@ -406,7 +406,7 @@ class Row:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            self.table.file.write_by_type(field_type, self.fields_values_dict[field],
+            self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self, fields=[]):

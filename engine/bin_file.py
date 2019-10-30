@@ -65,8 +65,8 @@ class BinFile:
 
     def read_by_type(self, value_type, start_pos, count_bytes):
         if value_type == "int":
-            self.read_integer(start_pos, count_bytes)
+            return self.read_integer(start_pos, count_bytes)
         if value_type == "bool":
-            self.read_bool(start_pos, count_bytes)
+            return self.read_bool(start_pos, count_bytes)
         if value_type == "str":
-            self.read_str(start_pos, count_bytes)
+            return self.read_str(start_pos, count_bytes)
