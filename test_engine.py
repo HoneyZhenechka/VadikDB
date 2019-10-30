@@ -58,4 +58,15 @@ def test_update():
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
     db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
     db.tables[0].get_rows()
+    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 99
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
+
+
+def test_select():
+    db.tables[0].insert(["zhenya1", "zhenya2"], [218, "vadik_vadik"])
+    db.tables[0].get_rows()
+    result_rows_1 = db.tables[0].select(db.tables[0].fields, db.tables[0].rows)
+    assert len(result_rows_1) == 2
+    result_rows_2 = db.tables[0].select(["zhenya1"], [db.tables[0].rows[1]])
+    assert len(result_rows_2) == 1
+    assert result_rows_2[0].fields_values_dict["zhenya1"] == 218
