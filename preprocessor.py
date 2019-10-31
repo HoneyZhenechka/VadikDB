@@ -49,8 +49,33 @@ class preprocessor:
             return True
         return False
 
+    def build_fields(self, fields, is_star, table_index):
+        fields_temp = []
+        if is_star:
+            for i in self.db.tables[table_index].fields:
+                fields_temp.append(i)
+        for i in fields:
+            fields_temp.append(i)
+        return fields_temp
+
     def is_correct_values(self, name, values):
-        pass
+        table_index = self.get_table_index(name)
+        if len(values) != len(self.db.tables[table_index].fields):
+            return [False, values]
+        for i in range(len(values)):
+            if self.db.tables[table_index].types[i].name == "int":
+                try:
+                    values[i] = int(values[i])
+                except:
+                    return [False, values]
+            if self.db.tables[table_index].types[i].name == "bool":
+                if values[i] == "False":
+                    values[i] = False
+                elif values[i] == "True":
+                    values[i] = True
+                else:
+                    return [False, values]
+        return [True, values]
 
     def create_table(self, name, fields):
         temp = self.is_correct_fields(fields)
@@ -62,8 +87,6 @@ class preprocessor:
         elif temp[0]:
             self.db.create_table(name, self.table_count, temp[1])
             self.table_count += 1
-
-
 
     def show_create_table(self, name):
         if not self.is_table_exists(name):
@@ -104,23 +127,30 @@ class preprocessor:
         else:
             table_index = self.get_table_index(name)
             if condition[0] == "":
+                self.db.tables[table_index].get_rows()
                 rows = self.db.tables[table_index].rows
             else:
                 rows = []
-                for i in self.db.tables[table_index].get_rows():
+                for i in self.db.tables[table_index].rows:
                     if i.fields_values_dict[condition[0]] == condition[1]:
                         rows.append(i)
-            fields_temp = []
-            if (is_star):
-                for i in self.db.tables[table_index].fields:
-                    fields_temp.append(i)
-            for i in fields:
-                fields_temp.append(i)
-            print(self.db.tables[table_index].select(fields_temp, rows))
+            fields = self.build_fields(fields, is_star, table_index)
+            rows = self.db.tables[table_index].select(fields, rows)
+            result = "| "
+            for field in self.db.tables[table_index].fields:
+                result += field + " | "
+            result += "\n"
+            for row in rows:
+                result += "| "
+                for field in row.fields_values_dict:
+                    result += str(row.fields_values_dict[field]) + " | "
+                result += "\n"
+            print(result)
 
 
 
     def insert(self, name, fields, values):
+        temp_correct_values = self.is_correct_values(name, values)
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -131,13 +161,17 @@ class preprocessor:
                 raise exception.FieldNotExists(is_fields_exists(name, fields))
             except Exception as ex:
                 print(ex)
-        elif not self.is_correct_values(name, values):
+        elif not temp_correct_values[0]:
             try:
                 raise exception.InvalidDataType()
             except Exception as ex:
                 print(ex)
         else:
-            pass  # insert in ENGINE
+            table_index = self.get_table_index(name)
+            if len(fields) == 0:
+                for i in range(len(values)):
+                    fields.append(self.db.tables[table_index].fields[i])
+            self.db.tables[table_index].insert(fields, temp_correct_values[1])
 
     def update(self, name, fields, values, condition):
         if not self.is_table_exists(name):
@@ -176,4 +210,3 @@ class preprocessor:
                 print(ex)
         else:
             pass  # delete in ENGINE
-
