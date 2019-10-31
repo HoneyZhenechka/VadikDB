@@ -56,7 +56,6 @@ class Table:
         max_fields_count = 14
         self.size = 32 + 22 + max_fields_count * 24
         self.row_length = 0
-        self.removed_rows_count = 0
         self.index_in_file = -1
         self.name = ""
         self.file = file
@@ -117,7 +116,6 @@ class Table:
 
     def write_meta_info(self):
         self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
-        self.file.write_integer(self.removed_rows_count, self.index_in_file + 32 + 3, 3)
         self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 6, 3)
         self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
         self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
@@ -141,7 +139,6 @@ class Table:
         # Table meta
         self.name = self.file.read_str(self.index_in_file, 32)
         self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
-        self.removed_rows_count = self.file.read_integer(self.index_in_file + 32 + 3, 3)
         self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
         self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
         self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
@@ -176,13 +173,13 @@ class Table:
             while row_index != 0:
                 current_row = Row(self, row_index)
                 current_row.read_info()
-                self.delete_row(current_row)
+                self.__delete_row(current_row)
                 row_index = current_row.next_index
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
                 current_row.read_info()
-                self.delete_row(current_row)
+                self.__delete_row(current_row)
 
     def select(self, fields, rows):
         selected_rows = []
@@ -231,7 +228,7 @@ class Table:
         self.row_count += 1
         return new_row, position
 
-    def iter_rows(self):
+    def __iter_rows(self):
         row_index = self.first_row_index
         while row_index != 0:
             current_row = Row(self, row_index)
@@ -242,11 +239,11 @@ class Table:
 
     def get_rows(self):
         new_rows_list = []
-        for row in self.iter_rows():
+        for row in self.__iter_rows():
             new_rows_list.append(row)
         self.rows = new_rows_list
 
-    def delete_row(self, row):
+    def __delete_row(self, row):
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
         if row.index_in_file == self.last_row_index:
@@ -263,7 +260,6 @@ class Table:
             previous_row.previous_index = row.index_in_file
             previous_row.write_info()
         self.row_count -= 1
-        self.removed_rows_count += 1
         self.last_removed_index = row.index_in_file
         self.write_meta_info()
 
