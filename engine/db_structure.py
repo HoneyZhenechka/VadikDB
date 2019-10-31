@@ -8,6 +8,7 @@ class Database:
         self.signature = "#VDBSignature"
         self.tables = []
         self.file = bin_py.BinFile("zhavoronkov.vdb")
+        self.file.open("w+")
 
     def write_file(self):
         signature_len = 13
