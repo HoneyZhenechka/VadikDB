@@ -37,8 +37,17 @@ class preprocessor:
                 result = True
         return result
 
+    def get_table_index(self, name):
+        for i in range(len(self.db.tables)):
+            if name == self.db.tables[i].name:
+                return i
+
     def is_correct_condition(self, name, condition):
-        pass
+        if condition[0] == "":
+            return True
+        if condition[0] in self.db.tables[self.get_table_index(name)].fields:
+            return True
+        return False
 
     def is_correct_values(self, name, values):
         pass
@@ -87,12 +96,28 @@ class preprocessor:
                 raise exception.FieldNotExists(is_fields_exists(name, fields))
             except Exception as ex:
                 print(ex)
-        elif self.is_correct_condition(name, condition):
+        elif not self.is_correct_condition(name, condition):
             try:
                 raise exception.FieldNotExists(is_fields_exists(name, fields))
             except Exception as ex:
                 print(ex)
         else:
+            table_index = self.get_table_index(name)
+            if condition[0] == "":
+                rows = self.db.tables[table_index].rows
+            else:
+                rows = []
+                for i in self.db.tables[table_index].get_rows():
+                    if i.fields_values_dict[condition[0]] == condition[1]:
+                        rows.append(i)
+            fields_temp = []
+            if (is_star):
+                for i in self.db.tables[table_index].fields:
+                    fields_temp.append(i)
+            for i in fields:
+                fields_temp.append(i)
+            print(self.db.tables[table_index].select(fields_temp, rows))
+
 
 
     def insert(self, name, fields, values):

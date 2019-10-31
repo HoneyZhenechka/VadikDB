@@ -27,7 +27,3 @@ class Logic:
                 self.pr.delete(tree.name, tree.condition)
         except:
             pass
-
-temp = Logic()
-temp.query("CREATE TABLE VADIC (sdf int, sd123 str);")
-temp.query("SHOW CREATE TABLE VADIC;")
