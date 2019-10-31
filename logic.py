@@ -22,8 +22,12 @@ class Logic:
             elif tree.type.lower() == "insert":
                 self.pr.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
             elif tree.type.lower() == "update":
-                self.pr.update(tree.name, tree.fields, tree.values, tree.condition)
+                self.pre.update(tree.name, tree.fields, tree.values, tree.condition)
             elif tree.type.lower() == "delete":
                 self.pr.delete(tree.name, tree.condition)
         except:
             pass
+
+temp = Logic()
+temp.query("CREATE TABLE VADIC (sdf int, sd123 str);")
+temp.query("SHOW CREATE TABLE VADIC;")

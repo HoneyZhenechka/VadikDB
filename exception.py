@@ -40,9 +40,9 @@ class IncorrectSyntax(DBException):
 
 
 class DuplicateFields(DBException):
-    def __init__(self, fields):
+    def __init__(self, field):
         self.error_code = "06"
-        print("Error code: " + self.error_code + " -- Duplicate fields: " + str(fields))
+        print("Error code: " + self.error_code + " -- Duplicate field: " + str(field))
 
 
 class ValueNotExists(DBException):

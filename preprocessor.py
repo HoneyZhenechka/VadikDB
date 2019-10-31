@@ -5,29 +5,35 @@ import engine.db_structure as eng
 class preprocessor:
 
     def __init__(self):
+        self.table_count = 0
         self.db = eng.Database()
+        sign_len = self.db.file.read_integer(0, 1)
+        sign_str = self.db.file.read_str(1, sign_len)
+        if sign_str != self.db.signature:
+            pass
 
     def is_correct_fields(self, fields):
-        result = [True, -1]
-        for i in range(len(fields)):
-            result = self.is_fields_exists(fields[i][0], fields)
-            if result[1] != -1 and result[1] != i:
-                result = [False, i]
-                break
-        return result
+        temp = {}
+        for field in fields:
+            if field[0] in temp:
+                try:
+                    raise exception.DuplicateFields(str(field[0] + " " + field[1]))
+                except Exception as ex:
+                    print(ex)
+                    return [False, temp]
+            else:
+                temp[field[0]] = field[1]
+        return [True, temp]
 
     def is_fields_exists(self, name, fields):
-        result = [False, -1]
-        for i in range(len(fields)):
-            if name == fields[i][0]:
-                result = [True, i]
-                break
-        return result
+        if name in fields:
+            return [True, name]
+        return [False, -1]
 
     def is_table_exists(self, name):
         result = False
         for i in self.db.tables:
-            if self.db.tables.name == name:
+            if i.name == name:
                 result = True
         return result
 
@@ -38,25 +44,17 @@ class preprocessor:
         pass
 
     def create_table(self, name, fields):
+        temp = self.is_correct_fields(fields)
         if self.is_table_exists(name):
             try:
                 raise exception.TableAlreadyExists(name)
             except Exception as ex:
                 print(ex)
-        elif not self.is_correct_fields(fields)[0]:
-            try:
-                temp_res = self.is_correct_fields(fields)
-                raise exception.DuplicateFields(str(fields[temp_res[1]][0]) + " " + str(fields[temp_res[1]][1]))
-            except Exception as ex:
-                print(ex)
-        else:
-            self.db.tables.append(eng.Table(self.db.file))
-            temp_index = len(self.db.tables) - 1
-            self.db.tables[temp_index].index = temp_index
-            self.db.tables[temp_index].name = name
-            for i in range(len(fields)):
-                self.db.tables[temp_index].fields.append(fields[i][0])
-                self.db.tables[temp_index].types.append(fields[i][1])
+        elif temp[0]:
+            self.db.create_table(name, self.table_count, temp[1])
+            self.table_count += 1
+
+
 
     def show_create_table(self, name):
         if not self.is_table_exists(name):
@@ -65,7 +63,9 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            pass  # show_table in ENGINE
+            for i in self.db.tables:
+                if i.name == name:
+                    print(i.show_create())
 
     def drop_table(self, name):
         if not self.is_table_exists(name):
@@ -74,7 +74,7 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            pass  # drop_table in ENGINE
+            pass
 
     def select(self, name, fields, is_star, condition):
         if not self.is_table_exists(name):
@@ -93,7 +93,7 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            pass  # select in ENGINE
+
 
     def insert(self, name, fields, values):
         if not self.is_table_exists(name):
@@ -151,3 +151,4 @@ class preprocessor:
                 print(ex)
         else:
             pass  # delete in ENGINE
+
