@@ -1,4 +1,5 @@
 import os
+import struct
 
 
 class BinFile:
@@ -36,11 +37,15 @@ class BinFile:
         int_bytes = bytes(self.__file.read(count_bytes))
         return int.from_bytes(int_bytes, "little")
 
-    def write_bool(self, bool_num, start_pos, count_bytes):
-        self.write_integer(int(bool_num), start_pos, count_bytes)
+    def write_bool(self, bool_num, start_pos):
+        if start_pos >= 0:
+            self.seek(start_pos, 0)
+        bool_bytes = struct.pack("<?", bool_num)
+        self.__file.write(bool_bytes)
 
-    def read_bool(self, start_pos, count_bytes):
-        return bool(self.read_integer(start_pos, count_bytes))
+    def read_bool(self):
+        bool_bytes = bytes(self.__file.read(1))
+        return struct.unpack("<?", bool_bytes)[0]
 
     def write_str(self, string, start_pos, count_bytes):
         if start_pos >= 0:
