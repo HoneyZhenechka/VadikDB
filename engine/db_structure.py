@@ -61,6 +61,7 @@ class Table:
         self.name = ""
         self.file = file
         self.first_block_index = 0
+        self.last_block_index = 0
         self.first_row_index = 0
         self.last_row_index = 0
         self.last_removed_index = 0
@@ -79,18 +80,18 @@ class Table:
                (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
 
     def create_block(self):
-        blocks = self.get_blocks()
         self.file.seek(0, 2)
         previous_index = 0
         block_index = self.file.tell()
-        if not len(blocks):
+        if not self.last_block_index:
             self.first_block_index = block_index
             self.write_meta_info()
         else:
-            last_block = blocks[-1]
+            last_block = self.last_block_index
             last_block.next_block = block_index
             last_block.update_file()
             previous_index = last_block.index_in_file
+        self.last_block_index = block_index
         result_block = Block(block_index, self)
         result_block.previous_block = previous_index
         result_block.write_file()
@@ -117,7 +118,8 @@ class Table:
 
     def write_meta_info(self):
         self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
-        self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 6, 3)
+        self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 3, 3)
+        self.file.write_integer(self.last_block_index, self.index_in_file + 32 + 6, 3)
         self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
         self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
         self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
@@ -141,6 +143,7 @@ class Table:
         self.name = self.file.read_str(self.index_in_file, 32)
         self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
         self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
+        self.last_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
         self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
         self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
         self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
