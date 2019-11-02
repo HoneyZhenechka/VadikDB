@@ -356,7 +356,6 @@ class Row:
         self.index_in_file = index
         self.table = table
         self.fields_values_dict = {}
-        self.row_id = 0
         self.previous_index = 0
         self.next_index = 0
         self.row_available = 0
@@ -364,14 +363,12 @@ class Row:
     def write_info(self):
         row_size = self.index_in_file + self.table.row_length
         self.table.file.write_integer(self.row_available, self.index_in_file, 1)
-        self.table.file.write_integer(self.row_id, self.index_in_file + 1, 3)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
 
     def read_info(self):
         row_size = self.index_in_file + self.table.row_length
         self.row_available = self.table.file.read_integer(self.index_in_file, 1)
-        self.row_id = self.table.file.read_integer(self.index_in_file + 1, 3)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
 
