@@ -427,3 +427,35 @@ class Type:
         if not isinstance(other, Type):
             return NotImplemented
         return self.__dict__ == other.__dict__
+
+
+class SQLCommand:
+    def __init__(self, method, *args):
+        self.method = method
+        self.args = args
+
+    def __call__(self):
+        result = self.method(*self.args)
+        self.method = None
+        self.args = None
+        return result
+
+
+class Transaction:
+    def __init__(self):
+        self.commands = []
+
+    def remove(self, command):
+        self.commands.remove(command)
+
+    def append(self, command):
+        self.commands.append(command)
+
+    def __iter__(self):
+        for command in self.commands:
+            yield command
+
+    def commit(self):
+        for command in self.commands:
+            command()
+        self.commands = []
