@@ -26,15 +26,17 @@ class preprocessor:
         return [True, temp]
 
     def is_fields_exists(self, name, fields):
-        if name in fields:
-            return [True, name]
-        return [False, -1]
+        for field in fields:
+            if not field in self.db.tables[self.get_table_index(name)].fields:
+                return [False, field]
+        return [True, -1]
 
     def is_table_exists(self, name):
         result = False
-        for i in self.db.tables:
-            if i.name == name:
+        for table in self.db.tables:
+            if table.name == name:
                 result = True
+                break
         return result
 
     def get_table_index(self, name):
@@ -50,13 +52,13 @@ class preprocessor:
         return False
 
     def build_fields(self, fields, is_star, table_index):
-        fields_temp = []
+        result = []
         if is_star:
-            for i in self.db.tables[table_index].fields:
-                fields_temp.append(i)
-        for i in fields:
-            fields_temp.append(i)
-        return fields_temp
+            for field in self.db.tables[table_index].fields:
+                result.append(field)
+        for field in fields:
+            result.append(field)
+        return result
 
     def is_correct_values(self, name, values):
         table_index = self.get_table_index(name)
@@ -114,20 +116,20 @@ class preprocessor:
                 raise exception.TableNotExists(name)
             except Exception as ex:
                 print(ex)
-        elif not self.is_fields_exists(name, fields):
+        elif not self.is_fields_exists(name, fields)[0]:
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(self.is_fields_exists(name, fields)[1])
             except Exception as ex:
                 print(ex)
         elif not self.is_correct_condition(name, condition):
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(condition[0])
             except Exception as ex:
                 print(ex)
         else:
             table_index = self.get_table_index(name)
+            self.db.tables[table_index].get_rows()
             if condition[0] == "":
-                self.db.tables[table_index].get_rows()
                 rows = self.db.tables[table_index].rows
             else:
                 rows = []
@@ -156,9 +158,9 @@ class preprocessor:
                 raise exception.TableNotExists(name)
             except Exception as ex:
                 print(ex)
-        elif not self.is_fields_exists(name, fields):
+        elif not self.is_fields_exists(name, fields)[0]:
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(self.is_fields_exists(name, fields)[1])
             except Exception as ex:
                 print(ex)
         elif not temp_correct_values[0]:
@@ -174,24 +176,25 @@ class preprocessor:
             self.db.tables[table_index].insert(fields, temp_correct_values[1])
 
     def update(self, name, fields, values, condition):
+        temp_correct_values = self.is_correct_values(name, values)
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
             except Exception as ex:
                 print(ex)
-        elif not self.is_fields_exists(name, fields):
+        elif not self.is_fields_exists(name, fields)[0]:
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(self.is_fields_exists(name, fields)[1])
             except Exception as ex:
                 print(ex)
-        elif not self.is_correct_values(name, values):
+        elif not temp_correct_values[0]:
             try:
                 raise exception.InvalidDataType()
             except Exception as ex:
                 print(ex)
-        elif self.is_correct_condition(name, condition):
+        elif not self.is_correct_condition(name, condition):
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(condition[0])
             except Exception as ex:
                 print(ex)
         else:
@@ -203,10 +206,18 @@ class preprocessor:
                 raise exception.TableNotExists(name)
             except Exception as ex:
                 print(ex)
-        elif self.is_correct_condition(name, condition):
+        elif not self.is_correct_condition(name, condition):
             try:
-                raise exception.FieldNotExists(is_fields_exists(name, fields))
+                raise exception.FieldNotExists(condition[0])
             except Exception as ex:
                 print(ex)
         else:
-            pass  # delete in ENGINE
+            table_index = self.get_table_index(name)
+            self.db.tables[table_index].get_rows()
+            rows_indices = []
+            for index_row in range(len(self.db.tables[table_index].rows)):
+                if self.db.tables[table_index].rows[index_row].fields_values_dict[condition[0]] == condition[1]:
+                    rows_indices.append(index_row)
+            self.db.tables[table_index].delete(rows_indices)
+
+

@@ -22,8 +22,9 @@ class Logic:
             elif tree.type.lower() == "insert":
                 self.pr.insert(tree.insert.name, tree.insert.fields, tree.insert.values)
             elif tree.type.lower() == "update":
-                self.pre.update(tree.name, tree.fields, tree.values, tree.condition)
+                self.pr.update(tree.name, tree.fields, tree.values, tree.condition)
             elif tree.type.lower() == "delete":
                 self.pr.delete(tree.name, tree.condition)
         except:
             pass
+        
