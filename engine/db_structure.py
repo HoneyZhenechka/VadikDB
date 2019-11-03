@@ -1,5 +1,6 @@
 import engine.bin_file as bin_py
 import exception
+import os
 
 
 class Database:
@@ -459,3 +460,25 @@ class Transaction:
         for command in self.commands:
             command()
         self.commands = []
+
+
+class RollbackLog:
+    def __init__(self):
+        self.file = bin_py.BinFile("journal.log")
+        self.db_file_size = os.stat("zhavoronkov.vdb").st_size
+        self.current_row_index = 16
+        self.rows = []
+
+    def create_file(self):
+        self.file.open("w+")
+        self.file.write_integer(self.db_file_size, 0, 16)
+
+    def open_file(self):
+        self.file.open("r+")
+
+    def append_row(self, row):
+        self.rows.append(row)
+
+    def write_rollback_row(self, row, row_length):
+        pass
+
