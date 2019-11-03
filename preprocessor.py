@@ -60,17 +60,27 @@ class preprocessor:
             result.append(field)
         return result
 
-    def is_correct_values(self, name, values):
+    def is_correct_values(self, name, values, fields=[]):
         table_index = self.get_table_index(name)
-        if len(values) != len(self.db.tables[table_index].fields):
-            return [False, values]
+        types = []
+
+        if len(fields) == 0:
+            types = self.db.tables[table_index].types
+            if len(values) != len(types):
+                return [False, values]
+        else:
+            for field in fields:
+                for index_of_field in range(len(self.db.tables[table_index].fields)):
+                    if field == self.db.tables[table_index].fields[index_of_field]:
+                        types.append(self.db.tables[table_index].types[index_of_field])
+
         for i in range(len(values)):
-            if self.db.tables[table_index].types[i].name == "int":
+            if types[i].name == "int":
                 try:
                     values[i] = int(values[i])
                 except:
                     return [False, values]
-            if self.db.tables[table_index].types[i].name == "bool":
+            if types[i].name == "bool":
                 if values[i] == "False":
                     values[i] = False
                 elif values[i] == "True":
@@ -176,7 +186,7 @@ class preprocessor:
             self.db.tables[table_index].insert(fields, temp_correct_values[1])
 
     def update(self, name, fields, values, condition):
-        temp_correct_values = self.is_correct_values(name, values)
+        temp_correct_values = self.is_correct_values(name, values, fields)
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -198,7 +208,17 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            pass  # update in ENGINE
+            table_index = self.get_table_index(name)
+            self.db.tables[table_index].get_rows()
+            rows = []
+            if condition[0] != "":
+                for row in self.db.tables[table_index].rows:
+                    if row.fields_values_dict[condition[0]] == condition[1]:
+                        rows.append(row)
+            else:
+                for row in self.db.tables[table_index].rows:
+                    rows.append(row)
+            self.db.tables[table_index].update(fields, temp_correct_values[1], rows)
 
     def delete(self, name, condition):
         if not self.is_table_exists(name):

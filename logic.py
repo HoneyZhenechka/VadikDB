@@ -27,4 +27,3 @@ class Logic:
                 self.pr.delete(tree.name, tree.condition)
         except:
             pass
-        
