@@ -92,6 +92,8 @@ def test_select():
 def test_transaction():
     db.tables[0].start_transaction()
     db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya1"], [98], [db.tables[0].rows[0]])
     db.tables[0].end_transaction()
     db.tables[0].get_rows()
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
+    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 98

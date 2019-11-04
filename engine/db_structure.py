@@ -513,7 +513,7 @@ class RollbackLog:
         new_row.write_row(self.file)
         if len(self.rows):
             self.rows[-1].next_index = new_row.rollback_index
-            self.rows[-1].write_row()
+            self.rows[-1].write_row(self.file)
         self.rows.append(new_row)
 
     def get_rows(self):
