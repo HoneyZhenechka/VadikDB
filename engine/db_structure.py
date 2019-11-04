@@ -73,12 +73,18 @@ class Table:
         self.types = []
         self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
         self.positions = {"row_id": 1}
+        self.is_transaction = False
+        self.transaction_obj = None
 
     def __eq__(self, other):
         if not isinstance(other, Table):
             return NotImplemented
         return (self.name, self.fields, self.fields_count, self.types, self.positions, self.row_length) == \
                (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
+
+    def start_transaction(self):
+        self.is_transaction = True
+        self.transaction_obj = Transaction(self)
 
     def create_block(self):
         self.file.seek(0, 2)
@@ -443,8 +449,11 @@ class SQLCommand:
 
 
 class Transaction:
-    def __init__(self):
+    def __init__(self, table: Table):
         self.commands = []
+        self.table = table
+        self.rollback_journal = RollbackLog()
+        self.rollback_journal.create_file()
 
     def remove(self, command):
         self.commands.remove(command)
@@ -460,25 +469,82 @@ class Transaction:
         for command in self.commands:
             command()
         self.commands = []
+        os.remove("journal.log")
+
+    def rollback(self):
+        journal_file_size = self.rollback_journal.file.read_integer(0, 16)
+        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
+            os.truncate("zhavoronkov.vdb", journal_file_size)
+        self.rollback_journal.get_rows()
+        self.rollback_journal.restore_rows()
 
 
 class RollbackLog:
-    def __init__(self):
+    def __init__(self, table: Table):
         self.file = bin_py.BinFile("journal.log")
-        self.db_file_size = os.stat("zhavoronkov.vdb").st_size
-        self.current_row_index = 16
+        self.table = table
         self.rows = []
+        self.first_rollback_index = 17
 
     def create_file(self):
         self.file.open("w+")
-        self.file.write_integer(self.db_file_size, 0, 16)
+        self.file.write_integer(os.stat("zhavoronkov.vdb").st_size, 0, 16)
 
-    def open_file(self):
-        self.file.open("r+")
+    def add_rollback_row(self, row: Row):
+        new_row = RollbackRow(row)
+        new_row.rollback_index = 17 + len(self.rows) * (new_row.rollback_index + row.table.row_length) + 6
+        new_row.write_row(self.file)
+        if len(self.rows):
+            self.rows[-1].next_index = new_row.rollback_index
 
-    def append_row(self, row):
-        self.rows.append(row)
+    def get_rows(self):
+        current_index = self.first_rollback_index
+        while current_index != -1:
+            current_original_row = Row(self.table)
+            current_rollback_row = RollbackRow(current_original_row)
+            current_rollback_row.rollback_index = current_index
+            current_rollback_row.read_row(self.file)
+            current_index = current_rollback_row.next_index
+            self.rows.append(current_rollback_row)
 
-    def write_rollback_row(self, row, row_length):
-        pass
+    def restore_rows(self):
+        for row in self.rows:
+            row.original_row.write_row_to_file()
 
+
+class RollbackRow:
+    def __init__(self, row: Row):
+        self.original_row = row
+        self.rollback_index = 17
+        self.next_index = -1
+
+    def write_row(self, file: bin_py.BinFile):
+        row_size = self.rollback_index + self.original_row.table.row_length
+        file.write_integer(self.original_row.row_available, self.rollback_index, 1)
+        file.write_integer(self.original_row.previous_index, row_size - 3, 3)
+        file.write_integer(self.original_row.next_index, row_size - 6, 3)
+        for field in self.original_row.fields_values_dict:
+            field_index = self.original_row.table.fields.index(field)
+            field_type = self.original_row.table.types[field_index]
+            value_position = self.original_row.table.positions[field]
+            file.write_by_type(field_type.name, self.original_row.fields_values_dict[field],
+                               self.rollback_index + value_position, field_type.size)
+        file.write_integer(self.original_row.index_in_file, row_size + 1, 3)
+        file.write_integer(self.next_index, row_size + 4, 3)
+
+    def read_row(self, file: bin_py.BinFile, fields=[]):
+        fields = self.original_row.table.get_fields(fields, True)
+        row_size = self.rollback_index + self.original_row.table.row_length
+        self.original_row.row_available = file.read_integer(self.rollback_index, 1)
+        self.original_row.previous_index = file.read_integer(row_size - 3, 3)
+        self.original_row.next_index = file.read_integer(row_size - 6, 3)
+        for field, pos in self.original_row.table.positions.items():
+            if field not in fields:
+                continue
+            index = self.original_row.table.fields.index(field)
+            field_type = self.original_row.table.types[index]
+            self.original_row.fields_values_dict[field] = self.original_row.table.file.read_by_type(field_type.name,
+                                                                                                    self.rollback_index + pos,
+                                                                                                    field_type.size)
+        self.original_row.index_in_file = file.read_integer(row_size + 1, 3)
+        self.next_index = file.read_integer(row_size + 4, 3)
