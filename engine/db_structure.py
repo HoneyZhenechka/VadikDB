@@ -203,7 +203,6 @@ class Table:
                     self.transaction_obj.append(self.__delete_row, current_row)
                 if not self.is_transaction:
                     self.__delete_row(current_row)
-                self.__delete_row(current_row)
 
     def select(self, fields, rows):
         selected_rows = []
