@@ -212,12 +212,16 @@ class Table:
         return selected_rows
 
     def update(self, fields, values, rows):
-        updated_rows = []
         for row in rows:
-            row.select_row(fields)
-            row.update_row(fields, values)
-            updated_rows.append(row)
-        return updated_rows
+            if self.is_transaction:
+                self.transaction_obj.rollback_journal.add_rollback_row(row)
+                first_update_command = SQLCommand(row.select_row, fields)
+                self.transaction_obj.append(first_update_command)
+                second_update_command = SQLCommand(row.update_row, fields, values)
+                self.transaction_obj.append(second_update_command)
+            else:
+                row.select_row(fields)
+                row.update_row(fields, values)
 
     def insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
@@ -464,7 +468,7 @@ class Transaction:
     def __init__(self, table: Table):
         self.commands = []
         self.table = table
-        self.rollback_journal = RollbackLog()
+        self.rollback_journal = RollbackLog(self.table)
         self.rollback_journal.create_file()
 
     def remove(self, command):
@@ -481,6 +485,7 @@ class Transaction:
         for command in self.commands:
             command()
         self.commands = []
+        self.rollback_journal.file.close()
         os.remove("journal.log")
 
     def rollback(self):
@@ -513,7 +518,7 @@ class RollbackLog:
 
     def get_rows(self):
         current_index = self.first_rollback_index
-        while current_index != -1:
+        while current_index != 0:
             current_original_row = Row(self.table)
             current_rollback_row = RollbackRow(current_original_row)
             current_rollback_row.rollback_index = current_index
@@ -530,7 +535,7 @@ class RollbackRow:
     def __init__(self, row: Row):
         self.original_row = row
         self.rollback_index = 17
-        self.next_index = -1
+        self.next_index = 0
 
     def write_row(self, file: bin_py.BinFile):
         row_size = self.rollback_index + self.original_row.table.row_length

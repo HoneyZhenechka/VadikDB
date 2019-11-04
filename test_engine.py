@@ -87,3 +87,11 @@ def test_select():
     result_rows_2 = db.tables[0].select(["zhenya1"], [db.tables[0].rows[1]])
     assert len(result_rows_2) == 1
     assert result_rows_2[0].fields_values_dict["zhenya1"] == 218
+
+
+def test_transaction():
+    db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
+    db.tables[0].end_transaction()
+    db.tables[0].get_rows()
+    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
