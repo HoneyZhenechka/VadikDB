@@ -183,24 +183,26 @@ class Table:
         return result_string
 
     def delete(self, rows_indexes=[]):
-        if self.is_transaction:
-            sql_method = SQLCommand(self.delete, rows_indexes)
-            self.transaction_obj.append(sql_method)
         if not len(rows_indexes):
             row_index = self.first_row_index
             while row_index != 0:
                 current_row = Row(self, row_index)
+                current_row.read_info()
                 if self.is_transaction:
                     self.transaction_obj.rollback_journal.add_rollback_row(current_row)
-                current_row.read_info()
-                self.__delete_row(current_row)
+                    self.transaction_obj.append(self.__delete_row, current_row)
+                if not self.is_transaction:
+                    self.__delete_row(current_row)
                 row_index = current_row.next_index
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
+                current_row.read_info()
                 if self.is_transaction:
                     self.transaction_obj.rollback_journal.add_rollback_row(current_row)
-                current_row.read_info()
+                    self.transaction_obj.append(self.__delete_row, current_row)
+                if not self.is_transaction:
+                    self.__delete_row(current_row)
                 self.__delete_row(current_row)
 
     def select(self, fields, rows):
