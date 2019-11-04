@@ -86,6 +86,10 @@ class Table:
         self.is_transaction = True
         self.transaction_obj = Transaction(self)
 
+    def end_transaction(self):
+        self.transaction_obj.commit()
+        self.is_transaction = False
+
     def create_block(self):
         self.file.seek(0, 2)
         previous_index = 0
@@ -179,16 +183,23 @@ class Table:
         return result_string
 
     def delete(self, rows_indexes=[]):
+        if self.is_transaction:
+            sql_method = SQLCommand(self.delete, rows_indexes)
+            self.transaction_obj.append(sql_method)
         if not len(rows_indexes):
             row_index = self.first_row_index
             while row_index != 0:
                 current_row = Row(self, row_index)
+                if self.is_transaction:
+                    self.transaction_obj.rollback_journal.add_rollback_row(current_row)
                 current_row.read_info()
                 self.__delete_row(current_row)
                 row_index = current_row.next_index
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
+                if self.is_transaction:
+                    self.transaction_obj.rollback_journal.add_rollback_row(current_row)
                 current_row.read_info()
                 self.__delete_row(current_row)
 
