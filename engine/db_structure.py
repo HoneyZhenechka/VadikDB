@@ -522,6 +522,10 @@ class RollbackLog:
             current_index = current_block.next_index
             self.blocks.append(current_block)
 
+    def restore_blocks(self):
+        for block in self.blocks:
+            self.table.file.write_integer(block.block_int, block.original_index, self.block_size)
+
 
 class RollbackBlock:
     def __init__(self, rollback_index, size, block_int, original_index):
