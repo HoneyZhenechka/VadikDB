@@ -87,8 +87,12 @@ class Table:
         self.transaction_obj = Transaction(self)
 
     def end_transaction(self):
-        self.transaction_obj.commit()
         self.is_transaction = False
+        self.transaction_obj.commit()
+
+    def rollback_transaction(self):
+        rollback_obj = Transaction(self)
+        rollback_obj.rollback()
 
     def create_block(self):
         self.file.seek(0, 2)
@@ -189,8 +193,8 @@ class Table:
                 current_row = Row(self, row_index)
                 current_row.read_info()
                 if self.is_transaction:
-                    self.transaction_obj.rollback_journal.add_rollback_row(current_row)
-                    self.transaction_obj.append(self.__delete_row, current_row)
+                    command = SQLCommand(self.__delete_row, current_row)
+                    self.transaction_obj.append(command)
                 if not self.is_transaction:
                     self.__delete_row(current_row)
                 row_index = current_row.next_index
@@ -199,8 +203,8 @@ class Table:
                 current_row = Row(self, index)
                 current_row.read_info()
                 if self.is_transaction:
-                    self.transaction_obj.rollback_journal.add_rollback_row(current_row)
-                    self.transaction_obj.append(self.__delete_row, current_row)
+                    command = SQLCommand(self.__delete_row, current_row)
+                    self.transaction_obj.append(command)
                 if not self.is_transaction:
                     self.__delete_row(current_row)
 
@@ -214,7 +218,6 @@ class Table:
     def update(self, fields, values, rows):
         for row in rows:
             if self.is_transaction:
-                self.transaction_obj.rollback_journal.add_rollback_row(row)
                 first_update_command = SQLCommand(row.select_row, fields)
                 self.transaction_obj.append(first_update_command)
                 second_update_command = SQLCommand(row.update_row, fields, values)
@@ -469,7 +472,6 @@ class Transaction:
         self.commands = []
         self.table = table
         self.rollback_journal = RollbackLog(self.table)
-        self.rollback_journal.create_file()
 
     def remove(self, command):
         self.commands.remove(command)
@@ -485,15 +487,6 @@ class Transaction:
         for command in self.commands:
             command()
         self.commands = []
-        self.rollback_journal.file.close()
-        os.remove("journal.log")
-
-    def rollback(self):
-        journal_file_size = self.rollback_journal.file.read_integer(0, 16)
-        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
-            os.truncate("zhavoronkov.vdb", journal_file_size)
-        self.rollback_journal.get_rows()
-        self.rollback_journal.restore_rows()
 
 
 class RollbackLog:
@@ -502,68 +495,3 @@ class RollbackLog:
         self.table = table
         self.rows = []
         self.first_rollback_index = 17
-
-    def create_file(self):
-        self.file.open("w+")
-        self.file.write_integer(os.stat("zhavoronkov.vdb").st_size, 0, 16)
-
-    def add_rollback_row(self, row: Row):
-        new_row = RollbackRow(row)
-        new_row.rollback_index = 17 + len(self.rows) * (new_row.rollback_index + row.table.row_length) + 6
-        new_row.write_row(self.file)
-        if len(self.rows):
-            self.rows[-1].next_index = new_row.rollback_index
-            self.rows[-1].write_row(self.file)
-        self.rows.append(new_row)
-
-    def get_rows(self):
-        current_index = self.first_rollback_index
-        while current_index != 0:
-            current_original_row = Row(self.table)
-            current_rollback_row = RollbackRow(current_original_row)
-            current_rollback_row.rollback_index = current_index
-            current_rollback_row.read_row(self.file)
-            current_index = current_rollback_row.next_index
-            self.rows.append(current_rollback_row)
-
-    def restore_rows(self):
-        for row in self.rows:
-            row.original_row.write_row_to_file()
-
-
-class RollbackRow:
-    def __init__(self, row: Row):
-        self.original_row = row
-        self.rollback_index = 17
-        self.next_index = 0
-
-    def write_row(self, file: bin_py.BinFile):
-        row_size = self.rollback_index + self.original_row.table.row_length
-        file.write_integer(self.original_row.row_available, self.rollback_index, 1)
-        file.write_integer(self.original_row.previous_index, row_size - 3, 3)
-        file.write_integer(self.original_row.next_index, row_size - 6, 3)
-        for field in self.original_row.fields_values_dict:
-            field_index = self.original_row.table.fields.index(field)
-            field_type = self.original_row.table.types[field_index]
-            value_position = self.original_row.table.positions[field]
-            file.write_by_type(field_type.name, self.original_row.fields_values_dict[field],
-                               self.rollback_index + value_position, field_type.size)
-        file.write_integer(self.original_row.index_in_file, row_size + 1, 3)
-        file.write_integer(self.next_index, row_size + 4, 3)
-
-    def read_row(self, file: bin_py.BinFile, fields=[]):
-        fields = self.original_row.table.get_fields(fields, True)
-        row_size = self.rollback_index + self.original_row.table.row_length
-        self.original_row.row_available = file.read_integer(self.rollback_index, 1)
-        self.original_row.previous_index = file.read_integer(row_size - 3, 3)
-        self.original_row.next_index = file.read_integer(row_size - 6, 3)
-        for field, pos in self.original_row.table.positions.items():
-            if field not in fields:
-                continue
-            index = self.original_row.table.fields.index(field)
-            field_type = self.original_row.table.types[index]
-            self.original_row.fields_values_dict[field] = self.original_row.table.file.read_by_type(field_type.name,
-                                                                                                    self.rollback_index + pos,
-                                                                                                    field_type.size)
-        self.original_row.index_in_file = file.read_integer(row_size + 1, 3)
-        self.next_index = file.read_integer(row_size + 4, 3)
