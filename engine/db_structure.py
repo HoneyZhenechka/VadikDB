@@ -493,5 +493,50 @@ class RollbackLog:
     def __init__(self, table: Table):
         self.file = bin_py.BinFile("journal.log")
         self.table = table
-        self.rows = []
-        self.first_rollback_index = 17
+        self.blocks = []
+        self.first_rollback_index = 16
+        self.block_count = 0
+        self.block_size = 12 + 512 * self.table.row_length
+
+    def create_file(self):
+        self.file.open("w+")
+        self.file.write_integer(os.stat("zhavoronkov.vdb").st_size, 0, 16)
+
+    def add_block(self, block_index):
+        block_num = self.table.file.read_integer(block_index, self.block_size)
+        new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 6)
+        self.block_count += 1
+        if len(self.blocks):
+            self.blocks[-1].next_index = new_rollback_index
+            self.blocks[-1].write_block(self.file)
+        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
+        new_block.write_block(self.file)
+        self.blocks.append(new_block)
+
+    def get_blocks(self):
+        current_index = self.first_rollback_index
+        while current_index != 0:
+            current_block = RollbackBlock(current_index, self.block_size, 0, 0)
+            current_block.index_in_file = current_index
+            current_block.read_block(self.file)
+            current_index = current_block.next_index
+            self.blocks.append(current_block)
+
+
+class RollbackBlock:
+    def __init__(self, rollback_index, size, block_int, original_index):
+        self.block_size = size
+        self.block_int = block_int
+        self.index_in_file = rollback_index
+        self.next_index = 0
+        self.original_index = original_index
+
+    def write_block(self, file: bin_py.BinFile):
+        file.write_integer(self.block_int, self.index_in_file, self.block_size)
+        file.write_integer(self.next_index, self.index_in_file + self.block_size, 3)
+        file.write_integer(self.original_index, self.index_in_file + self.block_size + 3, 3)
+
+    def read_block(self, file: bin_py.BinFile):
+        self.block_int = file.read_integer(self.index_in_file, self.block_size)
+        self.next_index = file.read_integer(self.index_in_file + self.block_size, 3)
+        self.original_index = file.read_integer(self.index_in_file + self.block_size + 3, 3)
