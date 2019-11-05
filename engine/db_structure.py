@@ -62,6 +62,7 @@ class Table:
         self.name = ""
         self.file = file
         self.first_block_index = 0
+        self.current_block_index = 0
         self.last_block_index = 0
         self.first_row_index = 0
         self.last_row_index = 0
@@ -85,10 +86,14 @@ class Table:
     def start_transaction(self):
         self.is_transaction = True
         self.transaction_obj = Transaction(self)
+        self.transaction_obj.rollback_journal.create_file()
 
     def end_transaction(self):
-        self.is_transaction = False
         self.transaction_obj.commit()
+        self.transaction_obj.rollback_journal.file.close()
+        self.transaction_obj = None
+        self.is_transaction = False
+        os.remove("journal.log")
 
     def rollback_transaction(self):
         rollback_obj = Transaction(self)
@@ -126,9 +131,13 @@ class Table:
         for block in self.get_blocks():
             position = block.get_write_position()
             if position:
+                if self.is_transaction:
+                    self.current_block_index = block.index_in_file
                 return position, block
         else:
             new_block = self.create_block()
+            if self.is_transaction:
+                self.current_block_index = new_block.index_in_file
             return new_block.get_write_position(), new_block
 
     def write_meta_info(self):
@@ -235,6 +244,12 @@ class Table:
 
     def __insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
+        if self.is_transaction:
+            self.transaction_obj.rollback_journal.add_block(self.current_block_index)
+            if (len(self.transaction_obj.rollback_journal.blocks) > 1) and \
+                    (self.transaction_obj.rollback_journal.check_rollback_indexes(self.current_block_index)):
+                del self.transaction_obj.rollback_journal.blocks[-1]
+                self.transaction_obj.rollback_journal.block_count -= 1
         if insert_index == -1:
             insert_index = self.last_row_index
         saved_next_index = 0
@@ -511,6 +526,12 @@ class RollbackLog:
         self.first_rollback_index = 16
         self.block_count = 0
         self.block_size = 12 + 512 * self.table.row_length
+
+    def check_rollback_indexes(self, index):
+        for block in self.blocks:
+            if block.original_index == index:
+                return True
+        return False
 
     def create_file(self):
         self.file.open("w+")
