@@ -227,6 +227,13 @@ class Table:
                 row.update_row(fields, values)
 
     def insert(self, fields=[], values=[], insert_index=-1):
+        if self.is_transaction:
+            method = DBMethod(self.__insert, fields, values, insert_index)
+            self.transaction_obj.append(method)
+        else:
+            self.__insert(fields, values, insert_index)
+
+    def __insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
         if insert_index == -1:
             insert_index = self.last_row_index
