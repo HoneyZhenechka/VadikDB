@@ -193,7 +193,7 @@ class Table:
                 current_row = Row(self, row_index)
                 current_row.read_info()
                 if self.is_transaction:
-                    command = SQLCommand(self.__delete_row, current_row)
+                    command = DBMethod(self.__delete_row, current_row)
                     self.transaction_obj.append(command)
                 if not self.is_transaction:
                     self.__delete_row(current_row)
@@ -203,7 +203,7 @@ class Table:
                 current_row = Row(self, index)
                 current_row.read_info()
                 if self.is_transaction:
-                    command = SQLCommand(self.__delete_row, current_row)
+                    command = DBMethod(self.__delete_row, current_row)
                     self.transaction_obj.append(command)
                 if not self.is_transaction:
                     self.__delete_row(current_row)
@@ -218,9 +218,9 @@ class Table:
     def update(self, fields, values, rows):
         for row in rows:
             if self.is_transaction:
-                first_update_command = SQLCommand(row.select_row, fields)
+                first_update_command = DBMethod(row.select_row, fields)
                 self.transaction_obj.append(first_update_command)
-                second_update_command = SQLCommand(row.update_row, fields, values)
+                second_update_command = DBMethod(row.update_row, fields, values)
                 self.transaction_obj.append(second_update_command)
             else:
                 row.select_row(fields)
@@ -455,7 +455,7 @@ class Type:
         return self.__dict__ == other.__dict__
 
 
-class SQLCommand:
+class DBMethod:
     def __init__(self, method, *args):
         self.method = method
         self.args = args
@@ -487,6 +487,13 @@ class Transaction:
         for command in self.commands:
             command()
         self.commands = []
+
+    def rollback(self):
+        journal_file_size = self.rollback_journal.file.read_integer(0, 16)
+        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
+            os.truncate("zhavoronkov.vdb", journal_file_size)
+        self.rollback_journal.get_blocks()
+        self.rollback_journal.restore_blocks()
 
 
 class RollbackLog:
