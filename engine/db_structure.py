@@ -12,9 +12,22 @@ class Database:
         if create_default_file:
             self.file = bin_py.BinFile("zhavoronkov.vdb")
             self.file.open("w+")
+            if self.__check_journal():
+                self.db_wide_rollback()
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
+
+    def __check_journal(self):
+        if os.path.isfile("journal.log"):
+            return True
+        return False
+
+    def db_wide_rollback(self):
+        rollback_obj = RollbackLog()
+        rollback_obj.open_file()
+        rollback_obj.get_blocks()
+        rollback_obj.restore_blocks()
 
     def write_file(self):
         signature_len = 13
@@ -50,6 +63,8 @@ class Database:
         if signature_str != self.signature:
             raise exception.WrongSignature()
         self.read_file()
+        if self.__check_journal():
+            self.db_wide_rollback()
 
     def create_table(self, table_name, tables_count, fields):
         self.file.open("r+")
