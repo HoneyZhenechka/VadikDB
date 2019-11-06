@@ -7,13 +7,11 @@ class Database:
     def __init__(self, create_default_file=True):
         self.tables_count = 0
         self.signature = "#VDBSignature"
-        self.tables = []
+        self.tables = {}
         self.file = None
         if create_default_file:
             self.file = bin_py.BinFile("zhavoronkov.vdb")
             self.file.open("w+")
-            if self.__check_journal():
-                self.db_wide_rollback()
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
@@ -22,12 +20,6 @@ class Database:
         if os.path.isfile("journal.log"):
             return True
         return False
-
-    def db_wide_rollback(self):
-        rollback_obj = RollbackLog()
-        rollback_obj.open_file()
-        rollback_obj.get_blocks()
-        rollback_obj.restore_blocks()
 
     def write_file(self):
         signature_len = 13
@@ -50,7 +42,7 @@ class Database:
             table_obj = Table(self.file)
             table_obj.index_in_file = 16 + i * table_obj.size
             table_obj.read_file()
-            self.tables.append(table_obj)
+            self.tables[table_obj.name] = table_obj
 
     def connect_to_db(self, file: bin_py.BinFile = None):
         if (file is not None) and not (file.is_file_exist()):
@@ -63,8 +55,6 @@ class Database:
         if signature_str != self.signature:
             raise exception.WrongSignature()
         self.read_file()
-        if self.__check_journal():
-            self.db_wide_rollback()
 
     def create_table(self, table_name, tables_count, fields):
         self.file.open("r+")
@@ -75,11 +65,10 @@ class Database:
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
         new_table.write_file()
-        self.tables.append(new_table)
+        self.tables[new_table.name] = new_table
         self.write_table_count(tables_count + 1)
-        table_index = self.tables.index(new_table)
-        self.tables[table_index].create_block()
-        return self.tables[table_index]
+        self.tables[new_table.name].create_block()
+        return self.tables[new_table.name]
 
 
 class Table:
@@ -584,19 +573,19 @@ class RollbackLog:
         if self.check_original_indexes(block_index):
             return
         block_num = self.table.file.read_integer(block_index, self.block_size)
-        new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 6)
+        new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 38)
         self.block_count += 1
         if len(self.blocks):
             self.blocks[-1].next_index = new_rollback_index
             self.blocks[-1].write_block(self.file)
-        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
+        new_block = RollbackInfo(new_rollback_index, self.block_size, block_num, block_index, self.table.name)
         new_block.write_block(self.file)
         self.blocks.append(new_block)
 
     def get_blocks(self):
         current_index = self.first_rollback_index
         while current_index != 0:
-            current_block = RollbackBlock(current_index, self.block_size, 0, 0)
+            current_block = RollbackInfo(current_index, self.block_size, 0, 0, "")
             current_block.index_in_file = current_index
             current_block.read_block(self.file)
             current_index = current_block.next_index
@@ -607,20 +596,23 @@ class RollbackLog:
             self.table.file.write_integer(block.block_int, block.original_index, self.block_size)
 
 
-class RollbackBlock:
-    def __init__(self, rollback_index, size, block_int, original_index):
+class RollbackInfo:
+    def __init__(self, rollback_index, size, block_int, original_index, table_name):
         self.block_size = size
         self.block_int = block_int
         self.index_in_file = rollback_index
         self.next_index = 0
         self.original_index = original_index
+        self.table_name = table_name
 
     def write_block(self, file: bin_py.BinFile):
         file.write_integer(self.block_int, self.index_in_file, self.block_size)
         file.write_integer(self.next_index, self.index_in_file + self.block_size, 3)
         file.write_integer(self.original_index, self.index_in_file + self.block_size + 3, 3)
+        file.write_str(self.table_name, self.index_in_file + self.block_size + 6, 32)
 
     def read_block(self, file: bin_py.BinFile):
         self.block_int = file.read_integer(self.index_in_file, self.block_size)
         self.next_index = file.read_integer(self.index_in_file + self.block_size, 3)
         self.original_index = file.read_integer(self.index_in_file + self.block_size + 3, 3)
+        self.table_name = file.read_str(self.index_in_file + self.block_size + 6, 32)

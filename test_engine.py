@@ -4,6 +4,7 @@ import os
 
 
 db = db_py.Database()
+table_name = "vadik_table"
 
 
 def test_binfile():
@@ -24,13 +25,13 @@ def test_binfile():
 
 def test_create():
     excepted_table = db_py.Table(db.file)
-    excepted_table.name = "vadik_table"
+    excepted_table.name = table_name
     excepted_table.fields = ["zhenya1", "zhenya2"]
     excepted_table.fields_count = 2
     excepted_table.types = [db_py.Type("int", 4), db_py.Type("str", 256)]
     excepted_table.positions = {"row_id": 1, "zhenya1": 4, "zhenya2": 8}
     excepted_table.row_length = 270
-    result_table = db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"})
+    result_table = db.create_table(table_name, 0, {"zhenya1": "int", "zhenya2": "str"})
     assert excepted_table == result_table
 
 
@@ -41,77 +42,77 @@ def test_show_create():
         "'" + v + "' " + types_names[i]
         for i, v in enumerate(fields_names)
     ]
-    table_name = "vadik_table"
+    table_name_temp = table_name
     excepted_string = "--------------------------------------------------------\n"
     excepted_string += "Create table: \n"
-    excepted_string += "CREATE TABLE '" + table_name + "' ("
+    excepted_string += "CREATE TABLE '" + table_name_temp + "' ("
     excepted_string += ", ".join(fields) + ")\n"
     excepted_string += "--------------------------------------------------------"
-    result_string = db.tables[0].show_create()
+    result_string = db.tables[table_name].show_create()
     assert result_string == excepted_string
 
 
 def test_insert():
-    db.tables[0].insert(["zhenya2"], ["test_string_123"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[1].fields_values_dict["zhenya2"] == "test_string_123"
-    assert len(db.tables[0].rows) == 2
+    db.tables[table_name].insert(["zhenya2"], ["test_string_123"])
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
+    db.tables[table_name].get_rows()
+    assert db.tables[table_name].rows[1].fields_values_dict["zhenya2"] == "test_string_123"
+    assert len(db.tables[table_name].rows) == 2
 
 
 def test_delete():
-    db.tables[0].delete([db.tables[0].rows[0].index_in_file])
-    db.tables[0].get_rows()
-    assert len(db.tables[0].rows)
-    assert not db.tables[0].rows[0].next_index
-    db.tables[0].delete()
-    db.tables[0].get_rows()
-    assert not len(db.tables[0].rows)
+    db.tables[table_name].delete([db.tables[table_name].rows[0].index_in_file])
+    db.tables[table_name].get_rows()
+    assert len(db.tables[table_name].rows)
+    assert not db.tables[table_name].rows[0].next_index
+    db.tables[table_name].delete()
+    db.tables[table_name].get_rows()
+    assert not len(db.tables[table_name].rows)
 
 
 def test_update():
-    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
-    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 99
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
+    db.tables[table_name].get_rows()
+    assert db.tables[table_name].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
+    db.tables[table_name].update(["zhenya2"], ["lovetsov"], [db.tables[table_name].rows[0]])
+    db.tables[table_name].get_rows()
+    assert db.tables[table_name].rows[0].fields_values_dict["zhenya1"] == 99
+    assert db.tables[table_name].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
 
 
 def test_select():
-    db.tables[0].insert(["zhenya1", "zhenya2"], [218, "vadik_vadik"])
-    db.tables[0].get_rows()
-    result_rows_1 = db.tables[0].select(db.tables[0].fields, db.tables[0].rows)
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [218, "vadik_vadik"])
+    db.tables[table_name].get_rows()
+    result_rows_1 = db.tables[table_name].select(db.tables[table_name].fields, db.tables[table_name].rows)
     assert len(result_rows_1) == 2
-    result_rows_2 = db.tables[0].select(["zhenya1"], [db.tables[0].rows[1]])
+    result_rows_2 = db.tables[table_name].select(["zhenya1"], [db.tables[table_name].rows[1]])
     assert len(result_rows_2) == 1
     assert result_rows_2[0].fields_values_dict["zhenya1"] == 218
 
 
 def test_transaction():
-    db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
-    db.tables[0].update(["zhenya1"], [98], [db.tables[0].rows[0]])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
-    db.tables[0].delete([db.tables[0].rows[-1].index_in_file])
-    db.tables[0].get_rows()
-    assert len(db.tables[0].rows) == 2
-    db.tables[0].end_transaction()
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
-    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 98
-    assert len(db.tables[0].rows) == 3
+    db.tables[table_name].start_transaction()
+    db.tables[table_name].update(["zhenya2"], ["lovetsov"], [db.tables[table_name].rows[0]])
+    db.tables[table_name].update(["zhenya1"], [98], [db.tables[table_name].rows[0]])
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
+    db.tables[table_name].delete([db.tables[table_name].rows[-1].index_in_file])
+    db.tables[table_name].get_rows()
+    assert len(db.tables[table_name].rows) == 2
+    db.tables[table_name].end_transaction()
+    db.tables[table_name].get_rows()
+    assert db.tables[table_name].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
+    assert db.tables[table_name].rows[0].fields_values_dict["zhenya1"] == 98
+    assert len(db.tables[table_name].rows) == 3
 
 
 def test_rollback():
-    db.tables[0].start_transaction()
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
-    db.tables[0].end_transaction(True)
-    db.tables[0].get_rows()
-    assert len(db.tables[0].rows) == 4
-    db.tables[0].rollback_transaction()
-    db.tables[0].get_rows()
-    assert len(db.tables[0].rows) == 3
+    db.tables[table_name].start_transaction()
+    db.tables[table_name].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
+    db.tables[table_name].end_transaction(True)
+    db.tables[table_name].get_rows()
+    assert len(db.tables[table_name].rows) == 4
+    db.tables[table_name].rollback_transaction()
+    db.tables[table_name].get_rows()
+    assert len(db.tables[table_name].rows) == 3
     os.remove("journal.log")
