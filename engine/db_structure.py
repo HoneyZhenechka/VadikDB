@@ -24,8 +24,11 @@ class Database:
         return False
 
     def db_wide_rollback(self):
-        rollback_obj = RollbackLog()
+        rollback_obj = RollbackLog(None, self.file)
         rollback_obj.open_file()
+        journal_file_size = rollback_obj.file.read_integer(0, 16)
+        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
+            os.truncate("zhavoronkov.vdb", journal_file_size)
         rollback_obj.get_blocks()
         rollback_obj.restore_blocks()
 
@@ -559,12 +562,13 @@ class Transaction:
 
 
 class RollbackLog:
-    def __init__(self, table: Table):
+    def __init__(self, table: Table = None, db_file: bin_py.BinFile = None):
         self.file = bin_py.BinFile("journal.log")
         self.table = table
         self.blocks = []
         self.first_rollback_index = 16
         self.block_count = 0
+        self.db_file = db_file
         self.block_size = 12 + 512 * self.table.row_length
 
     def check_original_indexes(self, index):
@@ -603,8 +607,12 @@ class RollbackLog:
             self.blocks.append(current_block)
 
     def restore_blocks(self):
+        if self.db_file is not None:
+            file = self.db_file
+        else:
+            file = self.table.file
         for block in self.blocks:
-            self.table.file.write_integer(block.block_int, block.original_index, self.block_size)
+            file.write_integer(block.block_int, block.original_index, self.block_size)
 
 
 class RollbackBlock:
