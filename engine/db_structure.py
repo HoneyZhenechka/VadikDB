@@ -4,12 +4,17 @@ import os
 
 
 class Database:
-    def __init__(self):
+    def __init__(self, create_default_file=True):
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
-        self.file = bin_py.BinFile("zhavoronkov.vdb")
-        self.file.open("w+")
+        self.file = None
+        if create_default_file:
+            self.file = bin_py.BinFile("zhavoronkov.vdb")
+            self.file.open("w+")
+            self.write_file()
+            self.write_table_count(self.tables_count)
+            self.file.close()
 
     def write_file(self):
         signature_len = 13
@@ -34,10 +39,19 @@ class Database:
             table_obj.read_file()
             self.tables.append(table_obj)
 
-    def create_table(self, table_name, tables_count, fields, recreate_file=False):
-        if recreate_file or not self.file.is_file_exist():
-            self.file.open("w+")
-            self.file.close()
+    def connect_to_db(self, file: bin_py.BinFile = None):
+        if (file is not None) and not (file.is_file_exist()):
+            raise exception.DBFileNotExists()
+        else:
+            self.file = file
+        self.file.open("r+")
+        signature_len = self.file.read_integer(0, 1)
+        signature_str = self.file.read_str(1, signature_len)
+        if signature_str != self.signature:
+            raise exception.WrongSignature()
+        self.read_file()
+
+    def create_table(self, table_name, tables_count, fields):
         self.file.open("r+")
         self.file.seek(0, 2)
         new_table = Table(self.file)
