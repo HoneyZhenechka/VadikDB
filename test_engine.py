@@ -103,3 +103,15 @@ def test_transaction():
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
     assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 98
     assert len(db.tables[0].rows) == 3
+
+
+def test_rollback():
+    db.tables[0].start_transaction()
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
+    db.tables[0].end_transaction(True)
+    db.tables[0].get_rows()
+    assert len(db.tables[0].rows) == 4
+    db.tables[0].rollback_transaction()
+    db.tables[0].get_rows()
+    assert len(db.tables[0].rows) == 3
+    os.remove("journal.log")

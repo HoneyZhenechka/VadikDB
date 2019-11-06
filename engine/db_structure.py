@@ -83,17 +83,26 @@ class Table:
         return (self.name, self.fields, self.fields_count, self.types, self.positions, self.row_length) == \
                (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
 
+    def __iter_blocks(self):
+        current_index = self.first_block_index
+        while current_index != 0:
+            current_block = Block(current_index, self)
+            current_block.read_file()
+            current_index = current_block.next_block
+            yield current_block
+
     def start_transaction(self):
         self.is_transaction = True
         self.transaction_obj = Transaction(self)
         self.transaction_obj.rollback_journal.create_file()
 
-    def end_transaction(self):
+    def end_transaction(self, is_rollback=False):
         self.transaction_obj.commit()
         self.transaction_obj.rollback_journal.file.close()
         self.transaction_obj = None
         self.is_transaction = False
-        os.remove("journal.log")
+        if not is_rollback:
+            os.remove("journal.log")
 
     def rollback_transaction(self):
         rollback_obj = Transaction(self)
@@ -119,12 +128,8 @@ class Table:
 
     def get_blocks(self):
         blocks = []
-        block_index = self.first_block_index
-        while block_index != 0:
-            current_block = Block(block_index, self)
-            current_block.read_file()
-            block_index = current_block.next_block
-            blocks.append(current_block)
+        for block in self.__iter_blocks():
+            blocks.append(block)
         return blocks
 
     def get_write_position(self):
@@ -139,6 +144,14 @@ class Table:
             if self.is_transaction:
                 self.current_block_index = new_block.index_in_file
             return new_block.get_write_position(), new_block
+
+    def get_block_index_for_row(self, row):
+        if len(self.get_blocks()):
+            return self.first_block_index
+        else:
+            for block in self.get_blocks():
+                if block.next_block > row.index_in_file > block.previous_block:
+                    return block.index_in_file
 
     def write_meta_info(self):
         self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
@@ -195,27 +208,27 @@ class Table:
         result_string += "--------------------------------------------------------"
         return result_string
 
+    def __delete_row_and_add_block(self, row):
+        if self.is_transaction:
+            command = DBMethod(self.__delete_row, row)
+            self.transaction_obj.append(command)
+            self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
+        if not self.is_transaction:
+            self.__delete_row(row)
+
     def delete(self, rows_indexes=[]):
         if not len(rows_indexes):
             row_index = self.first_row_index
             while row_index != 0:
                 current_row = Row(self, row_index)
                 current_row.read_info()
-                if self.is_transaction:
-                    command = DBMethod(self.__delete_row, current_row)
-                    self.transaction_obj.append(command)
-                if not self.is_transaction:
-                    self.__delete_row(current_row)
+                self.__delete_row_and_add_block(current_row)
                 row_index = current_row.next_index
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
                 current_row.read_info()
-                if self.is_transaction:
-                    command = DBMethod(self.__delete_row, current_row)
-                    self.transaction_obj.append(command)
-                if not self.is_transaction:
-                    self.__delete_row(current_row)
+                self.__delete_row_and_add_block(current_row)
 
     def select(self, fields, rows):
         selected_rows = []
@@ -231,6 +244,7 @@ class Table:
                 self.transaction_obj.append(first_update_command)
                 second_update_command = DBMethod(row.update_row, fields, values)
                 self.transaction_obj.append(second_update_command)
+                self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
             else:
                 row.select_row(fields)
                 row.update_row(fields, values)
@@ -246,10 +260,6 @@ class Table:
         position = self.get_free_row()
         if self.is_transaction:
             self.transaction_obj.rollback_journal.add_block(self.current_block_index)
-            if (len(self.transaction_obj.rollback_journal.blocks) > 1) and \
-                    (self.transaction_obj.rollback_journal.check_rollback_indexes(self.current_block_index)):
-                del self.transaction_obj.rollback_journal.blocks[-1]
-                self.transaction_obj.rollback_journal.block_count -= 1
         if insert_index == -1:
             insert_index = self.last_row_index
         saved_next_index = 0
@@ -511,6 +521,7 @@ class Transaction:
         self.commands = []
 
     def rollback(self):
+        self.rollback_journal.open_file()
         journal_file_size = self.rollback_journal.file.read_integer(0, 16)
         if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
             os.truncate("zhavoronkov.vdb", journal_file_size)
@@ -527,7 +538,7 @@ class RollbackLog:
         self.block_count = 0
         self.block_size = 12 + 512 * self.table.row_length
 
-    def check_rollback_indexes(self, index):
+    def check_original_indexes(self, index):
         for block in self.blocks:
             if block.original_index == index:
                 return True
@@ -537,7 +548,12 @@ class RollbackLog:
         self.file.open("w+")
         self.file.write_integer(os.stat("zhavoronkov.vdb").st_size, 0, 16)
 
+    def open_file(self):
+        self.file.open("r+")
+
     def add_block(self, block_index):
+        if self.check_original_indexes(block_index):
+            return
         block_num = self.table.file.read_integer(block_index, self.block_size)
         new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 6)
         self.block_count += 1
