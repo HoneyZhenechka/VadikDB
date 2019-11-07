@@ -13,7 +13,7 @@ def test_binfile():
     test_file.write_bool(False, 1)
     test_file.write_str("vadik", 2, 32)
     result_int = test_file.read_integer(0, 1)
-    result_bool = test_file.read_bool()
+    result_bool = test_file.read_bool(1)
     result_str = test_file.read_str(2, 32)
     test_file.close()
     os.remove("test.bin")
