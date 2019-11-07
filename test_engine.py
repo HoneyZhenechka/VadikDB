@@ -114,4 +114,3 @@ def test_rollback():
     db.tables[0].rollback_transaction()
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 3
-    os.remove("journal.log")

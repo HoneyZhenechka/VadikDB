@@ -564,6 +564,8 @@ class Transaction:
             os.truncate("zhavoronkov.vdb", journal_file_size)
         self.rollback_journal.get_blocks()
         self.rollback_journal.restore_blocks()
+        self.rollback_journal.close_file()
+        os.remove("journal.log")
 
 
 class RollbackLog:
@@ -589,6 +591,9 @@ class RollbackLog:
 
     def open_file(self):
         self.file.open("r+")
+
+    def close_file(self):
+        self.file.close()
 
     def add_block(self, block_index):
         if self.check_original_indexes(block_index):
