@@ -108,9 +108,11 @@ def test_transaction():
 def test_rollback():
     db.tables[0].start_transaction()
     db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"])
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssttttt_string_321"])
     db.tables[0].end_transaction(True)
     db.tables[0].get_rows()
-    assert len(db.tables[0].rows) == 4
+    assert len(db.tables[0].rows) == 6
     db.tables[0].rollback_transaction()
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 3

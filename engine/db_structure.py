@@ -31,6 +31,8 @@ class Database:
             os.truncate("zhavoronkov.vdb", journal_file_size)
         rollback_obj.get_blocks()
         rollback_obj.restore_blocks()
+        rollback_obj.close_file()
+        os.remove("journal.log")
 
     def write_file(self):
         signature_len = 13
