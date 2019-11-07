@@ -24,7 +24,7 @@ class Database:
         return False
 
     def db_wide_rollback(self):
-        rollback_obj = RollbackLog(None, self.file)
+        rollback_obj = RollbackLog(self.file, 0)
         rollback_obj.open_file()
         journal_file_size = rollback_obj.file.read_integer(0, 16)
         if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
@@ -55,11 +55,11 @@ class Database:
             table_obj.read_file()
             self.tables.append(table_obj)
 
-    def connect_to_db(self, file: bin_py.BinFile = None):
-        if (file is not None) and not (file.is_file_exist()):
+    def connect_to_db(self, filename):
+        file = bin_py.BinFile(filename)
+        if not file.is_file_exist():
             raise exception.DBFileNotExists()
-        else:
-            self.file = file
+        self.file = file
         self.file.open("r+")
         signature_len = self.file.read_integer(0, 1)
         signature_str = self.file.read_str(1, signature_len)
@@ -83,6 +83,11 @@ class Database:
         table_index = self.tables.index(new_table)
         self.tables[table_index].create_block()
         return self.tables[table_index]
+
+    def close_db(self):
+        self.file.close()
+        del self
+
 
 
 class Table:
@@ -535,7 +540,7 @@ class Transaction:
     def __init__(self, table: Table):
         self.commands = []
         self.table = table
-        self.rollback_journal = RollbackLog(self.table)
+        self.rollback_journal = RollbackLog(self.table.file, self.table.row_length)
 
     def remove(self, command):
         self.commands.remove(command)
@@ -562,14 +567,15 @@ class Transaction:
 
 
 class RollbackLog:
-    def __init__(self, table: Table = None, db_file: bin_py.BinFile = None):
+    def __init__(self, db_file: bin_py.BinFile, row_length=0):
         self.file = bin_py.BinFile("journal.log")
-        self.table = table
         self.blocks = []
         self.first_rollback_index = 16
         self.block_count = 0
         self.db_file = db_file
-        self.block_size = 12 + 512 * self.table.row_length
+        self.block_size = 0
+        if row_length:
+            self.block_size = 12 + 512 * row_length
 
     def check_original_indexes(self, index):
         for block in self.blocks:
@@ -587,48 +593,48 @@ class RollbackLog:
     def add_block(self, block_index):
         if self.check_original_indexes(block_index):
             return
-        block_num = self.table.file.read_integer(block_index, self.block_size)
-        new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 6)
+        block_num = self.db_file.read_integer(block_index, self.block_size)
+        new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 9)
         self.block_count += 1
         if len(self.blocks):
             self.blocks[-1].next_index = new_rollback_index
             self.blocks[-1].write_block(self.file)
-        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
+        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index, self.block_size)
         new_block.write_block(self.file)
         self.blocks.append(new_block)
 
     def get_blocks(self):
         current_index = self.first_rollback_index
         while current_index != 0:
-            current_block = RollbackBlock(current_index, self.block_size, 0, 0)
+            current_block = RollbackBlock(current_index, self.block_size, 0, 0, 0)
             current_block.index_in_file = current_index
             current_block.read_block(self.file)
             current_index = current_block.next_index
             self.blocks.append(current_block)
 
     def restore_blocks(self):
-        if self.db_file is not None:
-            file = self.db_file
-        else:
-            file = self.table.file
         for block in self.blocks:
-            file.write_integer(block.block_int, block.original_index, self.block_size)
+            self.db_file.write_integer(block.block_int, block.original_index, self.block_size)
 
 
 class RollbackBlock:
-    def __init__(self, rollback_index, size, block_int, original_index):
+    def __init__(self, rollback_index, size, block_int, original_index, block_size):
         self.block_size = size
         self.block_int = block_int
         self.index_in_file = rollback_index
         self.next_index = 0
         self.original_index = original_index
+        self.block_size = block_size
 
     def write_block(self, file: bin_py.BinFile):
-        file.write_integer(self.block_int, self.index_in_file, self.block_size)
-        file.write_integer(self.next_index, self.index_in_file + self.block_size, 3)
-        file.write_integer(self.original_index, self.index_in_file + self.block_size + 3, 3)
+        if self.block_size:
+            file.write_integer(self.block_size, self.index_in_file, 3)
+            file.write_integer(self.block_int, self.index_in_file + 3, self.block_size)
+            file.write_integer(self.next_index, self.index_in_file + 3 + self.block_size, 3)
+            file.write_integer(self.original_index, self.index_in_file + self.block_size + 6, 3)
 
     def read_block(self, file: bin_py.BinFile):
-        self.block_int = file.read_integer(self.index_in_file, self.block_size)
-        self.next_index = file.read_integer(self.index_in_file + self.block_size, 3)
-        self.original_index = file.read_integer(self.index_in_file + self.block_size + 3, 3)
+        self.block_size = file.read_integer(self.index_in_file, 3)
+        self.block_int = file.read_integer(self.index_in_file + 3, self.block_size)
+        self.next_index = file.read_integer(self.index_in_file + 3 + self.block_size, 3)
+        self.original_index = file.read_integer(self.index_in_file + self.block_size + 6, 3)
