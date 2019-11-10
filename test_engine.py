@@ -105,6 +105,16 @@ def test_transaction():
     assert len(db.tables[0].rows) == 3
 
 
+def test_read_commited():
+    db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], ["anime"], [db.tables[0].rows[0]])
+    result_rows = db.tables[0].select(["zhenya2"], db.tables[0].rows)
+    result_value = result_rows[0].fields_values_dict["zhenya2"]
+    db.tables[0].end_transaction()
+    assert result_value == "lovetsov"
+    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "anime"
+
+
 def test_rollback():
     db.tables[0].start_transaction()
     db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
