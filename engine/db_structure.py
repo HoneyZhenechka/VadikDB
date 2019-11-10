@@ -91,7 +91,6 @@ class Database:
         del self
 
 
-
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
@@ -269,12 +268,19 @@ class Table:
                 current_row.read_info()
                 self.__delete_row_and_add_block(current_row)
 
-    def select(self, fields, rows):
+    def __select_rows(self, fields, rows):
         selected_rows = []
         for row in rows:
             row.select_row(fields)
             selected_rows.append(row)
         return selected_rows
+
+    def select(self, fields, rows):
+        if self.is_transaction:
+            method = DBMethod(self.__select_rows, fields, rows)
+            return self.transaction_obj.append(method)
+        else:
+            return self.__select_rows(fields, rows)
 
     def update(self, fields, values, rows):
         for row in rows:
@@ -548,7 +554,10 @@ class Transaction:
         self.commands.remove(command)
 
     def append(self, command):
-        self.commands.append(command)
+        if command.method.__name__ == "__select_rows":
+            return command()
+        else:
+            self.commands.append(command)
 
     def __iter__(self):
         for command in self.commands:
