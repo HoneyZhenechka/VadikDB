@@ -49,6 +49,19 @@ class BinFile:
         bool_bytes = bytes(self.__file.read(1))
         return struct.unpack("<?", bool_bytes)[0]
 
+    def write_float(self, float_num, start_pos):
+        if start_pos >= 0:
+            self.seek(start_pos, 0)
+        float_bytes = struct.pack("<d", float_num)
+        self.__file.write(float_bytes)
+
+    def read_float(self, start_pos):
+        if start_pos >= 0:
+            self.seek(start_pos, 0)
+        float_bytes = bytes(self.__file.read(8))
+        result = struct.unpack("<d", float_bytes)[0]
+        return result
+
     def write_str(self, string, start_pos, count_bytes):
         if start_pos >= 0:
             self.seek(start_pos, 0)
@@ -69,6 +82,8 @@ class BinFile:
             self.write_bool(value, start_pos)
         if value_type == "str":
             self.write_str(value, start_pos, count_bytes)
+        if value_type == "float":
+            self.write_float(value, start_pos)
 
     def read_by_type(self, value_type, start_pos, count_bytes):
         if value_type == "int":
@@ -77,3 +92,5 @@ class BinFile:
             return self.read_bool(start_pos)
         if value_type == "str":
             return self.read_str(start_pos, count_bytes)
+        if value_type == "float":
+            return self.read_float(start_pos)

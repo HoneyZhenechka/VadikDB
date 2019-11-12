@@ -111,7 +111,8 @@ class Table:
         self.fields_count = 0
         self.row_count = 0
         self.types = []
-        self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "str": Type("str", 256)}
+        self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "float": Type("float", 8),
+                           "str": Type("str", 256)}
         self.positions = {"row_id": 1}
         self.is_transaction = False
         self.transaction_obj = None
