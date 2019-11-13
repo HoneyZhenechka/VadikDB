@@ -23,6 +23,12 @@ class Database:
             return True
         return False
 
+    def __update_table_metadata(self, table):
+        table.last_block_index = table.get_blocks()[-1].index_in_file
+        table.last_row_index = table.get_rows(False)[-1].index_in_file
+        table.row_count = len(table.get_rows(False))
+        table.write_meta_info()
+
     def db_wide_rollback(self):
         rollback_obj = RollbackLog(self.file, 0)
         rollback_obj.open_file()
@@ -33,6 +39,9 @@ class Database:
         rollback_obj.restore_blocks()
         rollback_obj.close_file()
         os.remove("journal.log")
+        self.read_file()
+        for table in self.tables:
+            self.__update_table_metadata(table)
 
     def write_file(self):
         signature_len = 13
@@ -129,7 +138,7 @@ class Table:
             current_block.read_file()
             current_index = current_block.next_block
             yield current_block
-
+            
     def start_transaction(self):
         self.is_transaction = True
         self.transaction_obj = Transaction(self)
