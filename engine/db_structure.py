@@ -338,11 +338,13 @@ class Table:
             row_index = current_row.next_index
             yield current_row
 
-    def get_rows(self):
+    def get_rows(self, check=True):
         new_rows_list = []
         for row in self.__iter_rows():
             new_rows_list.append(row)
-        self.rows = new_rows_list
+        if check:
+            self.rows = new_rows_list
+        return new_rows_list
 
     def __delete_row(self, row):
         if row.index_in_file == self.first_row_index:
@@ -567,6 +569,10 @@ class Transaction:
         self.rollback_journal.get_blocks()
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
+        self.table.last_block_index = self.table.get_blocks()[-1].index_in_file
+        self.table.last_row_index = self.table.get_rows(False)[-1].index_in_file
+        self.table.row_count = len(self.table.get_rows(False))
+        self.table.write_meta_info()
         os.remove("journal.log")
 
 
