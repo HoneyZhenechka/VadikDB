@@ -91,7 +91,6 @@ class Database:
         del self
 
 
-
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
@@ -156,7 +155,7 @@ class Table:
             self.first_block_index = block_index
             self.write_meta_info()
         else:
-            last_block = self.last_block_index
+            last_block = Block(self.last_block_index, self)
             last_block.next_block = block_index
             last_block.update_file()
             previous_index = last_block.index_in_file
@@ -607,15 +606,14 @@ class RollbackLog:
         if len(self.blocks):
             self.blocks[-1].next_index = new_rollback_index
             self.blocks[-1].write_block(self.file)
-        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index, self.block_size)
+        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
         new_block.write_block(self.file)
         self.blocks.append(new_block)
 
     def get_blocks(self):
         current_index = self.first_rollback_index
         while current_index != 0:
-            current_block = RollbackBlock(current_index, self.block_size, 0, 0, 0)
-            current_block.index_in_file = current_index
+            current_block = RollbackBlock(current_index, 0, 0, 0)
             current_block.read_block(self.file)
             current_index = current_block.next_index
             self.blocks.append(current_block)
@@ -626,13 +624,12 @@ class RollbackLog:
 
 
 class RollbackBlock:
-    def __init__(self, rollback_index, size, block_int, original_index, block_size):
+    def __init__(self, rollback_index, size, block_int, original_index):
         self.block_size = size
         self.block_int = block_int
         self.index_in_file = rollback_index
         self.next_index = 0
         self.original_index = original_index
-        self.block_size = block_size
 
     def write_block(self, file: bin_py.BinFile):
         if self.block_size:
