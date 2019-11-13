@@ -97,7 +97,9 @@ class Database:
 
     def close_db(self):
         self.file.close()
-        del self
+        self.file = None
+        self.tables_count = 0
+        self.tables = []
 
 
 class Table:
@@ -635,7 +637,7 @@ class RollbackLog:
 
     def restore_blocks(self):
         for block in self.blocks:
-            self.db_file.write_integer(block.block_int, block.original_index, self.block_size)
+            self.db_file.write_integer(block.block_int, block.original_index, block.block_size)
 
 
 class RollbackBlock:

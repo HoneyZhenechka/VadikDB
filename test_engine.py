@@ -132,3 +132,12 @@ def test_rollback():
     db.tables[0].rollback_transaction()
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 3
+
+
+def test_wide_rollback():
+    db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], ["xxx"], [db.tables[0].rows[0]])
+    db.tables[0].end_transaction(True)
+    db.db_wide_rollback()
+    db.tables[0].get_rows()
+    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "anime"
