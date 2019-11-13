@@ -8,6 +8,7 @@ class Database:
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
+        self.is_connected = False
         self.file = None
         if create_default_file:
             self.file = bin_py.BinFile("zhavoronkov.vdb")
@@ -17,6 +18,7 @@ class Database:
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
+            self.is_connected = True
 
     def __check_journal(self):
         if os.path.isfile("journal.log"):
@@ -24,15 +26,9 @@ class Database:
         return False
 
     def db_wide_rollback(self):
-        rollback_obj = RollbackLog(self.file, 0)
-        rollback_obj.open_file()
-        journal_file_size = rollback_obj.file.read_integer(0, 16)
-        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
-            os.truncate("zhavoronkov.vdb", journal_file_size)
-        rollback_obj.get_blocks()
-        rollback_obj.restore_blocks()
-        rollback_obj.close_file()
-        os.remove("journal.log")
+        if self.is_connected:
+            for table in self.tables:
+                table.rollback_transaction()
 
     def write_file(self):
         signature_len = 13
@@ -68,8 +64,7 @@ class Database:
         if signature_str != self.signature:
             raise exception.WrongSignature()
         self.read_file()
-        if self.__check_journal():
-            self.db_wide_rollback()
+        self.is_connected = True
 
     def create_table(self, table_name, tables_count, fields):
         self.file.open("r+")
