@@ -8,6 +8,9 @@ from pythonds.trees.binaryTree import BinaryTree
 def build_parse_tree(list):
     stack = Stack()
     tree = BinaryTree('')
+    if len(list) == 1:
+        tree.setRootVal(list[0])
+        return tree
     stack.push(tree)
     for i in range(len(list)):
         if (list[i] == '(') or (i == 0):
@@ -164,7 +167,7 @@ def p_start(p):
              | update
              | delete'''
 
-    print(1)
+
     p[0] = p[1]
 
 
@@ -342,7 +345,7 @@ def p_type(p):
 
 def p_error(p):
     try:
-        raise exception.IncorrectSyntax(p.lexpos)
+        raise exception.IncorrectSyntax(p.lexpos, p.value)
     except Exception as ex:
         print(ex)
 

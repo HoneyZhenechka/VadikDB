@@ -51,7 +51,7 @@ class preprocessor:
             value = self.solve_polynomial(root.getLeftChild()) / self.solve_polynomial(root.getRightChild())
         else:
             try:
-                value = float(root.getRootVal())
+                value = int(root.getRootVal())
             except:
                 pass
         return value
@@ -236,9 +236,7 @@ class preprocessor:
             self.db.tables[table_index].update(fields, temp_correct_values[1], rows)
 
     def delete(self, name, condition):
-        print(condition)
         condition = self.build_condition(condition)
-        print(condition)
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -250,11 +248,10 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            print(1)
-            #table_index = self.get_table_index(name)
-            #self.db.tables[table_index].get_rows()
-            #rows_indices = []
-            #for index_row in range(len(self.db.tables[table_index].rows)):
-               # if self.db.tables[table_index].rows[index_row].fields_values_dict[condition[0]] == condition[1]:
-                   # rows_indices.append(index_row)
-            #self.db.tables[table_index].delete(rows_indices)
+            table_index = self.get_table_index(name)
+            self.db.tables[table_index].get_rows()
+            rows_indices = []
+            for index_row in range(len(self.db.tables[table_index].rows)):
+                if self.db.tables[table_index].rows[index_row].fields_values_dict[condition[0]] == condition[1]:
+                    rows_indices.append(self.db.tables[table_index].rows[index_row].index_in_file)
+            self.db.tables[table_index].delete(rows_indices)
