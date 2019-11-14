@@ -1,7 +1,72 @@
 from SQL_parser.SQL_lexer import tokens
 import exception
 import ply.yacc as yacc
+from pythonds.basic.stack import Stack
+from pythonds.trees.binaryTree import BinaryTree
 
+
+def build_parse_tree(list):
+    stack = Stack()
+    tree = BinaryTree('')
+    stack.push(tree)
+    for i in range(len(list)):
+        if (list[i] == '(') or (i == 0):
+            tree.insertLeft('')
+            if list[i] == '(':
+                stack.push("(")
+            stack.push(tree)
+            tree = tree.getLeftChild()
+            if list[i] != '(':
+                tree.setRootVal(list[i])
+                parent = stack.pop()
+                tree = parent
+        elif list[i] not in ['+', '-', '*', '/', ')']:
+            tree.setRootVal(list[i])
+            parent = stack.pop()
+            tree = parent
+        elif list[i] in ['+', '-', '*', '/']:
+            sign = list[i]
+            if tree.getRootVal() in ['+', '-', '*', '/']:
+                if sign in ['+', '-'] or list[i - 1] == ')':
+                    temp = BinaryTree('')
+                    parent = stack.pop()
+                    if stack.size() == 0:
+                        temp.insertLeft(parent)
+                        parent = temp
+                        tree = parent
+                        stack.push(parent)
+                    elif parent == "(":
+                        temp.insertLeft(tree)
+                        parent = stack.pop()
+                        parent.insertRight(temp)
+                        stack.push(parent)
+                        stack.push("(")
+                        tree = parent.getRightChild()
+                    else:
+                        temp.insertLeft(tree)
+                        parent.insertRight(temp)
+                        stack.push(parent)
+                        tree = parent.getRightChild()
+                elif sign in ['*', '/']:
+                    rChild = tree.getRightChild()
+                    rChild.insertLeft(rChild.getRootVal())
+                    tree = rChild
+            tree.setRootVal(list[i])
+            tree.insertRight('')
+            stack.push(tree)
+            tree = tree.getRightChild()
+        elif list[i] == ')':
+            parent = ""
+            while parent != "(":
+                parent = stack.pop()
+                if parent == "(":
+                    tree = stack.pop()
+            stack.push(tree)
+        if i + 1 == len(list):
+            for j in range(stack.size()):
+                parent = stack.pop()
+                tree = parent
+    return tree
 
 class Struct:
 
@@ -99,6 +164,7 @@ def p_start(p):
              | update
              | delete'''
 
+    print(1)
     p[0] = p[1]
 
 
@@ -193,8 +259,8 @@ def p_update_body(p):
 
 
 def p_expression(p):
-    '''expression : field operator field
-                  | expression COMMA field operator field'''
+    '''expression : field EQUAL field
+                  | expression COMMA field EQUAL field'''
 
     if len(p) == 4:
         p[0] = [[],[]]
@@ -209,7 +275,6 @@ def p_expression(p):
 def p_delete(p):
     '''delete : DELETE FROM NAME ENDREQUEST
               | DELETE FROM NAME condition ENDREQUEST'''
-
     if len(p) == 5:
         p[0] = PDelete(p[3])
     else:
@@ -235,24 +300,44 @@ def p_field(p):
 
 
 def p_operator(p):
-    '''operator : EQUAL'''
+    '''operator : PLUS
+                | MINUS
+                | STAR
+                | DIVISION'''
 
     p[0] = p[1]
 
-def p_condition(p):
-    '''condition : WHERE field operator field'''
 
-    p[0] = [p[2], p[4]]
+def p_condition(p):
+    '''condition : WHERE field EQUAL tree'''
+
+    p[0] = [p[2], build_parse_tree(p[4])]
+
+
+def p_tree(p):
+    '''tree : field
+            | field operator tree
+            | operator tree
+            | LBRACKET tree RBRACKET
+            | tree operator tree'''
+
+    p[0] = []
+    for i in range(len(p) - 1):
+        if type(p[i+1]) is str:
+            p[0].append(p[i+1])
+        else:
+            for el in p[i+1]:
+                p[0].append(el)
 
 
 def p_type(p):
     '''type : int
             | str
             | bol
-            | bool'''
+            | bool
+            | float'''
 
     p[0] = p[1]
-
 
 
 def p_error(p):

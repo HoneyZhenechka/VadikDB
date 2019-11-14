@@ -27,3 +27,7 @@ class Logic:
                 self.pr.delete(tree.name, tree.condition)
         except:
             pass
+
+temp = Logic()
+print(temp.query("DELETE FrOM VAdIC WHERE id = 2.1 - 1;"))
+#print(pars.build_tree("DELETE FROM VADIC WHERE id = ((2 + 2) + 4 + (6 + (32 + 2882 + id)));").condition)

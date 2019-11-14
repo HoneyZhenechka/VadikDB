@@ -8,13 +8,13 @@ tokens = (
     'CREATE', 'SHOW', 'DROP', 'SELECT', 'INSERT', 'UPDATE', 'DELETE',
     'FROM', 'INTO', 'TABLE', 'WHERE', 'SET',
     'NAME', 'VALUES',
-    'int', 'str', 'bol', 'bool',
+    'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'ENDREQUEST',
+    'LBRACKET', 'COMMA', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
     'STAR'
 )
 
-ident = r'[a-z a-zA-Z0-9_ \- \+]\w*'
+ident = r'[a-z A-Z 0-9 \.]\w*'
 
 t_CREATE = r'CREATE'
 t_SHOW = r'SHOW'
@@ -36,7 +36,10 @@ t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
 t_COMMA = r','
 t_ENDREQUEST = r'\;'
+t_PLUS = r'\+'
+t_MINUS = r'\-'
 t_STAR = r'\*'
+t_DIVISION = r'\/'
 
 t_EQUAL = r'\=\=|\=|"IS"'
 
@@ -82,6 +85,17 @@ def t_NAME(t):
     elif (t.value.upper() == 'VALUES'):
         t.type = 'VALUES'
 
+    elif (t.value == '+'):
+        t.type = 'PLUS'
+
+    elif (t.value == '-'):
+        t.type = 'MINUS'
+
+    elif (t.value == '*'):
+        t.type = 'STAR'
+
+    elif (t.value == '/'):
+        t.type = 'DIVISION'
 
     elif (
             t.value.lower() == 'int' or
@@ -100,6 +114,10 @@ def t_NAME(t):
             t.value.lower() == 'string'
     ):
         t.type = 'str'
+    elif (
+        t .value.lower() == 'float'
+    ):
+        t.type = 'float'
 
     return t
 

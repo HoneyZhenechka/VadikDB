@@ -27,47 +27,60 @@ Rule 21    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fie
 Rule 22    update -> UPDATE update_body ENDREQUEST
 Rule 23    update_body -> NAME SET expression
 Rule 24    update_body -> NAME SET expression condition
-Rule 25    expression -> field operator field
-Rule 26    expression -> expression COMMA field operator field
+Rule 25    expression -> field EQUAL field
+Rule 26    expression -> expression COMMA field EQUAL field
 Rule 27    delete -> DELETE FROM NAME ENDREQUEST
 Rule 28    delete -> DELETE FROM NAME condition ENDREQUEST
 Rule 29    fields -> NAME
 Rule 30    fields -> fields COMMA NAME
 Rule 31    field -> NAME
-Rule 32    operator -> EQUAL
-Rule 33    condition -> WHERE field operator field
-Rule 34    type -> int
-Rule 35    type -> str
-Rule 36    type -> bol
-Rule 37    type -> bool
+Rule 32    operator -> PLUS
+Rule 33    operator -> MINUS
+Rule 34    operator -> STAR
+Rule 35    operator -> DIVISION
+Rule 36    condition -> WHERE field EQUAL tree
+Rule 37    tree -> field
+Rule 38    tree -> field operator tree
+Rule 39    tree -> operator tree
+Rule 40    tree -> LBRACKET tree RBRACKET
+Rule 41    tree -> tree operator tree
+Rule 42    type -> int
+Rule 43    type -> str
+Rule 44    type -> bol
+Rule 45    type -> bool
+Rule 46    type -> float
 
 Terminals, with rules where they appear
 
 COMMA                : 11 17 26 30
 CREATE               : 8 12
 DELETE               : 27 28
+DIVISION             : 35
 DROP                 : 13
 ENDREQUEST           : 8 12 13 14 15 19 22 27 28
-EQUAL                : 32
+EQUAL                : 25 26 36
 FROM                 : 16 17 18 27 28
 INSERT               : 19
 INTO                 : 20 21
-LBRACKET             : 9 20 21 21
+LBRACKET             : 9 20 21 21 40
+MINUS                : 33
 NAME                 : 9 10 11 12 13 16 17 18 20 21 23 24 27 28 29 30 31
-RBRACKET             : 9 20 21 21
+PLUS                 : 32
+RBRACKET             : 9 20 21 21 40
 SELECT               : 14 15
 SET                  : 23 24
 SHOW                 : 12
-STAR                 : 17 18
+STAR                 : 17 18 34
 TABLE                : 9 12 13
 UPDATE               : 22
 VALUES               : 20 21
-WHERE                : 33
-bol                  : 36
-bool                 : 37
+WHERE                : 36
+bol                  : 44
+bool                 : 45
 error                : 
-int                  : 34
-str                  : 35
+float                : 46
+int                  : 42
+str                  : 43
 
 Nonterminals, with rules where they appear
 
@@ -77,15 +90,16 @@ create_body          : 8
 delete               : 7
 drop                 : 3
 expression           : 23 24 26
-field                : 25 25 26 26 33 33
+field                : 25 25 26 26 36 37 38
 fields               : 16 17 20 21 21 30
 insert               : 5
 insert_body          : 19
-operator             : 25 26 33
+operator             : 38 39 41
 select               : 4
 select_body          : 14 15
 show                 : 2
 start                : 0
+tree                 : 36 38 39 40 41 41
 type                 : 10 11
 update               : 6
 update_body          : 22
@@ -284,7 +298,7 @@ state 20
 
     (14) select -> SELECT select_body . ENDREQUEST
     (15) select -> SELECT select_body . condition ENDREQUEST
-    (33) condition -> . WHERE field operator field
+    (36) condition -> . WHERE field EQUAL tree
 
     ENDREQUEST      shift and go to state 33
     WHERE           shift and go to state 35
@@ -400,7 +414,7 @@ state 34
 
 state 35
 
-    (33) condition -> WHERE . field operator field
+    (36) condition -> WHERE . field EQUAL tree
     (31) field -> . NAME
 
     NAME            shift and go to state 50
@@ -465,8 +479,8 @@ state 43
 
     (23) update_body -> NAME SET . expression
     (24) update_body -> NAME SET . expression condition
-    (25) expression -> . field operator field
-    (26) expression -> . expression COMMA field operator field
+    (25) expression -> . field EQUAL field
+    (26) expression -> . expression COMMA field EQUAL field
     (31) field -> . NAME
 
     NAME            shift and go to state 50
@@ -478,7 +492,7 @@ state 44
 
     (27) delete -> DELETE FROM NAME . ENDREQUEST
     (28) delete -> DELETE FROM NAME . condition ENDREQUEST
-    (33) condition -> . WHERE field operator field
+    (36) condition -> . WHERE field EQUAL tree
 
     ENDREQUEST      shift and go to state 59
     WHERE           shift and go to state 35
@@ -518,21 +532,24 @@ state 48
 
 state 49
 
-    (33) condition -> WHERE field . operator field
-    (32) operator -> . EQUAL
+    (36) condition -> WHERE field . EQUAL tree
 
-    EQUAL           shift and go to state 65
+    EQUAL           shift and go to state 64
 
-    operator                       shift and go to state 64
 
 state 50
 
     (31) field -> NAME .
 
     EQUAL           reduce using rule 31 (field -> NAME .)
+    PLUS            reduce using rule 31 (field -> NAME .)
+    MINUS           reduce using rule 31 (field -> NAME .)
+    STAR            reduce using rule 31 (field -> NAME .)
+    DIVISION        reduce using rule 31 (field -> NAME .)
     ENDREQUEST      reduce using rule 31 (field -> NAME .)
     COMMA           reduce using rule 31 (field -> NAME .)
     WHERE           reduce using rule 31 (field -> NAME .)
+    RBRACKET        reduce using rule 31 (field -> NAME .)
 
 
 state 51
@@ -557,7 +574,7 @@ state 53
     (17) select_body -> STAR COMMA fields . FROM NAME
     (30) fields -> fields . COMMA NAME
 
-    FROM            shift and go to state 66
+    FROM            shift and go to state 65
     COMMA           shift and go to state 37
 
 
@@ -573,7 +590,7 @@ state 55
 
     (20) insert_body -> INTO NAME VALUES . LBRACKET fields RBRACKET
 
-    LBRACKET        shift and go to state 67
+    LBRACKET        shift and go to state 66
 
 
 state 56
@@ -584,29 +601,27 @@ state 56
 
     NAME            shift and go to state 22
 
-    fields                         shift and go to state 68
+    fields                         shift and go to state 67
 
 state 57
 
     (23) update_body -> NAME SET expression .
     (24) update_body -> NAME SET expression . condition
-    (26) expression -> expression . COMMA field operator field
-    (33) condition -> . WHERE field operator field
+    (26) expression -> expression . COMMA field EQUAL field
+    (36) condition -> . WHERE field EQUAL tree
 
     ENDREQUEST      reduce using rule 23 (update_body -> NAME SET expression .)
-    COMMA           shift and go to state 70
+    COMMA           shift and go to state 69
     WHERE           shift and go to state 35
 
-    condition                      shift and go to state 69
+    condition                      shift and go to state 68
 
 state 58
 
-    (25) expression -> field . operator field
-    (32) operator -> . EQUAL
+    (25) expression -> field . EQUAL field
 
-    EQUAL           shift and go to state 65
+    EQUAL           shift and go to state 70
 
-    operator                       shift and go to state 71
 
 state 59
 
@@ -619,23 +634,25 @@ state 60
 
     (28) delete -> DELETE FROM NAME condition . ENDREQUEST
 
-    ENDREQUEST      shift and go to state 72
+    ENDREQUEST      shift and go to state 71
 
 
 state 61
 
     (10) values -> NAME . type
-    (34) type -> . int
-    (35) type -> . str
-    (36) type -> . bol
-    (37) type -> . bool
+    (42) type -> . int
+    (43) type -> . str
+    (44) type -> . bol
+    (45) type -> . bool
+    (46) type -> . float
 
-    int             shift and go to state 74
-    str             shift and go to state 75
-    bol             shift and go to state 76
-    bool            shift and go to state 77
+    int             shift and go to state 73
+    str             shift and go to state 74
+    bol             shift and go to state 75
+    bool            shift and go to state 76
+    float           shift and go to state 77
 
-    type                           shift and go to state 73
+    type                           shift and go to state 72
 
 state 62
 
@@ -655,28 +672,37 @@ state 63
 
 state 64
 
-    (33) condition -> WHERE field operator . field
+    (36) condition -> WHERE field EQUAL . tree
+    (37) tree -> . field
+    (38) tree -> . field operator tree
+    (39) tree -> . operator tree
+    (40) tree -> . LBRACKET tree RBRACKET
+    (41) tree -> . tree operator tree
     (31) field -> . NAME
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
 
+    LBRACKET        shift and go to state 83
     NAME            shift and go to state 50
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
 
     field                          shift and go to state 80
+    tree                           shift and go to state 81
+    operator                       shift and go to state 82
 
 state 65
 
-    (32) operator -> EQUAL .
+    (17) select_body -> STAR COMMA fields FROM . NAME
 
-    NAME            reduce using rule 32 (operator -> EQUAL .)
+    NAME            shift and go to state 88
 
 
 state 66
-
-    (17) select_body -> STAR COMMA fields FROM . NAME
-
-    NAME            shift and go to state 81
-
-
-state 67
 
     (20) insert_body -> INTO NAME VALUES LBRACKET . fields RBRACKET
     (29) fields -> . NAME
@@ -684,50 +710,50 @@ state 67
 
     NAME            shift and go to state 22
 
-    fields                         shift and go to state 82
+    fields                         shift and go to state 89
 
-state 68
+state 67
 
     (21) insert_body -> INTO NAME LBRACKET fields . RBRACKET VALUES LBRACKET fields RBRACKET
     (30) fields -> fields . COMMA NAME
 
-    RBRACKET        shift and go to state 83
+    RBRACKET        shift and go to state 90
     COMMA           shift and go to state 37
 
 
-state 69
+state 68
 
     (24) update_body -> NAME SET expression condition .
 
     ENDREQUEST      reduce using rule 24 (update_body -> NAME SET expression condition .)
 
 
+state 69
+
+    (26) expression -> expression COMMA . field EQUAL field
+    (31) field -> . NAME
+
+    NAME            shift and go to state 50
+
+    field                          shift and go to state 91
+
 state 70
 
-    (26) expression -> expression COMMA . field operator field
+    (25) expression -> field EQUAL . field
     (31) field -> . NAME
 
     NAME            shift and go to state 50
 
-    field                          shift and go to state 84
+    field                          shift and go to state 92
 
 state 71
-
-    (25) expression -> field operator . field
-    (31) field -> . NAME
-
-    NAME            shift and go to state 50
-
-    field                          shift and go to state 85
-
-state 72
 
     (28) delete -> DELETE FROM NAME condition ENDREQUEST .
 
     $end            reduce using rule 28 (delete -> DELETE FROM NAME condition ENDREQUEST .)
 
 
-state 73
+state 72
 
     (10) values -> NAME type .
 
@@ -735,36 +761,44 @@ state 73
     COMMA           reduce using rule 10 (values -> NAME type .)
 
 
+state 73
+
+    (42) type -> int .
+
+    RBRACKET        reduce using rule 42 (type -> int .)
+    COMMA           reduce using rule 42 (type -> int .)
+
+
 state 74
 
-    (34) type -> int .
+    (43) type -> str .
 
-    RBRACKET        reduce using rule 34 (type -> int .)
-    COMMA           reduce using rule 34 (type -> int .)
+    RBRACKET        reduce using rule 43 (type -> str .)
+    COMMA           reduce using rule 43 (type -> str .)
 
 
 state 75
 
-    (35) type -> str .
+    (44) type -> bol .
 
-    RBRACKET        reduce using rule 35 (type -> str .)
-    COMMA           reduce using rule 35 (type -> str .)
+    RBRACKET        reduce using rule 44 (type -> bol .)
+    COMMA           reduce using rule 44 (type -> bol .)
 
 
 state 76
 
-    (36) type -> bol .
+    (45) type -> bool .
 
-    RBRACKET        reduce using rule 36 (type -> bol .)
-    COMMA           reduce using rule 36 (type -> bol .)
+    RBRACKET        reduce using rule 45 (type -> bool .)
+    COMMA           reduce using rule 45 (type -> bool .)
 
 
 state 77
 
-    (37) type -> bool .
+    (46) type -> float .
 
-    RBRACKET        reduce using rule 37 (type -> bool .)
-    COMMA           reduce using rule 37 (type -> bool .)
+    RBRACKET        reduce using rule 46 (type -> float .)
+    COMMA           reduce using rule 46 (type -> float .)
 
 
 state 78
@@ -778,17 +812,152 @@ state 79
 
     (11) values -> values COMMA . NAME type
 
-    NAME            shift and go to state 86
+    NAME            shift and go to state 93
 
 
 state 80
 
-    (33) condition -> WHERE field operator field .
+    (37) tree -> field .
+    (38) tree -> field . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
 
-    ENDREQUEST      reduce using rule 33 (condition -> WHERE field operator field .)
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for DIVISION resolved as shift
+    ENDREQUEST      reduce using rule 37 (tree -> field .)
+    RBRACKET        reduce using rule 37 (tree -> field .)
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
 
+  ! PLUS            [ reduce using rule 37 (tree -> field .) ]
+  ! MINUS           [ reduce using rule 37 (tree -> field .) ]
+  ! STAR            [ reduce using rule 37 (tree -> field .) ]
+  ! DIVISION        [ reduce using rule 37 (tree -> field .) ]
+
+    operator                       shift and go to state 94
 
 state 81
+
+    (36) condition -> WHERE field EQUAL tree .
+    (41) tree -> tree . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    ENDREQUEST      reduce using rule 36 (condition -> WHERE field EQUAL tree .)
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    operator                       shift and go to state 95
+
+state 82
+
+    (39) tree -> operator . tree
+    (37) tree -> . field
+    (38) tree -> . field operator tree
+    (39) tree -> . operator tree
+    (40) tree -> . LBRACKET tree RBRACKET
+    (41) tree -> . tree operator tree
+    (31) field -> . NAME
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    LBRACKET        shift and go to state 83
+    NAME            shift and go to state 50
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    operator                       shift and go to state 82
+    tree                           shift and go to state 96
+    field                          shift and go to state 80
+
+state 83
+
+    (40) tree -> LBRACKET . tree RBRACKET
+    (37) tree -> . field
+    (38) tree -> . field operator tree
+    (39) tree -> . operator tree
+    (40) tree -> . LBRACKET tree RBRACKET
+    (41) tree -> . tree operator tree
+    (31) field -> . NAME
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    LBRACKET        shift and go to state 83
+    NAME            shift and go to state 50
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    tree                           shift and go to state 97
+    field                          shift and go to state 80
+    operator                       shift and go to state 82
+
+state 84
+
+    (32) operator -> PLUS .
+
+    LBRACKET        reduce using rule 32 (operator -> PLUS .)
+    NAME            reduce using rule 32 (operator -> PLUS .)
+    PLUS            reduce using rule 32 (operator -> PLUS .)
+    MINUS           reduce using rule 32 (operator -> PLUS .)
+    STAR            reduce using rule 32 (operator -> PLUS .)
+    DIVISION        reduce using rule 32 (operator -> PLUS .)
+
+
+state 85
+
+    (33) operator -> MINUS .
+
+    LBRACKET        reduce using rule 33 (operator -> MINUS .)
+    NAME            reduce using rule 33 (operator -> MINUS .)
+    PLUS            reduce using rule 33 (operator -> MINUS .)
+    MINUS           reduce using rule 33 (operator -> MINUS .)
+    STAR            reduce using rule 33 (operator -> MINUS .)
+    DIVISION        reduce using rule 33 (operator -> MINUS .)
+
+
+state 86
+
+    (34) operator -> STAR .
+
+    LBRACKET        reduce using rule 34 (operator -> STAR .)
+    NAME            reduce using rule 34 (operator -> STAR .)
+    PLUS            reduce using rule 34 (operator -> STAR .)
+    MINUS           reduce using rule 34 (operator -> STAR .)
+    STAR            reduce using rule 34 (operator -> STAR .)
+    DIVISION        reduce using rule 34 (operator -> STAR .)
+
+
+state 87
+
+    (35) operator -> DIVISION .
+
+    LBRACKET        reduce using rule 35 (operator -> DIVISION .)
+    NAME            reduce using rule 35 (operator -> DIVISION .)
+    PLUS            reduce using rule 35 (operator -> DIVISION .)
+    MINUS           reduce using rule 35 (operator -> DIVISION .)
+    STAR            reduce using rule 35 (operator -> DIVISION .)
+    DIVISION        reduce using rule 35 (operator -> DIVISION .)
+
+
+state 88
 
     (17) select_body -> STAR COMMA fields FROM NAME .
 
@@ -796,79 +965,173 @@ state 81
     WHERE           reduce using rule 17 (select_body -> STAR COMMA fields FROM NAME .)
 
 
-state 82
+state 89
 
     (20) insert_body -> INTO NAME VALUES LBRACKET fields . RBRACKET
     (30) fields -> fields . COMMA NAME
 
-    RBRACKET        shift and go to state 87
+    RBRACKET        shift and go to state 98
     COMMA           shift and go to state 37
 
 
-state 83
+state 90
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET . VALUES LBRACKET fields RBRACKET
 
-    VALUES          shift and go to state 88
+    VALUES          shift and go to state 99
 
 
-state 84
+state 91
 
-    (26) expression -> expression COMMA field . operator field
-    (32) operator -> . EQUAL
+    (26) expression -> expression COMMA field . EQUAL field
 
-    EQUAL           shift and go to state 65
-
-    operator                       shift and go to state 89
-
-state 85
-
-    (25) expression -> field operator field .
-
-    COMMA           reduce using rule 25 (expression -> field operator field .)
-    WHERE           reduce using rule 25 (expression -> field operator field .)
-    ENDREQUEST      reduce using rule 25 (expression -> field operator field .)
+    EQUAL           shift and go to state 100
 
 
-state 86
+state 92
+
+    (25) expression -> field EQUAL field .
+
+    COMMA           reduce using rule 25 (expression -> field EQUAL field .)
+    WHERE           reduce using rule 25 (expression -> field EQUAL field .)
+    ENDREQUEST      reduce using rule 25 (expression -> field EQUAL field .)
+
+
+state 93
 
     (11) values -> values COMMA NAME . type
-    (34) type -> . int
-    (35) type -> . str
-    (36) type -> . bol
-    (37) type -> . bool
+    (42) type -> . int
+    (43) type -> . str
+    (44) type -> . bol
+    (45) type -> . bool
+    (46) type -> . float
 
-    int             shift and go to state 74
-    str             shift and go to state 75
-    bol             shift and go to state 76
-    bool            shift and go to state 77
+    int             shift and go to state 73
+    str             shift and go to state 74
+    bol             shift and go to state 75
+    bool            shift and go to state 76
+    float           shift and go to state 77
 
-    type                           shift and go to state 90
+    type                           shift and go to state 101
 
-state 87
+state 94
+
+    (38) tree -> field operator . tree
+    (37) tree -> . field
+    (38) tree -> . field operator tree
+    (39) tree -> . operator tree
+    (40) tree -> . LBRACKET tree RBRACKET
+    (41) tree -> . tree operator tree
+    (31) field -> . NAME
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    LBRACKET        shift and go to state 83
+    NAME            shift and go to state 50
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    field                          shift and go to state 80
+    operator                       shift and go to state 82
+    tree                           shift and go to state 102
+
+state 95
+
+    (41) tree -> tree operator . tree
+    (37) tree -> . field
+    (38) tree -> . field operator tree
+    (39) tree -> . operator tree
+    (40) tree -> . LBRACKET tree RBRACKET
+    (41) tree -> . tree operator tree
+    (31) field -> . NAME
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    LBRACKET        shift and go to state 83
+    NAME            shift and go to state 50
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    tree                           shift and go to state 103
+    operator                       shift and go to state 82
+    field                          shift and go to state 80
+
+state 96
+
+    (39) tree -> operator tree .
+    (41) tree -> tree . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for DIVISION resolved as shift
+    ENDREQUEST      reduce using rule 39 (tree -> operator tree .)
+    RBRACKET        reduce using rule 39 (tree -> operator tree .)
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+  ! PLUS            [ reduce using rule 39 (tree -> operator tree .) ]
+  ! MINUS           [ reduce using rule 39 (tree -> operator tree .) ]
+  ! STAR            [ reduce using rule 39 (tree -> operator tree .) ]
+  ! DIVISION        [ reduce using rule 39 (tree -> operator tree .) ]
+
+    operator                       shift and go to state 95
+
+state 97
+
+    (40) tree -> LBRACKET tree . RBRACKET
+    (41) tree -> tree . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+    RBRACKET        shift and go to state 104
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+    operator                       shift and go to state 95
+
+state 98
 
     (20) insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .
 
     ENDREQUEST      reduce using rule 20 (insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .)
 
 
-state 88
+state 99
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET fields RBRACKET
 
-    LBRACKET        shift and go to state 91
+    LBRACKET        shift and go to state 105
 
 
-state 89
+state 100
 
-    (26) expression -> expression COMMA field operator . field
+    (26) expression -> expression COMMA field EQUAL . field
     (31) field -> . NAME
 
     NAME            shift and go to state 50
 
-    field                          shift and go to state 92
+    field                          shift and go to state 106
 
-state 90
+state 101
 
     (11) values -> values COMMA NAME type .
 
@@ -876,7 +1139,73 @@ state 90
     COMMA           reduce using rule 11 (values -> values COMMA NAME type .)
 
 
-state 91
+state 102
+
+    (38) tree -> field operator tree .
+    (41) tree -> tree . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for DIVISION resolved as shift
+    ENDREQUEST      reduce using rule 38 (tree -> field operator tree .)
+    RBRACKET        reduce using rule 38 (tree -> field operator tree .)
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+  ! PLUS            [ reduce using rule 38 (tree -> field operator tree .) ]
+  ! MINUS           [ reduce using rule 38 (tree -> field operator tree .) ]
+  ! STAR            [ reduce using rule 38 (tree -> field operator tree .) ]
+  ! DIVISION        [ reduce using rule 38 (tree -> field operator tree .) ]
+
+    operator                       shift and go to state 95
+
+state 103
+
+    (41) tree -> tree operator tree .
+    (41) tree -> tree . operator tree
+    (32) operator -> . PLUS
+    (33) operator -> . MINUS
+    (34) operator -> . STAR
+    (35) operator -> . DIVISION
+
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for STAR resolved as shift
+  ! shift/reduce conflict for DIVISION resolved as shift
+    ENDREQUEST      reduce using rule 41 (tree -> tree operator tree .)
+    RBRACKET        reduce using rule 41 (tree -> tree operator tree .)
+    PLUS            shift and go to state 84
+    MINUS           shift and go to state 85
+    STAR            shift and go to state 86
+    DIVISION        shift and go to state 87
+
+  ! PLUS            [ reduce using rule 41 (tree -> tree operator tree .) ]
+  ! MINUS           [ reduce using rule 41 (tree -> tree operator tree .) ]
+  ! STAR            [ reduce using rule 41 (tree -> tree operator tree .) ]
+  ! DIVISION        [ reduce using rule 41 (tree -> tree operator tree .) ]
+
+    operator                       shift and go to state 95
+
+state 104
+
+    (40) tree -> LBRACKET tree RBRACKET .
+
+    PLUS            reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+    MINUS           reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+    STAR            reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+    DIVISION        reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+    ENDREQUEST      reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+    RBRACKET        reduce using rule 40 (tree -> LBRACKET tree RBRACKET .)
+
+
+state 105
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET . fields RBRACKET
     (29) fields -> . NAME
@@ -884,29 +1213,48 @@ state 91
 
     NAME            shift and go to state 22
 
-    fields                         shift and go to state 93
+    fields                         shift and go to state 107
 
-state 92
+state 106
 
-    (26) expression -> expression COMMA field operator field .
+    (26) expression -> expression COMMA field EQUAL field .
 
-    COMMA           reduce using rule 26 (expression -> expression COMMA field operator field .)
-    WHERE           reduce using rule 26 (expression -> expression COMMA field operator field .)
-    ENDREQUEST      reduce using rule 26 (expression -> expression COMMA field operator field .)
+    COMMA           reduce using rule 26 (expression -> expression COMMA field EQUAL field .)
+    WHERE           reduce using rule 26 (expression -> expression COMMA field EQUAL field .)
+    ENDREQUEST      reduce using rule 26 (expression -> expression COMMA field EQUAL field .)
 
 
-state 93
+state 107
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields . RBRACKET
     (30) fields -> fields . COMMA NAME
 
-    RBRACKET        shift and go to state 94
+    RBRACKET        shift and go to state 108
     COMMA           shift and go to state 37
 
 
-state 94
+state 108
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET .
 
     ENDREQUEST      reduce using rule 21 (insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET .)
 
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for PLUS in state 80 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 80 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 80 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 80 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 96 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 96 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 96 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 96 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 102 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 102 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 102 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 102 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 103 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 103 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 103 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 103 resolved as shift

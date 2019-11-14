@@ -7,10 +7,6 @@ class preprocessor:
     def __init__(self):
         self.table_count = 0
         self.db = eng.Database()
-        sign_len = self.db.file.read_integer(0, 1)
-        sign_str = self.db.file.read_str(1, sign_len)
-        if sign_str != self.db.signature:
-            pass
 
     def is_correct_fields(self, fields):
         temp = {}
@@ -43,6 +39,25 @@ class preprocessor:
         for i in range(len(self.db.tables)):
             if name == self.db.tables[i].name:
                 return i
+
+    def solve_polynomial(self, root):
+        if root.getRootVal() == '+':
+            value = self.solve_polynomial(root.getLeftChild()) + self.solve_polynomial(root.getRightChild())
+        elif root.getRootVal() == '-':
+            value = self.solve_polynomial(root.getLeftChild()) - self.solve_polynomial(root.getRightChild())
+        elif root.getRootVal() == '*':
+            value = self.solve_polynomial(root.getLeftChild()) * self.solve_polynomial(root.getRightChild())
+        elif root.getRootVal() == '/':
+            value = self.solve_polynomial(root.getLeftChild()) / self.solve_polynomial(root.getRightChild())
+        else:
+            try:
+                value = float(root.getRootVal())
+            except:
+                pass
+        return value
+
+    def build_condition(self, condition):
+        return [condition[0], self.solve_polynomial(condition[1])]
 
     def is_correct_condition(self, name, condition):
         if condition[0] == "":
@@ -221,6 +236,9 @@ class preprocessor:
             self.db.tables[table_index].update(fields, temp_correct_values[1], rows)
 
     def delete(self, name, condition):
+        print(condition)
+        condition = self.build_condition(condition)
+        print(condition)
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -232,12 +250,11 @@ class preprocessor:
             except Exception as ex:
                 print(ex)
         else:
-            table_index = self.get_table_index(name)
-            self.db.tables[table_index].get_rows()
-            rows_indices = []
-            for index_row in range(len(self.db.tables[table_index].rows)):
-                if self.db.tables[table_index].rows[index_row].fields_values_dict[condition[0]] == condition[1]:
-                    rows_indices.append(index_row)
-            self.db.tables[table_index].delete(rows_indices)
-
-
+            print(1)
+            #table_index = self.get_table_index(name)
+            #self.db.tables[table_index].get_rows()
+            #rows_indices = []
+            #for index_row in range(len(self.db.tables[table_index].rows)):
+               # if self.db.tables[table_index].rows[index_row].fields_values_dict[condition[0]] == condition[1]:
+                   # rows_indices.append(index_row)
+            #self.db.tables[table_index].delete(rows_indices)

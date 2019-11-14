@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'COMMA CREATE DELETE DROP ENDREQUEST EQUAL FROM INSERT INTO LBRACKET NAME RBRACKET SELECT SET SHOW STAR TABLE UPDATE VALUES WHERE bol bool int strstart : create\n             | show\n             | drop\n             | select\n             | insert\n             | update\n             | deletecreate : CREATE create_body ENDREQUESTcreate_body : TABLE NAME LBRACKET values RBRACKETvalues : NAME type\n              | values COMMA NAME typeshow : SHOW CREATE TABLE NAME ENDREQUESTdrop : DROP TABLE NAME ENDREQUESTselect : SELECT select_body ENDREQUEST\n              | SELECT select_body condition ENDREQUESTselect_body : fields FROM NAME\n                   | STAR COMMA fields FROM NAME\n                   | STAR FROM NAMEinsert : INSERT insert_body ENDREQUESTinsert_body : INTO NAME VALUES LBRACKET fields RBRACKET\n                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKETupdate : UPDATE update_body ENDREQUESTupdate_body : NAME SET expression\n                   | NAME SET expression conditionexpression : field operator field\n                  | expression COMMA field operator fielddelete : DELETE FROM NAME ENDREQUEST\n              | DELETE FROM NAME condition ENDREQUESTfields : NAME\n              | fields COMMA NAMEfield : NAMEoperator : EQUALcondition : WHERE field operator fieldtype : int\n            | str\n            | bol\n            | bool'
+_lr_signature = 'COMMA CREATE DELETE DIVISION DROP ENDREQUEST EQUAL FROM INSERT INTO LBRACKET MINUS NAME PLUS RBRACKET SELECT SET SHOW STAR TABLE UPDATE VALUES WHERE bol bool float int strstart : create\n             | show\n             | drop\n             | select\n             | insert\n             | update\n             | deletecreate : CREATE create_body ENDREQUESTcreate_body : TABLE NAME LBRACKET values RBRACKETvalues : NAME type\n              | values COMMA NAME typeshow : SHOW CREATE TABLE NAME ENDREQUESTdrop : DROP TABLE NAME ENDREQUESTselect : SELECT select_body ENDREQUEST\n              | SELECT select_body condition ENDREQUESTselect_body : fields FROM NAME\n                   | STAR COMMA fields FROM NAME\n                   | STAR FROM NAMEinsert : INSERT insert_body ENDREQUESTinsert_body : INTO NAME VALUES LBRACKET fields RBRACKET\n                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKETupdate : UPDATE update_body ENDREQUESTupdate_body : NAME SET expression\n                   | NAME SET expression conditionexpression : field EQUAL field\n                  | expression COMMA field EQUAL fielddelete : DELETE FROM NAME ENDREQUEST\n              | DELETE FROM NAME condition ENDREQUESTfields : NAME\n              | fields COMMA NAMEfield : NAMEoperator : PLUS\n                | MINUS\n                | STAR\n                | DIVISIONcondition : WHERE field EQUAL treetree : field\n            | field operator tree\n            | operator tree\n            | LBRACKET tree RBRACKET\n            | tree operator treetype : int\n            | str\n            | bol\n            | bool\n            | float'
     
-_lr_action_items = {'CREATE':([0,10,],[9,18,]),'SHOW':([0,],[10,]),'DROP':([0,],[11,]),'SELECT':([0,],[12,]),'INSERT':([0,],[13,]),'UPDATE':([0,],[14,]),'DELETE':([0,],[15,]),'$end':([1,2,3,4,5,6,7,8,29,33,40,42,47,48,59,63,72,],[0,-1,-2,-3,-4,-5,-6,-7,-8,-14,-19,-22,-13,-15,-27,-12,-28,]),'TABLE':([9,11,18,],[17,19,31,]),'STAR':([12,],[23,]),'NAME':([12,14,17,19,25,28,31,35,36,37,38,39,43,45,56,64,65,66,67,70,71,79,89,91,],[22,27,30,32,41,44,46,50,51,52,22,54,50,61,22,50,-32,81,22,50,50,86,50,22,]),'INTO':([13,],[25,]),'FROM':([15,21,22,23,52,53,],[28,36,-29,39,-30,66,]),'ENDREQUEST':([16,20,24,26,32,34,44,46,50,51,54,57,60,69,78,80,81,85,87,92,94,],[29,33,40,42,47,48,59,63,-31,-16,-18,-23,72,-24,-9,-33,-17,-25,-20,-26,-21,]),'WHERE':([20,44,50,51,54,57,81,85,92,],[35,35,-31,-16,-18,35,-17,-25,-26,]),'COMMA':([21,22,23,50,52,53,57,62,68,73,74,75,76,77,82,85,90,92,93,],[37,-29,38,-31,-30,37,70,79,37,-10,-34,-35,-36,-37,37,-25,-11,-26,37,]),'RBRACKET':([22,52,62,68,73,74,75,76,77,82,90,93,],[-29,-30,78,83,-10,-34,-35,-36,-37,87,-11,94,]),'SET':([27,],[43,]),'LBRACKET':([30,41,55,88,],[45,56,67,91,]),'VALUES':([41,83,],[55,88,]),'EQUAL':([49,50,58,84,],[65,-31,65,65,]),'int':([61,86,],[74,74,]),'str':([61,86,],[75,75,]),'bol':([61,86,],[76,76,]),'bool':([61,86,],[77,77,]),}
+_lr_action_items = {'CREATE':([0,10,],[9,18,]),'SHOW':([0,],[10,]),'DROP':([0,],[11,]),'SELECT':([0,],[12,]),'INSERT':([0,],[13,]),'UPDATE':([0,],[14,]),'DELETE':([0,],[15,]),'$end':([1,2,3,4,5,6,7,8,29,33,40,42,47,48,59,63,71,],[0,-1,-2,-3,-4,-5,-6,-7,-8,-14,-19,-22,-13,-15,-27,-12,-28,]),'TABLE':([9,11,18,],[17,19,31,]),'STAR':([12,50,64,80,81,82,83,84,85,86,87,94,95,96,97,102,103,104,],[23,-31,86,86,86,86,86,-32,-33,-34,-35,86,86,86,86,86,86,-40,]),'NAME':([12,14,17,19,25,28,31,35,36,37,38,39,43,45,56,64,65,66,69,70,79,82,83,84,85,86,87,94,95,100,105,],[22,27,30,32,41,44,46,50,51,52,22,54,50,61,22,50,88,22,50,50,93,50,50,-32,-33,-34,-35,50,50,50,22,]),'INTO':([13,],[25,]),'FROM':([15,21,22,23,52,53,],[28,36,-29,39,-30,65,]),'ENDREQUEST':([16,20,24,26,32,34,44,46,50,51,54,57,60,68,78,80,81,88,92,96,98,102,103,104,106,108,],[29,33,40,42,47,48,59,63,-31,-16,-18,-23,71,-24,-9,-37,-36,-17,-25,-39,-20,-38,-41,-40,-26,-21,]),'WHERE':([20,44,50,51,54,57,88,92,106,],[35,35,-31,-16,-18,35,-17,-25,-26,]),'COMMA':([21,22,23,50,52,53,57,62,67,72,73,74,75,76,77,89,92,101,106,107,],[37,-29,38,-31,-30,37,69,79,37,-10,-42,-43,-44,-45,-46,37,-25,-11,-26,37,]),'RBRACKET':([22,50,52,62,67,72,73,74,75,76,77,80,89,96,97,101,102,103,104,107,],[-29,-31,-30,78,90,-10,-42,-43,-44,-45,-46,-37,98,-39,104,-11,-38,-41,-40,108,]),'SET':([27,],[43,]),'LBRACKET':([30,41,55,64,82,83,84,85,86,87,94,95,99,],[45,56,66,83,83,83,-32,-33,-34,-35,83,83,105,]),'VALUES':([41,90,],[55,99,]),'EQUAL':([49,50,58,91,],[64,-31,70,100,]),'PLUS':([50,64,80,81,82,83,84,85,86,87,94,95,96,97,102,103,104,],[-31,84,84,84,84,84,-32,-33,-34,-35,84,84,84,84,84,84,-40,]),'MINUS':([50,64,80,81,82,83,84,85,86,87,94,95,96,97,102,103,104,],[-31,85,85,85,85,85,-32,-33,-34,-35,85,85,85,85,85,85,-40,]),'DIVISION':([50,64,80,81,82,83,84,85,86,87,94,95,96,97,102,103,104,],[-31,87,87,87,87,87,-32,-33,-34,-35,87,87,87,87,87,87,-40,]),'int':([61,93,],[73,73,]),'str':([61,93,],[74,74,]),'bol':([61,93,],[75,75,]),'bool':([61,93,],[76,76,]),'float':([61,93,],[77,77,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'start':([0,],[1,]),'create':([0,],[2,]),'show':([0,],[3,]),'drop':([0,],[4,]),'select':([0,],[5,]),'insert':([0,],[6,]),'update':([0,],[7,]),'delete':([0,],[8,]),'create_body':([9,],[16,]),'select_body':([12,],[20,]),'fields':([12,38,56,67,91,],[21,53,68,82,93,]),'insert_body':([13,],[24,]),'update_body':([14,],[26,]),'condition':([20,44,57,],[34,60,69,]),'field':([35,43,64,70,71,89,],[49,58,80,84,85,92,]),'expression':([43,],[57,]),'values':([45,],[62,]),'operator':([49,58,84,],[64,71,89,]),'type':([61,86,],[73,90,]),}
+_lr_goto_items = {'start':([0,],[1,]),'create':([0,],[2,]),'show':([0,],[3,]),'drop':([0,],[4,]),'select':([0,],[5,]),'insert':([0,],[6,]),'update':([0,],[7,]),'delete':([0,],[8,]),'create_body':([9,],[16,]),'select_body':([12,],[20,]),'fields':([12,38,56,66,105,],[21,53,67,89,107,]),'insert_body':([13,],[24,]),'update_body':([14,],[26,]),'condition':([20,44,57,],[34,60,68,]),'field':([35,43,64,69,70,82,83,94,95,100,],[49,58,80,91,92,80,80,80,80,106,]),'expression':([43,],[57,]),'values':([45,],[62,]),'type':([61,93,],[72,101,]),'tree':([64,82,83,94,95,],[81,96,97,102,103,]),'operator':([64,80,81,82,83,94,95,96,97,102,103,],[82,94,95,82,82,82,82,95,95,95,95,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,41 +27,50 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> start","S'",1,None,None,None),
-  ('start -> create','start',1,'p_start','SQL_parser.py',94),
-  ('start -> show','start',1,'p_start','SQL_parser.py',95),
-  ('start -> drop','start',1,'p_start','SQL_parser.py',96),
-  ('start -> select','start',1,'p_start','SQL_parser.py',97),
-  ('start -> insert','start',1,'p_start','SQL_parser.py',98),
-  ('start -> update','start',1,'p_start','SQL_parser.py',99),
-  ('start -> delete','start',1,'p_start','SQL_parser.py',100),
-  ('create -> CREATE create_body ENDREQUEST','create',3,'p_create','SQL_parser.py',106),
-  ('create_body -> TABLE NAME LBRACKET values RBRACKET','create_body',5,'p_create_body','SQL_parser.py',112),
-  ('values -> NAME type','values',2,'p_values','SQL_parser.py',118),
-  ('values -> values COMMA NAME type','values',4,'p_values','SQL_parser.py',119),
-  ('show -> SHOW CREATE TABLE NAME ENDREQUEST','show',5,'p_show','SQL_parser.py',130),
-  ('drop -> DROP TABLE NAME ENDREQUEST','drop',4,'p_drop','SQL_parser.py',136),
-  ('select -> SELECT select_body ENDREQUEST','select',3,'p_select','SQL_parser.py',142),
-  ('select -> SELECT select_body condition ENDREQUEST','select',4,'p_select','SQL_parser.py',143),
-  ('select_body -> fields FROM NAME','select_body',3,'p_select_body','SQL_parser.py',149),
-  ('select_body -> STAR COMMA fields FROM NAME','select_body',5,'p_select_body','SQL_parser.py',150),
-  ('select_body -> STAR FROM NAME','select_body',3,'p_select_body','SQL_parser.py',151),
-  ('insert -> INSERT insert_body ENDREQUEST','insert',3,'p_insert','SQL_parser.py',162),
-  ('insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET','insert_body',6,'p_insert_body','SQL_parser.py',168),
-  ('insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET','insert_body',9,'p_insert_body','SQL_parser.py',169),
-  ('update -> UPDATE update_body ENDREQUEST','update',3,'p_update','SQL_parser.py',178),
-  ('update_body -> NAME SET expression','update_body',3,'p_update_body','SQL_parser.py',184),
-  ('update_body -> NAME SET expression condition','update_body',4,'p_update_body','SQL_parser.py',185),
-  ('expression -> field operator field','expression',3,'p_expression','SQL_parser.py',194),
-  ('expression -> expression COMMA field operator field','expression',5,'p_expression','SQL_parser.py',195),
-  ('delete -> DELETE FROM NAME ENDREQUEST','delete',4,'p_delete','SQL_parser.py',208),
-  ('delete -> DELETE FROM NAME condition ENDREQUEST','delete',5,'p_delete','SQL_parser.py',209),
-  ('fields -> NAME','fields',1,'p_fields','SQL_parser.py',218),
-  ('fields -> fields COMMA NAME','fields',3,'p_fields','SQL_parser.py',219),
-  ('field -> NAME','field',1,'p_field','SQL_parser.py',230),
-  ('operator -> EQUAL','operator',1,'p_operator','SQL_parser.py',236),
-  ('condition -> WHERE field operator field','condition',4,'p_condition','SQL_parser.py',241),
-  ('type -> int','type',1,'p_type','SQL_parser.py',247),
-  ('type -> str','type',1,'p_type','SQL_parser.py',248),
-  ('type -> bol','type',1,'p_type','SQL_parser.py',249),
-  ('type -> bool','type',1,'p_type','SQL_parser.py',250),
+  ('start -> create','start',1,'p_start','SQL_parser.py',159),
+  ('start -> show','start',1,'p_start','SQL_parser.py',160),
+  ('start -> drop','start',1,'p_start','SQL_parser.py',161),
+  ('start -> select','start',1,'p_start','SQL_parser.py',162),
+  ('start -> insert','start',1,'p_start','SQL_parser.py',163),
+  ('start -> update','start',1,'p_start','SQL_parser.py',164),
+  ('start -> delete','start',1,'p_start','SQL_parser.py',165),
+  ('create -> CREATE create_body ENDREQUEST','create',3,'p_create','SQL_parser.py',171),
+  ('create_body -> TABLE NAME LBRACKET values RBRACKET','create_body',5,'p_create_body','SQL_parser.py',177),
+  ('values -> NAME type','values',2,'p_values','SQL_parser.py',183),
+  ('values -> values COMMA NAME type','values',4,'p_values','SQL_parser.py',184),
+  ('show -> SHOW CREATE TABLE NAME ENDREQUEST','show',5,'p_show','SQL_parser.py',195),
+  ('drop -> DROP TABLE NAME ENDREQUEST','drop',4,'p_drop','SQL_parser.py',201),
+  ('select -> SELECT select_body ENDREQUEST','select',3,'p_select','SQL_parser.py',207),
+  ('select -> SELECT select_body condition ENDREQUEST','select',4,'p_select','SQL_parser.py',208),
+  ('select_body -> fields FROM NAME','select_body',3,'p_select_body','SQL_parser.py',216),
+  ('select_body -> STAR COMMA fields FROM NAME','select_body',5,'p_select_body','SQL_parser.py',217),
+  ('select_body -> STAR FROM NAME','select_body',3,'p_select_body','SQL_parser.py',218),
+  ('insert -> INSERT insert_body ENDREQUEST','insert',3,'p_insert','SQL_parser.py',229),
+  ('insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET','insert_body',6,'p_insert_body','SQL_parser.py',235),
+  ('insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET','insert_body',9,'p_insert_body','SQL_parser.py',236),
+  ('update -> UPDATE update_body ENDREQUEST','update',3,'p_update','SQL_parser.py',245),
+  ('update_body -> NAME SET expression','update_body',3,'p_update_body','SQL_parser.py',251),
+  ('update_body -> NAME SET expression condition','update_body',4,'p_update_body','SQL_parser.py',252),
+  ('expression -> field EQUAL field','expression',3,'p_expression','SQL_parser.py',261),
+  ('expression -> expression COMMA field EQUAL field','expression',5,'p_expression','SQL_parser.py',262),
+  ('delete -> DELETE FROM NAME ENDREQUEST','delete',4,'p_delete','SQL_parser.py',275),
+  ('delete -> DELETE FROM NAME condition ENDREQUEST','delete',5,'p_delete','SQL_parser.py',276),
+  ('fields -> NAME','fields',1,'p_fields','SQL_parser.py',284),
+  ('fields -> fields COMMA NAME','fields',3,'p_fields','SQL_parser.py',285),
+  ('field -> NAME','field',1,'p_field','SQL_parser.py',296),
+  ('operator -> PLUS','operator',1,'p_operator','SQL_parser.py',302),
+  ('operator -> MINUS','operator',1,'p_operator','SQL_parser.py',303),
+  ('operator -> STAR','operator',1,'p_operator','SQL_parser.py',304),
+  ('operator -> DIVISION','operator',1,'p_operator','SQL_parser.py',305),
+  ('condition -> WHERE field EQUAL tree','condition',4,'p_condition','SQL_parser.py',311),
+  ('tree -> field','tree',1,'p_tree','SQL_parser.py',317),
+  ('tree -> field operator tree','tree',3,'p_tree','SQL_parser.py',318),
+  ('tree -> operator tree','tree',2,'p_tree','SQL_parser.py',319),
+  ('tree -> LBRACKET tree RBRACKET','tree',3,'p_tree','SQL_parser.py',320),
+  ('tree -> tree operator tree','tree',3,'p_tree','SQL_parser.py',321),
+  ('type -> int','type',1,'p_type','SQL_parser.py',333),
+  ('type -> str','type',1,'p_type','SQL_parser.py',334),
+  ('type -> bol','type',1,'p_type','SQL_parser.py',335),
+  ('type -> bool','type',1,'p_type','SQL_parser.py',336),
+  ('type -> float','type',1,'p_type','SQL_parser.py',337),
 ]
