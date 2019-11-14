@@ -13,7 +13,7 @@ class Database:
             self.file = bin_py.BinFile("zhavoronkov.vdb")
             self.file.open("w+")
             if self.__check_journal():
-                self.db_wide_rollback()
+                self.wide_rollback()
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
@@ -29,7 +29,7 @@ class Database:
         table.row_count = len(table.get_rows(False))
         table.write_meta_info()
 
-    def db_wide_rollback(self):
+    def wide_rollback(self):
         rollback_obj = RollbackLog(self.file, 0)
         rollback_obj.open_file()
         journal_file_size = rollback_obj.file.read_integer(0, 16)
@@ -60,6 +60,7 @@ class Database:
         signature_result = self.file.read_str(1, signature_len)
         if self.signature != signature_result:
             raise exception.WrongFileFormat()
+        self.tables_count = self.file.read_integer(14, 2)
         for i in range(self.tables_count):
             table_obj = Table(self.file)
             table_obj.index_in_file = 16 + i * table_obj.size
@@ -78,7 +79,7 @@ class Database:
             raise exception.WrongSignature()
         self.read_file()
         if self.__check_journal():
-            self.db_wide_rollback()
+            self.wide_rollback()
 
     def create_table(self, table_name, tables_count, fields):
         self.file.open("r+")
