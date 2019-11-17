@@ -311,6 +311,7 @@ class Table:
                 local_rollback_obj.add_block(self.get_block_index_for_row(row))
                 row.select_row(fields)
                 row.update_row(fields, values)
+                self.__close_local_rollback_journal(local_rollback_obj)
 
     def insert(self, fields=[], values=[], insert_index=-1):
         if self.is_transaction:
@@ -321,9 +322,10 @@ class Table:
 
     def __insert(self, fields=[], values=[], insert_index=-1):
         position = self.get_free_row()
-        local_rollback_obj = self.__create_local_rollback_journal()
-        local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
-        if self.is_transaction:
+        if not self.is_transaction:
+            local_rollback_obj = self.__create_local_rollback_journal()
+            local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
+        else:
             self.transaction_obj.rollback_journal.add_block(self.current_block_index)
         if insert_index == -1:
             insert_index = self.last_row_index
@@ -353,7 +355,9 @@ class Table:
             self.last_row_index = position
             self.write_meta_info()
         self.row_count += 1
-        self.__close_local_rollback_journal(local_rollback_obj)
+        if not self.is_transaction:
+            local_rollback_obj = self.__create_local_rollback_journal()
+            local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
 
     def __iter_rows(self):
         row_index = self.first_row_index
