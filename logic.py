@@ -5,8 +5,8 @@ import preprocessor as pre
 class Logic:
 
 
-    def __init__(self):
-        self.pr = pre.preprocessor()
+    def __init__(self, db_filename):
+        self.pr = pre.preprocessor(db_filename)
 
     def query(self, sql_request):
         tree = pars.build_tree(sql_request)
@@ -28,17 +28,17 @@ class Logic:
         except:
             pass
 
-temp = Logic()
-temp.query("CREATE TABLE VADICS (id int, name str);")
-temp.query("SHOW CREATE TABLE VADICS;")
-temp.query("SELECT * FROM VADICS;")
-temp.query("INSERT INTO VADICS VALUES (1, admin);")
-temp.query("SELECT * FROM VADICS;")
-temp.query("INSERT INTO VADICS VALUES (2, admin);")
-temp.query("SELECT * FROM VADICS;")
-temp.query("UPDATE VADICS SET name = notadmin;")
-temp.query("SELECT * FROM VADICS;")
-temp.query("DELETE FROM VADICS WHERE id = 1;")
-temp.query("SELECT * FROM VADICS;")
+#temp = Logic()
+#temp.query("CREATE TABLE VADICS (id int, name str);")
+#temp.query("SHOW CREATE TABLE VADICS;")
+#temp.query("SELECT * FROM VADICS;")
+#temp.query("INSERT INTO VADICS VALUES (1, admin);")
+#temp.query("SELECT * FROM VADICS;")
+#temp.query("INSERT INTO VADICS VALUES (2, admin);")
+#temp.query("SELECT * FROM VADICS;")
+#temp.query("UPDATE VADICS SET name = notadmin;")
+#temp.query("SELECT * FROM VADICS;")
+#temp.query("DELETE FROM VADICS WHERE id = 1;")
+#temp.query("SELECT * FROM VADICS;")
 #print(temp.query("DELETE FROM VADIC WHERE id = 1*2 + 3/4 - 5*(6+7);"))
 #print(pars.build_tree("DELETE FROM VADIC WHERE id = ((2 + 2) + 4 + (6 + (32 + 2882 + id)));").condition)

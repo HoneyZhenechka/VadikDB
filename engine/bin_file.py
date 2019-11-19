@@ -5,13 +5,13 @@ import struct
 class BinFile:
     def __init__(self, filename):
         self.__file = None
-        self.__filename = filename
+        self.filename = filename
 
     def is_file_exist(self):
-        return os.path.isfile(self.__filename)
+        return os.path.isfile(self.filename)
 
     def open(self, filemode):
-        self.__file = open(self.__filename, filemode + "b")
+        self.__file = open(self.filename, filemode + "b")
 
     def close(self):
         self.__file.close()

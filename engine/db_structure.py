@@ -8,19 +8,29 @@ threading_lock = threading.Lock()
 
 
 class Database:
-    def __init__(self, create_default_file=True):
+    def __init__(self, create_default_file=True, db_filename=""):
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
+        self.filename = ""
         self.file = None
         if create_default_file:
-            self.file = bin_py.BinFile("zhavoronkov.vdb")
+            self.filename = "zhavoronkov.vdb"
+            self.file = bin_py.BinFile(self.filename)
             self.file.open("w+")
-            if self.__check_journal():
-                self.wide_rollback()
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
+        elif db_filename != "":
+            self.filename = db_filename
+            if os.path.isfile(self.filename):
+                self.connect_to_db(self.filename)
+            else:
+                self.file = bin_py.BinFile(self.filename)
+                self.file.open("w+")
+                self.write_table_count(self.tables_count)
+                self.file.close()
+
 
     def __check_journal(self):
         if os.path.isfile("journal.log"):
@@ -37,8 +47,8 @@ class Database:
         rollback_obj = RollbackLog(self.file, 0)
         rollback_obj.open_file()
         journal_file_size = rollback_obj.file.read_integer(0, 16)
-        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
-            os.truncate("zhavoronkov.vdb", journal_file_size)
+        if journal_file_size < os.stat(self.filename).st_size:
+            os.truncate(self.filename, journal_file_size)
         rollback_obj.get_blocks()
         rollback_obj.restore_blocks()
         rollback_obj.close_file()
@@ -600,8 +610,8 @@ class Transaction:
     def rollback(self):
         self.rollback_journal.open_file()
         journal_file_size = self.rollback_journal.file.read_integer(0, 16)
-        if journal_file_size < os.stat("zhavoronkov.vdb").st_size:
-            os.truncate("zhavoronkov.vdb", journal_file_size)
+        if journal_file_size < os.stat(self.table.file.filename).st_size:
+            os.truncate(self.table.file.filename, journal_file_size)
         self.rollback_journal.get_blocks()
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
@@ -631,7 +641,7 @@ class RollbackLog:
 
     def create_file(self):
         self.file.open("w+")
-        self.file.write_integer(os.stat("zhavoronkov.vdb").st_size, 0, 16)
+        self.file.write_integer(os.stat(self.db_file.filename).st_size, 0, 16)
 
     def open_file(self):
         self.file.open("r+")

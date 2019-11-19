@@ -4,9 +4,12 @@ import engine.db_structure as eng
 
 class preprocessor:
 
-    def __init__(self):
+    def __init__(self, db_filename):
         self.table_count = 0
-        self.db = eng.Database()
+        if db_filename == "":
+            self.db = eng.Database()
+        else:
+            self.db = eng.Database(False, db_filename)
 
     def is_correct_fields(self, fields):
         temp = {}
