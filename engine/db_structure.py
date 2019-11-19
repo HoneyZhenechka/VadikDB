@@ -1,6 +1,10 @@
 import engine.bin_file as bin_py
+import threading
 import exception
 import os
+
+
+threading_lock = threading.Lock()
 
 
 class Database:
@@ -299,6 +303,7 @@ class Table:
         return selected_rows
 
     def update(self, fields, values, rows):
+        threading_lock.acquire()
         for row in rows:
             if self.is_transaction:
                 first_update_command = DBMethod(row.select_row, fields)
@@ -312,6 +317,7 @@ class Table:
                 row.select_row(fields)
                 row.update_row(fields, values)
                 self.__close_local_rollback_journal(local_rollback_obj)
+        threading_lock.release()
 
     def insert(self, fields=[], values=[], insert_index=-1):
         if self.is_transaction:
