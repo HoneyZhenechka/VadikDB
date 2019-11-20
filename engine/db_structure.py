@@ -53,7 +53,6 @@ class Database:
         rollback_obj.restore_blocks()
         rollback_obj.close_file()
         os.remove("journal.log")
-        self.read_file()
         for table in self.tables:
             self.__update_table_metadata(table)
 
