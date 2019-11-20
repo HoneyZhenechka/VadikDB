@@ -142,3 +142,12 @@ def test_wide_rollback():
     db.connect_to_db("zhavoronkov.vdb")
     db.tables[0].get_rows()
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "anime"
+    assert len(db.tables[0].rows) == 3
+
+
+def test_durability():
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"], test_rollback=True)
+    db.close_db()
+    db.connect_to_db("zhavoronkov.vdb")
+    db.tables[0].get_rows()
+    assert len(db.tables[0].rows) == 3

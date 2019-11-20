@@ -329,14 +329,14 @@ class Table:
                 self.__close_local_rollback_journal(local_rollback_obj)
         threading_lock.release()
 
-    def insert(self, fields=[], values=[], insert_index=-1):
+    def insert(self, fields=[], values=[], insert_index=-1, test_rollback=False):
         if self.is_transaction:
-            method = DBMethod(self.__insert, fields, values, insert_index)
+            method = DBMethod(self.__insert, fields, values, insert_index, test_rollback)
             self.transaction_obj.append(method)
         else:
-            self.__insert(fields, values, insert_index)
+            self.__insert(fields, values, insert_index, test_rollback)
 
-    def __insert(self, fields=[], values=[], insert_index=-1):
+    def __insert(self, fields=[], values=[], insert_index=-1, test_rollback=False):
         global local_rollback_obj
         position = self.get_free_row()
         if not self.is_transaction:
@@ -367,6 +367,10 @@ class Table:
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
         new_row.fields_values_dict = {field: values[index] for index, field in enumerate(fields)}
+        if test_rollback:
+            new_row.write_row_to_file(True)
+            local_rollback_obj.file.close()
+            return
         new_row.write_row_to_file()
         if self.last_row_index == insert_index:
             self.last_row_index = position
@@ -542,7 +546,7 @@ class Row:
             previous_row.next_index = self.next_index
             previous_row.write_info()
 
-    def write_row_to_file(self):
+    def write_row_to_file(self, is_test=False):
         self.write_info()
         for field in self.fields_values_dict:
             field_index = self.table.fields.index(field)
@@ -550,6 +554,8 @@ class Row:
             value_position = self.table.positions[field]
             self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
+            if is_test and field_index:
+                return
 
     def read_row_from_file(self, fields=[]):
         fields = self.table.get_fields(fields, True)
