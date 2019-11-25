@@ -1,6 +1,6 @@
 import exception
 import engine.db_structure as eng
-
+import typing
 
 class preprocessor:
 
@@ -11,7 +11,7 @@ class preprocessor:
         else:
             self.db = eng.Database(False, db_filename)
 
-    def is_correct_fields(self, fields):
+    def is_correct_fields(self, fields=()) -> typing.Tuple[bool, dict]:
         temp = {}
         for field in fields:
             if field[0] in temp:
@@ -19,39 +19,38 @@ class preprocessor:
                     raise exception.DuplicateFields(str(field[0] + " " + field[1]))
                 except Exception as ex:
                     print(ex)
-                    return [False, temp]
+                    return False, temp
             else:
                 temp[field[0]] = field[1]
-        return [True, temp]
+        return True, temp
 
-    def is_fields_exists(self, name, fields):
+    def is_fields_exist(self, name: str, fields=()) -> typing.Tuple[bool, str]:
         for field in fields:
             if not field in self.db.tables[self.get_table_index(name)].fields:
-                return [False, field]
-        return [True, -1]
+                return False, field
+        return True, ""
 
-    def is_table_exists(self, name):
-        result = False
+    def is_table_exists(self, name: str) -> bool:
         for table in self.db.tables:
             if table.name == name:
-                result = True
-                break
-        return result
+                return True
+        return False
 
-    def get_table_index(self, name):
+    def get_table_index(self, name: str) -> int:
         for i in range(len(self.db.tables)):
             if name == self.db.tables[i].name:
                 return i
 
-    def solve_polynomial(self, root):
+    def solve_expression(self, root) -> int:
+        value = 0
         if root.getRootVal() == '+':
-            value = self.solve_polynomial(root.getLeftChild()) + self.solve_polynomial(root.getRightChild())
+            value = self.solve_expression(root.getLeftChild()) + self.solve_expression(root.getRightChild())
         elif root.getRootVal() == '-':
-            value = self.solve_polynomial(root.getLeftChild()) - self.solve_polynomial(root.getRightChild())
+            value = self.solve_expression(root.getLeftChild()) - self.solve_expression(root.getRightChild())
         elif root.getRootVal() == '*':
-            value = self.solve_polynomial(root.getLeftChild()) * self.solve_polynomial(root.getRightChild())
+            value = self.solve_expression(root.getLeftChild()) * self.solve_expression(root.getRightChild())
         elif root.getRootVal() == '/':
-            value = self.solve_polynomial(root.getLeftChild()) / self.solve_polynomial(root.getRightChild())
+            value = self.solve_expression(root.getLeftChild()) / self.solve_expression(root.getRightChild())
         else:
             try:
                 value = int(root.getRootVal())
@@ -59,17 +58,17 @@ class preprocessor:
                 pass
         return value
 
-    def build_condition(self, condition):
-        return [condition[0], self.solve_polynomial(condition[1])]
+    def build_condition(self, condition: list) -> typing.Tuple[bool, int]:
+        return condition[0], self.solve_expression(condition[1])
 
-    def is_correct_condition(self, name, condition):
+    def is_correct_condition(self, name: str, condition: list) -> bool:
         if condition[0] == "":
             return True
         if condition[0] in self.db.tables[self.get_table_index(name)].fields:
             return True
         return False
 
-    def build_fields(self, fields, is_star, table_index):
+    def build_fields(self, fields: list, is_star: bool, table_index: int) -> typing.Tuple[str]:
         result = []
         if is_star:
             for field in self.db.tables[table_index].fields:
@@ -78,14 +77,14 @@ class preprocessor:
             result.append(field)
         return result
 
-    def is_correct_values(self, name, values, fields=[]):
+    def is_correct_values(self, name: str, values: list, fields=()) -> typing.Tuple[bool, list]:
         table_index = self.get_table_index(name)
         types = []
 
         if len(fields) == 0:
             types = self.db.tables[table_index].types
             if len(values) != len(types):
-                return [False, values]
+                return False, values
         else:
             for field in fields:
                 for index_of_field in range(len(self.db.tables[table_index].fields)):
@@ -97,17 +96,17 @@ class preprocessor:
                 try:
                     values[i] = int(values[i])
                 except:
-                    return [False, values]
+                    return False, values
             if types[i].name == "bool":
                 if values[i] == "False":
                     values[i] = False
                 elif values[i] == "True":
                     values[i] = True
                 else:
-                    return [False, values]
-        return [True, values]
+                    return False, values
+        return True, values
 
-    def create_table(self, name, fields):
+    def create_table(self, name: str, fields: list = ()):
         temp = self.is_correct_fields(fields)
         if self.is_table_exists(name):
             try:
@@ -118,7 +117,7 @@ class preprocessor:
             self.db.create_table(name, self.table_count, temp[1])
             self.table_count += 1
 
-    def show_create_table(self, name):
+    def show_create_table(self, name: str):
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -129,7 +128,7 @@ class preprocessor:
                 if i.name == name:
                     print(i.show_create())
 
-    def drop_table(self, name):
+    def drop_table(self, name: str):
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
@@ -138,15 +137,15 @@ class preprocessor:
         else:
             pass
 
-    def select(self, name, fields, is_star, condition):
+    def select(self, name: str, fields: list, is_star: bool, condition: list):
         if not self.is_table_exists(name):
             try:
                 raise exception.TableNotExists(name)
             except Exception as ex:
                 print(ex)
-        elif not self.is_fields_exists(name, fields)[0]:
+        elif not self.is_fields_exist(name, fields)[0]:
             try:
-                raise exception.FieldNotExists(self.is_fields_exists(name, fields)[1])
+                raise exception.FieldNotExists(self.is_fields_exist(name, fields)[1])
             except Exception as ex:
                 print(ex)
         elif not self.is_correct_condition(name, condition):
@@ -179,7 +178,7 @@ class preprocessor:
 
 
 
-    def insert(self, name, fields, values):
+    def insert(self, name: str, fields: list, values: list):
         temp_correct_values = self.is_correct_values(name, values)
         if not self.is_table_exists(name):
             try:
@@ -203,7 +202,7 @@ class preprocessor:
                     fields.append(self.db.tables[table_index].fields[i])
             self.db.tables[table_index].insert(fields, temp_correct_values[1])
 
-    def update(self, name, fields, values, condition):
+    def update(self, name: str, fields: list, values: list, condition: list):
         temp_correct_values = self.is_correct_values(name, values, fields)
         if not self.is_table_exists(name):
             try:
@@ -238,7 +237,7 @@ class preprocessor:
                     rows.append(row)
             self.db.tables[table_index].update(fields, temp_correct_values[1], rows)
 
-    def delete(self, name, condition):
+    def delete(self, name: str, condition: list):
         condition = self.build_condition(condition)
         if not self.is_table_exists(name):
             try:
