@@ -28,6 +28,7 @@ class Database:
             else:
                 self.file = bin_py.BinFile(self.filename)
                 self.file.open("w+")
+                self.write_file()
                 self.write_table_count(self.tables_count)
                 self.file.close()
 
