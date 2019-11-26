@@ -1,5 +1,6 @@
 import os
 import struct
+import typing
 
 
 class BinFile:
@@ -7,25 +8,25 @@ class BinFile:
         self.__file = None
         self.filename = filename
 
-    def is_file_exist(self):
+    def is_file_exist(self) -> bool:
         return os.path.isfile(self.filename)
 
-    def open(self, filemode: str):
+    def open(self, filemode: str) -> typing.NoReturn:
         self.__file = open(self.filename, filemode + "b")
 
-    def close(self):
+    def close(self) -> typing.NoReturn:
         self.__file.close()
 
-    def read(self, count_bytes: int):
+    def read(self, count_bytes: int) -> typing.NoReturn:
         self.__file.read(count_bytes)
 
-    def tell(self):
+    def tell(self) -> int:
         return self.__file.tell()
 
-    def seek(self, offset: int, from_what: int):
+    def seek(self, offset: int, from_what: int) -> typing.NoReturn:
         self.__file.seek(offset, from_what)
 
-    def write_integer(self, int_num: int, start_pos: int, count_bytes: int):
+    def write_integer(self, int_num: int, start_pos: int, count_bytes: int) -> typing.NoReturn:
         if start_pos >= 0:
             self.seek(start_pos, 0)
         byte_num = int_num.to_bytes(count_bytes, byteorder="little")
@@ -37,7 +38,7 @@ class BinFile:
         int_bytes = bytes(self.__file.read(count_bytes))
         return int.from_bytes(int_bytes, "little")
 
-    def write_fixed_integer(self, int_num: int, start_pos: int):
+    def write_fixed_integer(self, int_num: int, start_pos: int) -> typing.NoReturn:
         if start_pos >= 0:
             self.seek(start_pos, 0)
         int_bytes = struct.pack("<i", int_num)
@@ -49,7 +50,7 @@ class BinFile:
         int_bytes = bytes(self.__file.read(4))
         return struct.unpack("<i",int_bytes)[0]
 
-    def write_bool(self, bool_num: bool, start_pos: int):
+    def write_bool(self, bool_num: bool, start_pos: int) -> typing.NoReturn:
         if start_pos >= 0:
             self.seek(start_pos, 0)
         bool_bytes = struct.pack("<?", bool_num)
@@ -61,7 +62,7 @@ class BinFile:
         bool_bytes = bytes(self.__file.read(1))
         return struct.unpack("<?", bool_bytes)[0]
 
-    def write_float(self, float_num: float, start_pos: int):
+    def write_float(self, float_num: float, start_pos: int) -> typing.NoReturn:
         if start_pos >= 0:
             self.seek(start_pos, 0)
         float_bytes = struct.pack("<d", float_num)
@@ -73,7 +74,7 @@ class BinFile:
         float_bytes = bytes(self.__file.read(8))
         return struct.unpack("<d", float_bytes)[0]
 
-    def write_str(self, string: str, start_pos: int, count_bytes: int):
+    def write_str(self, string: str, start_pos: int, count_bytes: int) -> typing.NoReturn:
         if start_pos >= 0:
             self.seek(start_pos, 0)
         string = string[:count_bytes]
