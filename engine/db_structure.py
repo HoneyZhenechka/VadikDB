@@ -285,12 +285,12 @@ class Table:
             self.transaction_obj.append(command)
             self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
         if not self.is_transaction:
-            local_rollback_obj = self.__create_local_rollback_journal()
-            local_rollback_obj.add_block(self.get_block_index_for_row(row))
+            rollback_obj = self.__create_local_rollback_journal()
+            rollback_obj.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
-            self.__close_local_rollback_journal(local_rollback_obj)
+            self.__close_local_rollback_journal(rollback_obj)
 
-    def delete(self, rows_indexes: typing.List[int] = []):
+    def delete(self, rows_indexes: typing.Tuple[int] = ()):
         if not len(rows_indexes):
             row_index = self.first_row_index
             while row_index != 0:
@@ -304,14 +304,14 @@ class Table:
                 current_row.read_info()
                 self.__delete_row_and_add_block(current_row)
 
-    def select(self, fields: typing.List[str], rows: typing.List) -> typing.List:
+    def select(self, fields: typing.Tuple[str], rows: typing.Tuple) -> typing.List:
         selected_rows = []
         for row in rows:
             row.select_row(fields)
             selected_rows.append(row)
         return selected_rows
 
-    def update(self, fields: typing.List[str], values: typing.List, rows: typing.List) -> typing.NoReturn:
+    def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple) -> typing.NoReturn:
         threading_lock.acquire()
         for row in rows:
             if self.is_transaction:
@@ -321,14 +321,14 @@ class Table:
                 self.transaction_obj.append(second_update_command)
                 self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
             else:
-                local_rollback_obj = self.__create_local_rollback_journal()
-                local_rollback_obj.add_block(self.get_block_index_for_row(row))
+                rollback_obj = self.__create_local_rollback_journal()
+                rollback_obj.add_block(self.get_block_index_for_row(row))
                 row.select_row(fields)
                 row.update_row(fields, values)
-                self.__close_local_rollback_journal(local_rollback_obj)
+                self.__close_local_rollback_journal(rollback_obj)
         threading_lock.release()
 
-    def insert(self, fields: typing.List[str] = [], values: typing.List = [], insert_index: int = -1,
+    def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                test_rollback: bool = False) -> typing.NoReturn:
         if self.is_transaction:
             method = DBMethod(self.__insert, fields, values, insert_index, test_rollback)
@@ -336,9 +336,9 @@ class Table:
         else:
             self.__insert(fields, values, insert_index, test_rollback)
 
-    def __insert(self, fields: typing.List[str] = [], values: typing.List = [], insert_index: int = -1,
+    def __insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False) -> typing.NoReturn:
-        global local_rollback_obj
+        local_rollback_obj = None
         position = self.get_free_row()
         if not self.is_transaction:
             local_rollback_obj = self.__create_local_rollback_journal()
@@ -456,7 +456,7 @@ class Table:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
 
-    def get_fields(self, fields: typing.List[str] = [], replace_fields: bool = False) -> typing.List[str]:
+    def get_fields(self, fields: typing.Tuple[str] = (), replace_fields: bool = False) -> typing.List[str]:
         is_all = replace_fields and (not fields or type(fields) != list)
         if ("*" in fields) or is_all:
             return self.fields
@@ -522,7 +522,7 @@ class Row:
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
 
-    def select_row(self, fields: typing.List[str] = []) -> typing.NoReturn:
+    def select_row(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
         fields = self.table.get_fields(fields)
         result = {}
         for field in fields:
@@ -530,7 +530,7 @@ class Row:
                 result[field] = self.fields_values_dict[field]
         self.fields_values_dict = result
 
-    def update_row(self, fields: typing.List[str] = [], values: typing.List = []) -> typing.NoReturn:
+    def update_row(self, fields: typing.Tuple[str] = (), values: typing.Tuple = ()) -> typing.NoReturn:
         for index, field in enumerate(fields):
             self.fields_values_dict[field] = values[index]
         self.write_row_to_file()
@@ -558,7 +558,7 @@ class Row:
             self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
 
-    def read_row_from_file(self, fields: typing.List[str] = []) -> typing.NoReturn:
+    def read_row_from_file(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
         fields = self.table.get_fields(fields, True)
         self.read_info()
         for field, pos in self.table.positions.items():
