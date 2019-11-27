@@ -553,10 +553,10 @@ class Row:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
-                                          self.index_in_file + value_position, field_type.size)
             if is_test and field_index:
                 return
+            self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
+                                          self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self, fields: typing.List[str] = []) -> typing.NoReturn:
         fields = self.table.get_fields(fields, True)
