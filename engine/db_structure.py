@@ -2,6 +2,7 @@ import engine.bin_file as bin_py
 import threading
 import typing
 import exception
+import fnmatch
 import os
 
 threading_lock = threading.Lock()
@@ -32,9 +33,18 @@ class Database:
                 self.write_table_count(self.tables_count)
                 self.file.close()
 
+    def __get_journal_files(self) -> typing.List[str]:
+        filename_list = []
+        for file in os.listdir('.'):
+            if fnmatch.fnmatch(file, 'journal*'):
+                filename_list.append(file)
+        return filename_list
+
     def __check_journal(self) -> bool:
-        if os.path.isfile("journal.log"):
-            return True
+        filename_list = self.__get_journal_files()
+        for filename in filename_list:
+            if os.path.isfile(filename):
+                return True
         return False
 
     def __update_table_metadata(self, table) -> typing.NoReturn:
