@@ -224,8 +224,7 @@ class preprocessor:
 
 
     def insert(self, name: str, fields: list, values: list):
-        new_values = self.get_values(name, values)
-        if not self.is_table_exists(name):
+        if not (self.is_table_exists(name)):
             try:
                 raise exception.TableNotExists(name)
             except Exception as ex:
@@ -235,17 +234,19 @@ class preprocessor:
                 raise exception.FieldNotExists(self.is_fields_exist(name, fields)[1])
             except Exception as ex:
                 print(ex)
-        elif not new_values[0]:
-            try:
-                raise exception.InvalidDataType()
-            except Exception as ex:
-                print(ex)
         else:
-            table_index = self.get_table_index(name)
-            if len(fields) == 0:
-                for i in range(len(values)):
-                    fields.append(self.db.tables[table_index].fields[i])
-            self.db.tables[table_index].insert(fields, new_values[1])
+            new_values = self.get_values(name, values)
+            if not new_values[0]:
+                try:
+                    raise exception.InvalidDataType()
+                except Exception as ex:
+                    print(ex)
+            else:
+                table_index = self.get_table_index(name)
+                if len(fields) == 0:
+                    for i in range(len(values)):
+                        fields.append(self.db.tables[table_index].fields[i])
+                self.db.tables[table_index].insert(fields, new_values[1])
 
     def update(self, name: str, fields: list, values: list, condition):
         if not self.is_table_exists(name):
