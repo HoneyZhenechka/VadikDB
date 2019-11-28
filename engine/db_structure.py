@@ -641,8 +641,10 @@ class Transaction:
 
 
 class RollbackLog:
-    def __init__(self, db_file: bin_py.BinFile, row_length: int = 0):
+    def __init__(self, db_file: bin_py.BinFile, row_length: int = 0, filename: str = ""):
         self.file = bin_py.BinFile("journal.log")
+        if filename != "":
+            self.file = bin_py.BinFile(filename)
         self.blocks = []
         self.first_rollback_index = 16
         self.block_count = 0
