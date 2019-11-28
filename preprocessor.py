@@ -97,6 +97,7 @@ class preprocessor:
     def get_correct_values(self, name: str, values: list, row, fields=()) -> list:
         table_index = self.get_table_index(name)
         types = []
+        new_values = []
         is_exception = False
 
         if len(fields) == 0:
@@ -112,23 +113,25 @@ class preprocessor:
         for i in range(len(values)):
             if types[i].name == "int":
                 try:
-                    values[i] = int(self.solve_expression(values[i], row))
+                    new_values.append(int(self.solve_expression(values[i], row)))
                 except:
                     is_exception = True
-            if types[i].name == "bool":
+            elif types[i].name == "bool":
                 if self.solve_expression(values[i], row) == "False":
-                    values[i] = False
+                    new_values.append(False)
                 elif self.solve_expression(values[i], row) == "True":
-                    values[i] = True
+                    new_values.append(True)
                 else:
                     is_exception = True
+            else:
+                new_values.append(str(values[i].getRootVal()))
         if is_exception:
             try:
                 raise exception.InvalidDataType()
             except Exception as ex:
                 print(ex)
                 return []
-        return values
+        return new_values
 
     def get_values(self, name:str, values:list, fields=()):
         table_index = self.get_table_index(name)
@@ -266,7 +269,7 @@ class preprocessor:
             new_values = []
             for row in self.db.tables[table_index].rows:
                 if self.solve_condition(condition, row):
-                    new_values = (self.get_correct_values(name, values, row, fields))
+                    new_values.append(self.get_correct_values(name, values, row, fields))
                     rows.append(row)
             self.db.tables[table_index].update(fields, new_values, rows)
 
