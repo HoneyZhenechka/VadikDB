@@ -79,7 +79,7 @@ def test_update():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
     db.tables[0].get_rows()
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
-    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]])
     db.tables[0].get_rows()
     assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 99
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
@@ -97,8 +97,8 @@ def test_select():
 
 def test_transaction():
     db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], ["lovetsov"], [db.tables[0].rows[0]])
-    db.tables[0].update(["zhenya1"], [98], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya1"], [[98]], [db.tables[0].rows[0]])
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
     db.tables[0].delete([db.tables[0].rows[-1].index_in_file])
@@ -113,7 +113,7 @@ def test_transaction():
 
 def test_read_commited():
     db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], ["anime"], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya2"], [["anime"]], [db.tables[0].rows[0]])
     result_rows = db.tables[0].select(["zhenya2"], db.tables[0].rows)
     result_value = result_rows[0].fields_values_dict["zhenya2"]
     db.tables[0].end_transaction()
@@ -136,7 +136,7 @@ def test_rollback():
 
 def test_wide_rollback():
     db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], ["xxx"], [db.tables[0].rows[0]])
+    db.tables[0].update(["zhenya2"], [["xxx"]], [db.tables[0].rows[0]])
     db.tables[0].end_transaction(True)
     db.close_db()
     db.connect_to_db("zhavoronkov.vdb")

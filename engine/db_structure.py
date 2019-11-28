@@ -323,18 +323,18 @@ class Table:
 
     def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple) -> typing.NoReturn:
         threading_lock.acquire()
-        for row in rows:
+        for i in range(len(rows)):
             if self.is_transaction:
-                first_update_command = DBMethod(row.select_row, fields)
+                first_update_command = DBMethod(rows[i].select_row, fields)
                 self.transaction_obj.append(first_update_command)
-                second_update_command = DBMethod(row.update_row, fields, values)
+                second_update_command = DBMethod(rows[i].update_row, fields, values[i])
                 self.transaction_obj.append(second_update_command)
-                self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
+                self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
             else:
                 rollback_obj = self.__create_local_rollback_journal()
-                rollback_obj.add_block(self.get_block_index_for_row(row))
-                row.select_row(fields)
-                row.update_row(fields, values)
+                rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
+                rows[i].select_row(fields)
+                rows[i].update_row(fields, values[i])
                 self.__close_local_rollback_journal(rollback_obj)
         threading_lock.release()
 
