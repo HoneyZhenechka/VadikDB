@@ -114,3 +114,4 @@ TestResults
 *.user
 *.sln
 *.vdb
+*.log
