@@ -11,7 +11,10 @@ tokens = (
     'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
     'LBRACKET', 'COMMA', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
-    'STAR'
+    'STAR', 'NOT_EQUAL', 'GREATER_THAN',
+    'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
+    'LESS_THAN_OR_EQUAL', 'OR',
+    'NOT', 'AND'
 )
 
 ident = r'[a-z A-Z 0-9 \.]\w*'
@@ -41,7 +44,15 @@ t_MINUS = r'\-'
 t_STAR = r'\*'
 t_DIVISION = r'\/'
 
-t_EQUAL = r'\=\=|\=|"IS"'
+t_EQUAL = r'\='
+t_NOT_EQUAL = r'!='
+t_GREATER_THAN = r'\>'
+t_LESS_THAN = r'\<'
+t_GREATER_THAN_OR_EQUAL = r'>='
+t_LESS_THAN_OR_EQUAL = r'<='
+t_OR = r'OR'
+t_NOT = 'NOT'
+t_AND = 'AND'
 
 
 @TOKEN(ident)
@@ -96,6 +107,33 @@ def t_NAME(t):
 
     elif (t.value == '/'):
         t.type = 'DIVISION'
+
+    elif (t.value.upper() == '='):
+        t.type = 'EQUAL'
+
+    elif (t.value.upper() == '!='):
+        t.type = 'NOT_EQUAL'
+
+    elif (t.value.upper() == '>'):
+        t.type = 'GREATER_THAN'
+
+    elif (t.value.upper() == '<'):
+        t.type = 'LESS_THAN'
+
+    elif (t.value.upper() == '>='):
+        t.type = 'GREATER_THAN_OR_EQUAL'
+
+    elif (t.value.upper() == '<='):
+        t.type = 'LESS_THAN_OR_EQUAL'
+
+    elif (t.value.upper() == 'OR'):
+        t.type = 'OR'
+
+    elif (t.value.upper() == 'NOT'):
+        t.type = 'NOT'
+
+    elif (t.value.upper() == 'AND'):
+        t.type = 'AND'
 
     elif (
             t.value.lower() == 'int' or

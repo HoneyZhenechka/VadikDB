@@ -5,7 +5,27 @@ from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
 
 
-def build_parse_tree(list):
+def build_tree_condition(list):
+    if len(list) == 1:
+        return list[0]
+    tree = BinaryTree('')
+    for i in range(len(list)):
+        if type(list[i]) is BinaryTree:
+            if tree.getRootVal() == '':
+                tree.insertLeft(list[i])
+            else:
+                tree.insertRight(list[i])
+        elif tree.getRootVal() in ['AND', 'OR', 'or', 'and']:
+            new_tree = BinaryTree('')
+            new_tree.setRootVal(list[i])
+            new_tree.insertLeft(tree)
+            tree = new_tree
+        else:
+            tree.setRootVal(list[i])
+    return tree
+
+
+def build_tree_expression(list):
     stack = Stack()
     tree = BinaryTree('')
     if len(list) == 1:
@@ -89,7 +109,7 @@ class Struct:
 
 class PCreate(Struct):
 
-    def __init__(self, name="", fields=[]):
+    def __init__(self, name="", fields=()):
         self.name = name
         self.type = "create"
         self.fields = fields
@@ -111,7 +131,7 @@ class PDrop(Struct):
 
 class PSelect(Struct):
 
-    def __init__(self, select_body, condition=["", ""]):
+    def __init__(self, select_body, condition=True):
         self.type = "select"
         self.select = select_body
         self.condition = condition
@@ -119,7 +139,7 @@ class PSelect(Struct):
 
 class PSelectBody(Struct):
 
-    def __init__(self, name="", fields=[], isStar=False):
+    def __init__(self, name="", fields=(), isStar=False):
         self.name = name
         self.fields = fields
         self.isStar = isStar
@@ -134,7 +154,7 @@ class PInsert(Struct):
 
 class PInsertBody(Struct):
 
-    def __init__(self, name="", fields=[], values=[]):
+    def __init__(self, name="", fields=(), values=()):
         self.name = name
         self.fields = fields
         self.values = values
@@ -142,7 +162,7 @@ class PInsertBody(Struct):
 
 class PUpdate(Struct):
 
-    def __init__(self, name="", set=[[], []], condition=["", ""]):
+    def __init__(self, name="", set=((),()), condition=True):
         self.name = name
         self.type = "update"
         self.fields = set[0]
@@ -152,7 +172,7 @@ class PUpdate(Struct):
 
 class PDelete(Struct):
 
-    def __init__(self, name="", condition=["", ""]):
+    def __init__(self, name="", condition=True):
         self.name = name
         self.type = "delete"
         self.condition = condition
@@ -262,17 +282,17 @@ def p_update_body(p):
 
 
 def p_expression(p):
-    '''expression : field EQUAL field
-                  | expression COMMA field EQUAL field'''
+    '''expression : field EQUAL tree_expression
+                  | expression COMMA field EQUAL tree_expression'''
 
     if len(p) == 4:
         p[0] = [[],[]]
         p[0][0].append(p[1])
-        p[0][1].append(p[3])
+        p[0][1].append(build_tree_expression(p[3]))
     else:
         p[0] = p[1]
         p[0][0].append(p[3])
-        p[0][1].append(p[5])
+        p[0][1].append(build_tree_expression(p[5]))
 
 
 def p_delete(p):
@@ -302,27 +322,42 @@ def p_field(p):
     p[0] = p[1]
 
 
-def p_operator(p):
-    '''operator : PLUS
-                | MINUS
-                | STAR
-                | DIVISION'''
-
-    p[0] = p[1]
-
-
 def p_condition(p):
-    '''condition : WHERE field EQUAL tree'''
+    '''condition : WHERE tree_condition'''
 
-    p[0] = [p[2], build_parse_tree(p[4])]
+    p[0] = build_tree_condition(p[2])
 
 
-def p_tree(p):
-    '''tree : field
-            | field operator tree
-            | operator tree
-            | LBRACKET tree RBRACKET
-            | tree operator tree'''
+def p_tree_condition(p):
+    '''tree_condition : tree_comparison operator_condition tree_condition
+                        | tree_comparison
+                        | tree_comparison operator_condition tree_comparison'''
+    p[0] = []
+    for i in range(len(p) - 1):
+        try:
+            if type(p[i + 1]) is str:
+                p[0].append(p[i + 1])
+            else:
+                for el in p[i + 1]:
+                    p[0].append(el)
+        except:
+            p[0].append(p[i + 1])
+
+
+def p_tree_comparison(p):
+    '''tree_comparison :  tree_expression operator_comparison tree_expression'''
+
+    p[0] = BinaryTree('')
+    p[0].insertLeft(build_tree_expression(p[1]))
+    p[0].setRootVal(p[2])
+    p[0].insertRight(build_tree_expression(p[3]))
+
+def p_tree_expression(p):
+    '''tree_expression : field
+            | field operator_expression tree_expression
+            | operator_expression tree_expression
+            | LBRACKET tree_expression RBRACKET
+            | tree_expression operator_expression tree_expression'''
 
     p[0] = []
     for i in range(len(p) - 1):
@@ -331,6 +366,33 @@ def p_tree(p):
         else:
             for el in p[i+1]:
                 p[0].append(el)
+
+
+def p_operator_condition(p):
+    '''operator_condition : AND
+                            | OR '''
+
+    p[0] = p[1]
+
+
+def p_operator_comparison(p):
+    '''operator_comparison : EQUAL
+                            | NOT_EQUAL
+                            | GREATER_THAN
+                            | LESS_THAN
+                            | GREATER_THAN_OR_EQUAL
+                            | LESS_THAN_OR_EQUAL'''
+
+    p[0] = p[1]
+
+
+def p_operator_expression(p):
+    '''operator_expression : PLUS
+                | MINUS
+                | STAR
+                | DIVISION'''
+
+    p[0] = p[1]
 
 
 def p_type(p):
