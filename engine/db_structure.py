@@ -397,7 +397,8 @@ class Table:
             current_row.read_info()
             current_row.read_row_from_file()
             row_index = current_row.next_index
-            yield current_row
+            if current_row.row_available != 2:
+                yield current_row
 
     def get_rows(self, check: bool = True) -> typing.List:
         new_rows_list = []
