@@ -36,7 +36,7 @@ class Database:
     def __get_journal_files(self) -> typing.List[str]:
         filename_list = []
         for file in os.listdir('.'):
-            if fnmatch.fnmatch(file, 'journal*'):
+            if fnmatch.fnmatch(file, 'rollback_journal*'):
                 filename_list.append(file)
         return filename_list
 
@@ -62,7 +62,7 @@ class Database:
         rollback_obj.get_blocks()
         rollback_obj.restore_blocks()
         rollback_obj.close_file()
-        os.remove("journal.log")
+        os.remove("rollback_journal.log")
         for table in self.tables:
             self.__update_table_metadata(table)
 
@@ -172,7 +172,7 @@ class Table:
 
     def __close_local_rollback_journal(self, rollback_obj) -> typing.NoReturn:
         rollback_obj.close_file()
-        os.remove("journal.log")
+        os.remove("rollback_journal.log")
 
     def start_transaction(self) -> typing.NoReturn:
         self.is_transaction = True
@@ -185,7 +185,7 @@ class Table:
         self.transaction_obj = None
         self.is_transaction = False
         if not is_rollback:
-            os.remove("journal.log")
+            os.remove("rollback_journal.log")
 
     def rollback_transaction(self) -> typing.NoReturn:
         rollback_obj = Transaction(self)
@@ -637,12 +637,12 @@ class Transaction:
         self.table.last_row_index = self.table.get_rows(False)[-1].index_in_file
         self.table.row_count = len(self.table.get_rows(False))
         self.table.write_meta_info()
-        os.remove("journal.log")
+        os.remove("rollback_journal.log")
 
 
 class RollbackLog:
     def __init__(self, db_file: bin_py.BinFile, row_length: int = 0, filename: str = ""):
-        self.file = bin_py.BinFile("journal.log")
+        self.file = bin_py.BinFile("rollback_journal.log")
         if filename != "":
             self.file = bin_py.BinFile(filename)
         self.blocks = []
