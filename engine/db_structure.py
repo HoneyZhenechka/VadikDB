@@ -610,15 +610,8 @@ class Transaction:
         self.table = table
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length)
 
-    def remove(self, command: DBMethod) -> typing.NoReturn:
-        self.commands.remove(command)
-
     def append(self, command: DBMethod) -> typing.NoReturn:
         self.commands.append(command)
-
-    def __iter__(self) -> typing.Iterable:
-        for command in self.commands:
-            yield command
 
     def commit(self) -> typing.NoReturn:
         for command in self.commands:
