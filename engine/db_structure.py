@@ -644,6 +644,7 @@ class RollbackLog:
         self.db_file = db_file
         self.block_size = 0
         if row_length:
+            self.row_length = row_length
             self.block_size = 12 + 512 * row_length
 
     def check_original_indexes(self, index: int) -> bool:
