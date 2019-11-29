@@ -148,6 +148,11 @@ class preprocessor:
                         types.append(self.db.tables[table_index].types[index_of_field])
 
         for i in range(len(values)):
+            if types[i].name == 'float':
+                try:
+                    values[i] = float(values[i])
+                except:
+                    return False, values
             if types[i].name == "int":
                 try:
                     values[i] = int(values[i])
@@ -223,8 +228,6 @@ class preprocessor:
                     result += str(row.fields_values_dict[field]) + " | "
                 result += "\n"
             print(result)
-
-
 
     def insert(self, name: str, fields: list, values: list):
         if not (self.is_table_exists(name)):

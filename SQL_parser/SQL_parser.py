@@ -91,6 +91,7 @@ def build_tree_expression(list):
                 tree = parent
     return tree
 
+
 class Struct:
 
     def __init__(self, **dictionary):

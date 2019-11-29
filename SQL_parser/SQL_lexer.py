@@ -4,7 +4,6 @@ import re
 
 
 tokens = (
-
     'CREATE', 'SHOW', 'DROP', 'SELECT', 'INSERT', 'UPDATE', 'DELETE',
     'FROM', 'INTO', 'TABLE', 'WHERE', 'SET',
     'NAME', 'VALUES',
@@ -17,7 +16,7 @@ tokens = (
     'NOT', 'AND'
 )
 
-ident = r'[a-z A-Z 0-9 \.]\w*'
+ident = r'\d+\.\d+|\w+'
 
 t_CREATE = r'CREATE'
 t_SHOW = r'SHOW'
@@ -25,7 +24,7 @@ t_DROP = r'DROP'
 t_SELECT = r'SELECT'
 t_INSERT = r'INSERT'
 t_UPDATE = r'UPDATE'
-p_DELETE = r'DELETE'
+t_DELETE = r'DELETE'
 
 t_TABLE = r'TABLE'
 t_FROM = r'FROM'
@@ -51,8 +50,8 @@ t_LESS_THAN = r'\<'
 t_GREATER_THAN_OR_EQUAL = r'>='
 t_LESS_THAN_OR_EQUAL = r'<='
 t_OR = r'OR'
-t_NOT = 'NOT'
-t_AND = 'AND'
+t_NOT = r'NOT'
+t_AND = r'AND'
 
 
 @TOKEN(ident)
@@ -134,6 +133,15 @@ def t_NAME(t):
 
     elif (t.value.upper() == 'AND'):
         t.type = 'AND'
+
+    elif (t.value == '('):
+        t.type = 'LBRACKET'
+
+    elif (t.value == ')'):
+        t.type = 'RBRACKET'
+
+    elif (t.value == ';'):
+        t.type = 'ENDREQUEST'
 
     elif (
             t.value.lower() == 'int' or
