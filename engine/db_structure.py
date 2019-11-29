@@ -145,7 +145,7 @@ class Table:
         self.fields_count = 0
         self.row_count = 0
         self.types = []
-        self.types_dict = {"bool": Type("bool", 1), "int": Type("int", 4), "float": Type("float", 8),
+        self.types_dict = {"boo": Type("bool", 1), "int": Type("int", 4), "flo": Type("float", 8),
                            "str": Type("str", 256)}
         self.positions = {"row_id": 1}
         self.is_transaction = False
@@ -250,7 +250,7 @@ class Table:
         self.file.write_integer(self.fields_count, self.index_in_file + 32 + 20, 2)
         current_position = self.index_in_file + 32 + 22
         for index, field in enumerate(self.fields):
-            self.file.write_str(field + self.types[index].name, current_position, 24)
+            self.file.write_str(field + self.types[index].name[:3], current_position, 24)
             current_position += 24
         bytes_count = self.size - (current_position - self.index_in_file)
         self.file.write_str("", current_position, bytes_count)
@@ -453,6 +453,12 @@ class Table:
             self.row_length += self.types[index].size
         self.row_length += 6
 
+    def __check_type_name(self, typename):
+        for key in self.types_dict:
+            if typename == self.types_dict[key].name:
+                return True
+        return False
+
     def fill_table_fields(self, fields_dict: typing.Dict = {}) -> typing.NoReturn:
         fields_list = list(fields_dict.keys())
         types_list = list(fields_dict.values())
@@ -461,8 +467,8 @@ class Table:
         self.types = types_list
         self.fields = fields_list
         for index, type_name in enumerate(self.types):
-            if type_name in self.types_dict:
-                self.types[index] = self.types_dict[type_name]
+            if self.__check_type_name(type_name):
+                self.types[index] = self.types_dict[type_name[:3]]
             else:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
