@@ -671,14 +671,14 @@ class RollbackLog:
         if len(self.blocks):
             self.blocks[-1].next_index = new_rollback_index
             self.blocks[-1].write_block(self.file)
-        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
+        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index, self.row_length)
         new_block.write_block(self.file)
         self.blocks.append(new_block)
 
     def get_blocks(self) -> typing.NoReturn:
         current_index = self.first_rollback_index
         while current_index != 0:
-            current_block = RollbackBlock(current_index, 0, 0, 0)
+            current_block = RollbackBlock(current_index, 0, 0, 0, 0)
             current_block.read_block(self.file)
             current_index = current_block.next_index
             self.blocks.append(current_block)
@@ -689,12 +689,15 @@ class RollbackLog:
 
 
 class RollbackBlock:
-    def __init__(self, rollback_index: int, size: int, block_int: int, original_index: int):
+    def __init__(self, rollback_index: int, size: int, block_int: int, original_index: int, row_length: int):
         self.block_size = size
         self.block_int = block_int
         self.index_in_file = rollback_index
+        self.first_row_index = rollback_index + 12
         self.next_index = 0
         self.original_index = original_index
+        self.row_length = row_length
+        self.rows_indexes = []
 
     def write_block(self, file: bin_py.BinFile) -> typing.NoReturn:
         if self.block_size:
@@ -708,3 +711,17 @@ class RollbackBlock:
         self.block_int = file.read_integer(self.index_in_file + 3, self.block_size)
         self.next_index = file.read_integer(self.index_in_file + 3 + self.block_size, 3)
         self.original_index = file.read_integer(self.index_in_file + self.block_size + 6, 3)
+
+    def get_rows_indexes(self):
+        rows_indexes = []
+        current_row_index = self.first_row_index
+        while current_row_index < self.block_size:
+            rows_indexes.append(current_row_index)
+            current_row_index += self.row_length
+        self.rows_indexes = rows_indexes
+
+    def get_row_meta_info(self, file: bin_py.BinFile, row_index: int):
+        meta_dict = {"row_available": file.read_integer(row_index, 1),
+                     "previous_index": file.read_integer(self.row_length - 3, 3),
+                     "next_index": file.read_integer(self.row_length - 6, 3)}
+        return meta_dict
