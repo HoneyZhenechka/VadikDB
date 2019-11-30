@@ -181,9 +181,7 @@ class Table:
 
     def end_transaction(self, is_rollback: bool = False) -> typing.NoReturn:
         self.transaction_obj.commit()
-        self.transaction_obj.rollback_journal.file.close()
         self.transaction_obj = None
-        self.is_transaction = False
         if not is_rollback:
             os.remove("rollback_journal.log")
 
@@ -292,7 +290,7 @@ class Table:
     def __delete_row_and_add_block(self, row) -> typing.NoReturn:
         if self.is_transaction:
             command = DBMethod(self.__delete_row, row)
-            self.transaction_obj.append(command)
+            self.transaction_obj.execute(command)
             self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
         if not self.is_transaction:
             rollback_obj = self.__create_local_rollback_journal()
@@ -316,20 +314,38 @@ class Table:
 
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple) -> typing.List:
         selected_rows = []
-        for row in rows:
-            row.select_row(fields)
-            selected_rows.append(row)
+        if self.is_transaction:
+            self.transaction_obj.rollback_journal.get_blocks()
+            rollback_row = RollbackRow(self.row_length)
+            rows_meta = []
+            for block in self.transaction_obj.rollback_journal.blocks:
+                block.get_rows_indexes(self.transaction_obj.rollback_journal.file, self.row_length)
+                for index in block.rows_indexes:
+                    rows_meta.append(rollback_row.get_row_meta_info(self.transaction_obj.rollback_journal.file, index))
+            selected_rollback_meta = []
+            for row in rows:
+                for meta in rows_meta:
+                    if (meta["next_index"] == row.next_index) and (meta["previous_index"] == row.previous_index) and \
+                            (meta["row_available"] == row.row_available):
+                        selected_rollback_meta.append(meta)
+            for meta in selected_rollback_meta:
+                selected_rows.append(rollback_row.get_row(self.transaction_obj.rollback_journal.file,
+                                                          meta["rollback_index"], self))
+        else:
+            for row in rows:
+                row.select_row(fields)
+                selected_rows.append(row)
         return selected_rows
 
     def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple) -> typing.NoReturn:
         threading_lock.acquire()
         for i in range(len(rows)):
             if self.is_transaction:
-                first_update_command = DBMethod(rows[i].select_row, fields)
-                self.transaction_obj.append(first_update_command)
-                second_update_command = DBMethod(rows[i].update_row, fields, values[i])
-                self.transaction_obj.append(second_update_command)
                 self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
+                first_update_command = DBMethod(rows[i].select_row, fields)
+                self.transaction_obj.execute(first_update_command)
+                second_update_command = DBMethod(rows[i].update_row, fields, values[i])
+                self.transaction_obj.execute(second_update_command)
             else:
                 rollback_obj = self.__create_local_rollback_journal()
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
@@ -342,7 +358,7 @@ class Table:
                test_rollback: bool = False) -> typing.NoReturn:
         if self.is_transaction:
             method = DBMethod(self.__insert, fields, values, insert_index, test_rollback)
-            self.transaction_obj.append(method)
+            self.transaction_obj.execute(method)
         else:
             self.__insert(fields, values, insert_index, test_rollback)
 
@@ -353,7 +369,7 @@ class Table:
         if not self.is_transaction:
             local_rollback_obj = self.__create_local_rollback_journal()
             local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
-        if self.is_transaction:
+        else:
             self.transaction_obj.rollback_journal.add_block(self.current_block_index)
         if insert_index == -1:
             insert_index = self.last_row_index
@@ -473,8 +489,8 @@ class Table:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
 
-    def get_fields(self, fields: typing.Tuple[str] = (), replace_fields: bool = False) -> typing.List[str]:
-        is_all = replace_fields and (not fields or type(fields) != list)
+    def get_fields(self, fields: typing.Tuple = (), replace_fields: bool = False) -> typing.List[str]:
+        is_all = replace_fields and (not fields or type(fields) != tuple)
         if ("*" in fields) or is_all:
             return self.fields
         result_fields = []
@@ -612,17 +628,15 @@ class DBMethod:
 
 class Transaction:
     def __init__(self, table: Table):
-        self.commands = []
         self.table = table
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length)
 
-    def append(self, command: DBMethod) -> typing.NoReturn:
-        self.commands.append(command)
+    def execute(self, command: DBMethod) -> typing.NoReturn:
+        command()
 
     def commit(self) -> typing.NoReturn:
-        for command in self.commands:
-            command()
-        self.commands = []
+        self.rollback_journal.file.close()
+        self.table.is_transaction = False
 
     def rollback(self) -> typing.NoReturn:
         self.rollback_journal.open_file()
@@ -678,14 +692,15 @@ class RollbackLog:
         if len(self.blocks):
             self.blocks[-1].next_index = new_rollback_index
             self.blocks[-1].write_block(self.file)
-        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index, self.row_length)
+        new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
         new_block.write_block(self.file)
         self.blocks.append(new_block)
 
     def get_blocks(self) -> typing.NoReturn:
+        self.blocks = []
         current_index = self.first_rollback_index
         while current_index != 0:
-            current_block = RollbackBlock(current_index, 0, 0, 0, 0)
+            current_block = RollbackBlock(current_index, 0, 0, 0)
             current_block.read_block(self.file)
             current_index = current_block.next_index
             self.blocks.append(current_block)
@@ -696,14 +711,13 @@ class RollbackLog:
 
 
 class RollbackBlock:
-    def __init__(self, rollback_index: int, size: int, block_int: int, original_index: int, row_length: int):
+    def __init__(self, rollback_index: int, size: int, block_int: int, original_index: int):
         self.block_size = size
         self.block_int = block_int
         self.index_in_file = rollback_index
-        self.first_row_index = rollback_index + 12
+        self.first_row_index = self.index_in_file + 3 + 12
         self.next_index = 0
         self.original_index = original_index
-        self.row_length = row_length
         self.rows_indexes = []
 
     def write_block(self, file: bin_py.BinFile) -> typing.NoReturn:
@@ -719,16 +733,44 @@ class RollbackBlock:
         self.next_index = file.read_integer(self.index_in_file + 3 + self.block_size, 3)
         self.original_index = file.read_integer(self.index_in_file + self.block_size + 6, 3)
 
-    def get_rows_indexes(self):
+    def get_rows_indexes(self, file: bin_py.BinFile, row_length: int):
         rows_indexes = []
         current_row_index = self.first_row_index
-        while current_row_index < self.block_size:
-            rows_indexes.append(current_row_index)
-            current_row_index += self.row_length
+        row = RollbackRow(row_length)
+        current_meta = row.get_row_meta_info(file, current_row_index)
+        if not current_meta["row_available"]:
+            return
+        while current_meta["row_available"]:
+            current_row_index += row_length
+            current_meta = row.get_row_meta_info(file, current_row_index)
+            rows_indexes.append(current_meta["rollback_index"])
         self.rows_indexes = rows_indexes
 
+
+class RollbackRow:
+    def __init__(self, row_length: int):
+        self.row_length = row_length
+
     def get_row_meta_info(self, file: bin_py.BinFile, row_index: int):
+        row_size = row_index + self.row_length
         meta_dict = {"row_available": file.read_integer(row_index, 1),
-                     "previous_index": file.read_integer(self.row_length - 3, 3),
-                     "next_index": file.read_integer(self.row_length - 6, 3)}
+                     "previous_index": file.read_integer(row_size - 3, 3),
+                     "next_index": file.read_integer(row_size - 6, 3),
+                     "rollback_index": row_index}
         return meta_dict
+
+    def get_row(self, file: bin_py.BinFile, row_index: int, table: Table):
+        fields = table.get_fields((), True)
+        meta_dict = self.get_row_meta_info(file, row_index)
+        rollback_row = Row(table, 0)
+        rollback_row.row_available = meta_dict["row_available"]
+        rollback_row.previous_index = meta_dict["previous_index"]
+        rollback_row.next_index = meta_dict["next_index"]
+        for field, pos in table.positions.items():
+            if field not in fields:
+                continue
+            index = table.fields.index(field)
+            field_type = table.types[index]
+            rollback_row.fields_values_dict[field] = file.read_by_type(field_type.name, row_index + pos,
+                                                                       field_type.size)
+        return rollback_row
