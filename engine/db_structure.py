@@ -326,7 +326,7 @@ class Table:
             for row in rows:
                 for meta in rows_meta:
                     if (meta["next_index"] == row.next_index) and (meta["previous_index"] == row.previous_index) and \
-                            (meta["row_available"] == row.row_available):
+                            (meta["row_available"] == row.row_available) and row.row_available:
                         selected_rollback_meta.append(meta)
             for meta in selected_rollback_meta:
                 selected_rows.append(rollback_row.get_row(self.transaction_obj.rollback_journal.file,
