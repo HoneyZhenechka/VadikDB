@@ -735,7 +735,7 @@ class RollbackBlock:
         self.next_index = file.read_integer(self.index_in_file + 3 + self.block_size, 3)
         self.original_index = file.read_integer(self.index_in_file + self.block_size + 6, 3)
 
-    def get_rows_indexes(self, file: bin_py.BinFile, row_length: int):
+    def get_rows_indexes(self, file: bin_py.BinFile, row_length: int) -> typing.NoReturn:
         rows_indexes = []
         current_row_index = self.first_row_index
         row = RollbackRow(row_length)
@@ -761,7 +761,7 @@ class RollbackRow:
                      "rollback_index": row_index}
         return meta_dict
 
-    def get_row(self, file: bin_py.BinFile, row_index: int, table: Table):
+    def get_row(self, file: bin_py.BinFile, row_index: int, table: Table) -> Row:
         fields = table.get_fields((), True)
         meta_dict = self.get_row_meta_info(file, row_index)
         rollback_row = Row(table, 0)
