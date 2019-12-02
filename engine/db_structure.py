@@ -1,3 +1,6 @@
+import random
+import string
+
 import engine.bin_file as bin_py
 import threading
 import typing
@@ -126,6 +129,11 @@ class Database:
         self.file = None
         self.tables_count = 0
         self.tables = []
+
+
+def __get_random_string(length: int) -> str:
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 class Table:
