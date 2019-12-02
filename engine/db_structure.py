@@ -1,9 +1,8 @@
-import random
-import string
-
 import engine.bin_file as bin_py
 import threading
 import typing
+import random
+import string
 import exception
 import fnmatch
 import os
