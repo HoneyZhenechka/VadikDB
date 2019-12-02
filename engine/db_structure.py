@@ -54,15 +54,17 @@ class Database:
         table.write_meta_info()
 
     def wide_rollback(self) -> typing.NoReturn:
-        rollback_obj = RollbackLog(self.file, 0)
-        rollback_obj.open_file()
-        journal_file_size = rollback_obj.file.read_integer(0, 16)
-        if journal_file_size < os.stat(self.filename).st_size:
-            os.truncate(self.filename, journal_file_size)
-        rollback_obj.get_blocks()
-        rollback_obj.restore_blocks()
-        rollback_obj.close_file()
-        os.remove("rollback_journal.log")
+        filename_list = self.__get_journal_files()
+        for filename in filename_list:
+            rollback_obj = RollbackLog(self.file, 0, filename)
+            rollback_obj.open_file()
+            journal_file_size = rollback_obj.file.read_integer(0, 16)
+            if journal_file_size < os.stat(self.filename).st_size:
+                os.truncate(self.filename, journal_file_size)
+            rollback_obj.get_blocks()
+            rollback_obj.restore_blocks()
+            rollback_obj.close_file()
+            os.remove(filename)
         for table in self.tables:
             self.__update_table_metadata(table)
 
