@@ -4,6 +4,7 @@ import typing
 import random
 import string
 import exception
+import exception
 import fnmatch
 import os
 
@@ -190,10 +191,8 @@ class Table:
         self.transaction_obj.rollback_journal.create_file()
 
     def end_transaction(self, is_rollback: bool = False) -> typing.NoReturn:
-        self.transaction_obj.commit()
+        self.transaction_obj.commit(is_rollback)
         self.transaction_obj = None
-        if not is_rollback:
-            os.remove("rollback_journal.log")
 
     def rollback_transaction(self) -> typing.NoReturn:
         rollback_obj = Transaction(self)
@@ -653,8 +652,10 @@ class Transaction:
     def execute(self, command: DBMethod) -> typing.NoReturn:
         command()
 
-    def commit(self) -> typing.NoReturn:
+    def commit(self, is_rollback: bool) -> typing.NoReturn:
         self.rollback_journal.file.close()
+        if not is_rollback:
+            os.remove("rollback_journal.log")
         self.table.is_transaction = False
 
     def rollback(self) -> typing.NoReturn:
