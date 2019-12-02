@@ -131,7 +131,7 @@ class Database:
         self.tables = []
 
 
-def __get_random_string(length: int) -> str:
+def get_random_string(length: int) -> str:
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
@@ -160,6 +160,7 @@ class Table:
         self.positions = {"row_id": 1}
         self.is_transaction = False
         self.transaction_obj = None
+        self.rollback_filenames = []
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -175,14 +176,14 @@ class Table:
             current_index = current_block.next_block
             yield current_block
 
-    def __create_local_rollback_journal(self):
-        rollback_obj = RollbackLog(self.file, self.row_length)
+    def __create_local_rollback_journal(self, name: str):
+        rollback_obj = RollbackLog(self.file, self.row_length, name)
         rollback_obj.create_file()
         return rollback_obj
 
     def __close_local_rollback_journal(self, rollback_obj) -> typing.NoReturn:
         rollback_obj.close_file()
-        os.remove("rollback_journal.log")
+        os.remove(rollback_obj.file.filename)
 
     def start_transaction(self) -> typing.NoReturn:
         self.is_transaction = True
@@ -285,6 +286,15 @@ class Table:
             self.positions[field] = field_position
             field_position += field_type.size
 
+    def get_random_filename(self) -> str:
+        while True:
+            random_string = get_random_string(10)
+            filename = "rollback_journal_" + random_string + ".log"
+            if filename not in self.rollback_filenames:
+                self.rollback_filenames.append(filename)
+                break
+        return filename
+
     def show_create(self) -> str:
         fields = [
             "'" + v + "' " + self.types[i].name
@@ -303,7 +313,7 @@ class Table:
             self.transaction_obj.execute(command)
             self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
         if not self.is_transaction:
-            rollback_obj = self.__create_local_rollback_journal()
+            rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
             self.__close_local_rollback_journal(rollback_obj)
@@ -357,7 +367,7 @@ class Table:
                 second_update_command = DBMethod(rows[i].update_row, fields, values[i])
                 self.transaction_obj.execute(second_update_command)
             else:
-                rollback_obj = self.__create_local_rollback_journal()
+                rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
                 rows[i].select_row(fields)
                 rows[i].update_row(fields, values[i])
@@ -377,7 +387,7 @@ class Table:
         local_rollback_obj = None
         position = self.get_free_row()
         if not self.is_transaction:
-            local_rollback_obj = self.__create_local_rollback_journal()
+            local_rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
         else:
             self.transaction_obj.rollback_journal.add_block(self.current_block_index)
