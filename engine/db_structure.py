@@ -333,6 +333,11 @@ class Table:
         selected_rows = []
         if self.is_transaction:
             self.transaction_obj.rollback_journal.get_blocks()
+            if not len(self.transaction_obj.rollback_journal.blocks):
+                for row in rows:
+                    row.select_row(fields)
+                    selected_rows.append(row)
+                return selected_rows
             rollback_row = RollbackRow(self.row_length)
             rows_meta = []
             for block in self.transaction_obj.rollback_journal.blocks:
