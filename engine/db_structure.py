@@ -188,6 +188,8 @@ class Table:
         transaction_obj = Transaction(self)
         self.transactions[transaction_obj.id] = transaction_obj
         self.transactions[transaction_obj.id].rollback_journal.create_file()
+        for block in self.get_blocks():
+            self.transactions[transaction_obj.id].rollback_journal.add_block(block.index_in_file)
         return transaction_obj.id
 
     def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
