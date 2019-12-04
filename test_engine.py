@@ -96,13 +96,13 @@ def test_select():
 
 
 def test_transaction():
-    db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]])
-    db.tables[0].update(["zhenya1"], [[98]], [db.tables[0].rows[0]])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
-    db.tables[0].delete([db.tables[0].rows[-1].index_in_file])
-    db.tables[0].end_transaction()
+    id = db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]], id)
+    db.tables[0].update(["zhenya1"], [[98]], [db.tables[0].rows[0]], id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"], transaction_id=id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"], transaction_id=id)
+    db.tables[0].delete([db.tables[0].rows[-1].index_in_file], id)
+    db.tables[0].end_transaction(id)
     db.tables[0].get_rows()
     assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
     assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 98
@@ -110,31 +110,31 @@ def test_transaction():
 
 
 def test_read_commited():
-    db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], [["anime"]], [db.tables[0].rows[0]])
-    result_rows = db.tables[0].select(["zhenya2"], db.tables[0].rows)
+    id = db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], [["anime"]], [db.tables[0].rows[0]], id)
+    result_rows = db.tables[0].select(["zhenya2"], db.tables[0].rows, id)
     result_value = result_rows[0].fields_values_dict["zhenya2"]
-    db.tables[0].end_transaction()
+    db.tables[0].end_transaction(id)
     assert result_value == "lovetsov"
 
 
 def test_rollback():
-    db.tables[0].start_transaction()
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssttttt_string_321"])
-    db.tables[0].end_transaction(True)
+    id = db.tables[0].start_transaction()
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"], transaction_id=id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"], transaction_id=id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssttttt_string_321"], transaction_id=id)
+    db.tables[0].end_transaction(id, True)
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 6
-    db.tables[0].rollback_transaction()
+    db.tables[0].rollback_transaction(id)
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 3
 
 
 def test_wide_rollback():
-    db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], [["xxx"]], [db.tables[0].rows[0]])
-    db.tables[0].end_transaction(True)
+    id = db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], [["xxx"]], [db.tables[0].rows[0]], id)
+    db.tables[0].end_transaction(id, True)
     db.close_db()
     db.connect_to_db("zhavoronkov.vdb")
     db.tables[0].get_rows()

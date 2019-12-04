@@ -157,8 +157,8 @@ class Table:
         self.types_dict = {"boo": Type("bool", 1), "int": Type("int", 4), "flo": Type("float", 8),
                            "str": Type("str", 256)}
         self.positions = {"row_id": 1}
-        self.is_transaction = False
-        self.transaction_obj = None
+        self.transactions = {}
+        self.max_transaction_id = 0
         self.rollback_filenames = []
 
     def __eq__(self, other) -> bool:
@@ -184,18 +184,19 @@ class Table:
         rollback_obj.close_file()
         os.remove(rollback_obj.file.filename)
 
-    def start_transaction(self) -> typing.NoReturn:
-        self.is_transaction = True
-        self.transaction_obj = Transaction(self)
-        self.transaction_obj.rollback_journal.create_file()
+    def start_transaction(self) -> int:
+        transaction_obj = Transaction(self)
+        self.transactions[transaction_obj.id] = transaction_obj
+        self.transactions[transaction_obj.id].rollback_journal.create_file()
+        return transaction_obj.id
 
-    def end_transaction(self, is_rollback: bool = False) -> typing.NoReturn:
-        self.transaction_obj.commit(is_rollback)
-        self.transaction_obj = None
+    def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
+        self.transactions[transaction_id].commit(is_rollback)
+        if not is_rollback:
+            del self.transactions[transaction_id]
 
-    def rollback_transaction(self) -> typing.NoReturn:
-        rollback_obj = Transaction(self)
-        rollback_obj.rollback()
+    def rollback_transaction(self, transaction_id: int) -> typing.NoReturn:
+        self.transactions[transaction_id].rollback()
 
     def create_block(self):
         self.file.seek(0, 2)
@@ -304,41 +305,42 @@ class Table:
         result_string += "--------------------------------------------------------"
         return result_string
 
-    def __delete_row_and_add_block(self, row) -> typing.NoReturn:
-        if self.is_transaction:
+    def __delete_row_and_add_block(self, row, transaction_id: int = 0) -> typing.NoReturn:
+        if transaction_id > 0:
             command = DBMethod(self.__delete_row, row)
-            self.transaction_obj.execute(command)
-            self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(row))
-        if not self.is_transaction:
+            self.transactions[transaction_id].execute(command)
+            self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
+        else:
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
             self.__close_local_rollback_journal(rollback_obj)
 
-    def delete(self, rows_indexes: typing.Tuple[int] = ()):
+    def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0):
         if not len(rows_indexes):
             row_index = self.first_row_index
             while row_index != 0:
                 current_row = Row(self, row_index)
                 current_row.read_info()
-                self.__delete_row_and_add_block(current_row)
+                self.__delete_row_and_add_block(current_row, transaction_id)
                 row_index = current_row.next_index
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
                 current_row.read_info()
-                self.__delete_row_and_add_block(current_row)
+                self.__delete_row_and_add_block(current_row, transaction_id)
 
-    def select(self, fields: typing.Tuple[str], rows: typing.Tuple) -> typing.List:
+    def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
         selected_rows = []
-        if self.is_transaction:
-            self.transaction_obj.rollback_journal.get_blocks()
+        if transaction_id > 0:
+            self.transactions[transaction_id].rollback_journal.get_blocks()
             rollback_row = RollbackRow(self.row_length)
             rows_meta = []
-            for block in self.transaction_obj.rollback_journal.blocks:
-                block.get_rows_indexes(self.transaction_obj.rollback_journal.file, self.row_length)
+            for block in self.transactions[transaction_id].rollback_journal.blocks:
+                block.get_rows_indexes(self.transactions[transaction_id].rollback_journal.file, self.row_length)
                 for index in block.rows_indexes:
-                    rows_meta.append(rollback_row.get_row_meta_info(self.transaction_obj.rollback_journal.file, index))
+                    rows_meta.append(rollback_row.get_row_meta_info(
+                        self.transactions[transaction_id].rollback_journal.file, index))
             selected_rollback_meta = []
             for row in rows:
                 for meta in rows_meta:
@@ -346,7 +348,7 @@ class Table:
                             (meta["row_available"] == row.row_available) and row.row_available:
                         selected_rollback_meta.append(meta)
             for meta in selected_rollback_meta:
-                selected_rows.append(rollback_row.get_row(self.transaction_obj.rollback_journal.file,
+                selected_rows.append(rollback_row.get_row(self.transactions[transaction_id].rollback_journal.file,
                                                           meta["rollback_index"], self))
         else:
             for row in rows:
@@ -354,15 +356,16 @@ class Table:
                 selected_rows.append(row)
         return selected_rows
 
-    def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple) -> typing.NoReturn:
+    def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple, transaction_id: int = 0) -> \
+            typing.NoReturn:
         threading_lock.acquire()
         for i in range(len(rows)):
-            if self.is_transaction:
-                self.transaction_obj.rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
+            if transaction_id > 0:
+                self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
                 first_update_command = DBMethod(rows[i].select_row, fields)
-                self.transaction_obj.execute(first_update_command)
+                self.transactions[transaction_id].execute(first_update_command)
                 second_update_command = DBMethod(rows[i].update_row, fields, values[i])
-                self.transaction_obj.execute(second_update_command)
+                self.transactions[transaction_id].execute(second_update_command)
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
@@ -372,22 +375,22 @@ class Table:
         threading_lock.release()
 
     def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
-               test_rollback: bool = False) -> typing.NoReturn:
-        if self.is_transaction:
-            method = DBMethod(self.__insert, fields, values, insert_index, test_rollback)
-            self.transaction_obj.execute(method)
+               test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
+        if transaction_id > 0:
+            method = DBMethod(self.__insert, fields, values, insert_index, test_rollback, transaction_id)
+            self.transactions[transaction_id].execute(method)
         else:
-            self.__insert(fields, values, insert_index, test_rollback)
+            self.__insert(fields, values, insert_index, test_rollback, transaction_id)
 
     def __insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
-                 test_rollback: bool = False) -> typing.NoReturn:
+                 test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
         local_rollback_obj = None
         position = self.get_free_row()
-        if not self.is_transaction:
+        if not transaction_id:
             local_rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             local_rollback_obj.add_block(self.get_block_index_for_row(self.current_block_index))
         else:
-            self.transaction_obj.rollback_journal.add_block(self.current_block_index)
+            self.transactions[transaction_id].rollback_journal.add_block(self.current_block_index)
         if insert_index == -1:
             insert_index = self.last_row_index
         saved_next_index = 0
@@ -420,7 +423,7 @@ class Table:
             self.last_row_index = position
             self.write_meta_info()
         self.row_count += 1
-        if not self.is_transaction:
+        if not transaction_id:
             self.__close_local_rollback_journal(local_rollback_obj)
 
     def __iter_rows(self) -> typing.Iterable:
@@ -645,8 +648,10 @@ class DBMethod:
 
 class Transaction:
     def __init__(self, table: Table):
+        self.id = table.max_transaction_id + 1
+        self.filename = "rollback_journal_" + str(self.id) + ".log"
         self.table = table
-        self.rollback_journal = RollbackLog(self.table.file, self.table.row_length)
+        self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
 
     def execute(self, command: DBMethod) -> typing.NoReturn:
         command()
@@ -654,7 +659,7 @@ class Transaction:
     def commit(self, is_rollback: bool) -> typing.NoReturn:
         self.rollback_journal.file.close()
         if not is_rollback:
-            os.remove("rollback_journal.log")
+            os.remove(self.filename)
         self.table.is_transaction = False
 
     def rollback(self) -> typing.NoReturn:
@@ -669,7 +674,7 @@ class Transaction:
         self.table.last_row_index = self.table.get_rows(False)[-1].index_in_file
         self.table.row_count = len(self.table.get_rows(False))
         self.table.write_meta_info()
-        os.remove("rollback_journal.log")
+        os.remove(self.filename)
 
 
 class RollbackLog:
