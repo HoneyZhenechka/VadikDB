@@ -648,7 +648,8 @@ class DBMethod:
 
 class Transaction:
     def __init__(self, table: Table):
-        self.id = table.max_transaction_id + 1
+        table.max_transaction_id += 1
+        self.id = table.max_transaction_id
         self.filename = "rollback_journal_" + str(self.id) + ".log"
         self.table = table
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)

@@ -1,5 +1,6 @@
 import engine.bin_file as bin_py
 import engine.db_structure as db_py
+import threading
 import os
 
 
@@ -148,3 +149,22 @@ def test_durability():
     db.connect_to_db("zhavoronkov.vdb")
     db.tables[0].get_rows()
     assert len(db.tables[0].rows) == 3
+
+
+def thread_function():
+    id = db.tables[0].start_transaction()
+    db.tables[0].update(["zhenya2"], [["mmmm"]], [db.tables[0].rows[2]], id)
+    db.tables[0].end_transaction(id)
+
+
+def test_repeatable_read():
+    id = db.tables[0].start_transaction()
+    db.tables[0].insert(["zhenya1", "zhenya2"], [228, "greta_sobaka"], transaction_id=id)
+    result_rows_one = db.tables[0].select(["zhenya2"], db.tables[0].rows, id)
+    result_value_one = result_rows_one[2].fields_values_dict["zhenya2"]
+    new_thread = threading.Thread(target=thread_function)
+    new_thread.start()
+    result_rows_two = db.tables[0].select(["zhenya2"], db.tables[0].rows, id)
+    result_value_two = result_rows_two[2].fields_values_dict["zhenya2"]
+    db.tables[0].end_transaction(id)
+    assert result_value_one == result_value_two
