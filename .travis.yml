@@ -4,7 +4,7 @@ python:
   - "3.7"
  
 install:
-  -pip install ply
-  -pip install pythonds
+  -pip install ply pythonds
+ 
 
 script: py.test -s test_engine.py
