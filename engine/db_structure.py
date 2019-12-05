@@ -188,8 +188,6 @@ class Table:
         transaction_obj = Transaction(self)
         self.transactions[transaction_obj.id] = transaction_obj
         self.transactions[transaction_obj.id].rollback_journal.create_file()
-        for block in self.get_blocks():
-            self.transactions[transaction_obj.id].rollback_journal.add_block(block.index_in_file)
         return transaction_obj.id
 
     def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
@@ -346,8 +344,8 @@ class Table:
             selected_rollback_meta = []
             for row in rows:
                 for meta in rows_meta:
-                    if (meta["next_index"] == row.next_index) and (meta["previous_index"] == row.previous_index) and \
-                            (meta["row_available"] == row.row_available) and row.row_available:
+                    if ((meta["next_index"] == row.next_index) and (meta["previous_index"] == row.previous_index) and
+                            (meta["row_available"] == row.row_available) and row.row_available):
                         selected_rollback_meta.append(meta)
             for meta in selected_rollback_meta:
                 selected_rows.append(rollback_row.get_row(self.transactions[transaction_id].rollback_journal.file,
@@ -358,8 +356,8 @@ class Table:
                 selected_rows.append(row)
         return selected_rows
 
-    def update(self, fields: typing.Tuple[str], values: typing.Tuple, rows: typing.Tuple, transaction_id: int = 0) -> \
-            typing.NoReturn:
+    def update(self, fields: typing.Tuple[str], values: typing.Tuple,
+               rows: typing.Tuple, transaction_id: int = 0) -> typing.NoReturn:
         threading_lock.acquire()
         for i in range(len(rows)):
             if transaction_id > 0:
@@ -652,7 +650,7 @@ class Transaction:
     def __init__(self, table: Table):
         table.max_transaction_id += 1
         self.id = table.max_transaction_id
-        self.filename = "rollback_journal_" + str(self.id) + ".log"
+        self.filename = f"rollback_journal_{self.id}.log"
         self.table = table
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
 
