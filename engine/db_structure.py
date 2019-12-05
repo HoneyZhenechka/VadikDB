@@ -513,16 +513,6 @@ class Table:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
 
-    def get_fields(self, fields: typing.Tuple = (), replace_fields: bool = False) -> typing.List[str]:
-        is_all = replace_fields and (not fields or type(fields) != tuple)
-        if ("*" in fields) or is_all:
-            return self.fields
-        result_fields = []
-        for field in fields:
-            if (field in ["id", "row_id"]) or (field in self.fields):
-                result_fields.append(field)
-        return result_fields
-
 
 class Block:
     def __init__(self, start_index: int, table: Table) -> typing.NoReturn:
@@ -580,7 +570,6 @@ class Row:
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
 
     def select_row(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
-        fields = self.table.get_fields(fields)
         result = {}
         for field in fields:
             if field in self.fields_values_dict:
@@ -616,7 +605,7 @@ class Row:
                                           self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
-        fields = self.table.get_fields(fields, True)
+        fields = self.table.fields
         self.read_info()
         for field, pos in self.table.positions.items():
             if field not in fields:
@@ -787,7 +776,7 @@ class RollbackRow:
         return meta_dict
 
     def get_row(self, file: bin_py.BinFile, row_index: int, table: Table) -> Row:
-        fields = table.get_fields((), True)
+        fields = table.fields
         meta_dict = self.get_row_meta_info(file, row_index)
         rollback_row = Row(table, 0)
         rollback_row.row_available = meta_dict["row_available"]
