@@ -63,7 +63,6 @@ class Database:
             journal_file_size = rollback_obj.file.read_integer(0, 16)
             if journal_file_size < os.stat(self.filename).st_size:
                 os.truncate(self.filename, journal_file_size)
-            rollback_obj.get_blocks()
             rollback_obj.restore_blocks()
             rollback_obj.close_file()
             os.remove(filename)
@@ -339,10 +338,9 @@ class Table:
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
         selected_rows = []
         if transaction_id > 0:
-            self.transactions[transaction_id].rollback_journal.get_blocks()
             rollback_row = RollbackRow(self.row_length)
             rows_meta = []
-            for block in self.transactions[transaction_id].rollback_journal.blocks:
+            for block in self.transactions[transaction_id].rollback_journal.iter_blocks():
                 block.get_rows_indexes(self.transactions[transaction_id].rollback_journal.file, self.row_length)
                 for index in block.rows_indexes:
                     rows_meta.append(rollback_row.get_row_meta_info(
@@ -674,7 +672,6 @@ class Transaction:
         journal_file_size = self.rollback_journal.file.read_integer(0, 16)
         if journal_file_size < os.stat(self.table.file.filename).st_size:
             os.truncate(self.table.file.filename, journal_file_size)
-        self.rollback_journal.get_blocks()
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
         self.table.last_block_index = self.table.get_blocks_indexes()[-1]
@@ -689,7 +686,6 @@ class RollbackLog:
         self.file = bin_py.BinFile("rollback_journal.log")
         if filename != "":
             self.file = bin_py.BinFile(filename)
-        self.blocks = []
         self.first_rollback_index = 16
         self.block_count = 0
         self.db_file = db_file
@@ -699,7 +695,7 @@ class RollbackLog:
             self.block_size = 12 + 512 * row_length
 
     def check_original_indexes(self, index: int) -> bool:
-        for block in self.blocks:
+        for block in self.iter_blocks():
             if block.original_index == index:
                 return True
         return False
@@ -720,24 +716,24 @@ class RollbackLog:
         block_num = self.db_file.read_integer(block_index, self.block_size)
         new_rollback_index = self.first_rollback_index + self.block_count * (self.block_size + 9)
         self.block_count += 1
-        if len(self.blocks):
-            self.blocks[-1].next_index = new_rollback_index
-            self.blocks[-1].write_block(self.file)
+        if self.block_count > 1:
+            for block in self.iter_blocks():
+                if block.next_block == 0:
+                    block.next_index = new_rollback_index
+                    block.write_block(self.file)
         new_block = RollbackBlock(new_rollback_index, self.block_size, block_num, block_index)
         new_block.write_block(self.file)
-        self.blocks.append(new_block)
 
-    def get_blocks(self) -> typing.NoReturn:
-        self.blocks = []
+    def iter_blocks(self) -> typing.Iterable:
         current_index = self.first_rollback_index
         while current_index != 0:
             current_block = RollbackBlock(current_index, 0, 0, 0)
             current_block.read_block(self.file)
             current_index = current_block.next_index
-            self.blocks.append(current_block)
+            yield current_block
 
     def restore_blocks(self) -> typing.NoReturn:
-        for block in self.blocks:
+        for block in self.iter_blocks():
             self.db_file.write_integer(block.block_int, block.original_index, block.block_size)
 
 
