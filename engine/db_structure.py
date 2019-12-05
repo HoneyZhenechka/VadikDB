@@ -597,7 +597,7 @@ class Row:
             self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
 
-    def read_row_from_file(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
+    def read_row_from_file(self) -> typing.NoReturn:
         fields = self.table.fields
         self.read_info()
         for field, pos in self.table.positions.items():
