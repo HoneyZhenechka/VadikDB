@@ -569,7 +569,7 @@ class Row:
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
 
-    def select_row(self, fields: typing.Tuple[str] = ()) -> typing.NoReturn:
+    def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}
         for field in fields:
             if field in self.fields_values_dict:
