@@ -149,7 +149,6 @@ class Table:
         self.last_row_index = 0
         self.last_removed_index = 0
         self.fields = []
-        self.rows = []
         self.fields_count = 0
         self.row_count = 0
         self.types = []
