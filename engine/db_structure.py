@@ -269,7 +269,6 @@ class Table:
         self.file.seek(current_position, 0)
 
     def read_file(self) -> typing.NoReturn:
-        # Table meta
         self.name = self.file.read_str(self.index_in_file, 32)
         self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
         self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
@@ -423,24 +422,6 @@ class Table:
         if not transaction_id:
             self.__close_local_rollback_journal(local_rollback_obj)
 
-    def __iter_rows(self) -> typing.Iterable:
-        row_index = self.first_row_index
-        while row_index != 0:
-            current_row = Row(self, row_index)
-            current_row.read_info()
-            current_row.read_row_from_file()
-            row_index = current_row.next_index
-            if current_row.row_available != 2:
-                yield current_row
-
-    def get_rows(self, check: bool = True) -> typing.List:
-        new_rows_list = []
-        for row in self.__iter_rows():
-            new_rows_list.append(row)
-        if check:
-            self.rows = new_rows_list
-        return new_rows_list
-
     def __delete_row(self, row) -> typing.NoReturn:
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
@@ -492,7 +473,7 @@ class Table:
                 return True
         return False
 
-    def fill_table_fields(self, fields_dict: typing.Dict = {}) -> typing.NoReturn:
+    def fill_table_fields(self, fields_dict: typing.Dict) -> typing.NoReturn:
         fields_list = list(fields_dict.keys())
         types_list = list(fields_dict.values())
         if len(types_list) != len(fields_list):
@@ -511,6 +492,7 @@ class Block:
     def __init__(self, start_index: int, table: Table) -> typing.NoReturn:
         self.table = table
         self.block_size = 512
+        self.first_row_index = 12
         self.rows_count = 0
         self.previous_block = 0
         self.next_block = 0
@@ -539,6 +521,15 @@ class Block:
         self.rows_count = self.table.file.read_integer(self.index_in_file + 3, 3)
         self.previous_block = self.table.file.read_integer(self.index_in_file + 6, 3)
         self.next_block = self.table.file.read_integer(self.index_in_file + 9, 3)
+
+    def iter_rows(self):
+        current_index = self.first_row_index
+        while (current_index < self.next_block) and (current_index != 0):
+            current_row = Row(self.table, current_index)
+            current_row.read_row_from_file()
+            current_index = current_row.next_index
+            if current_row.row_available == 1:
+                yield current_row
 
 
 class Row:
