@@ -576,7 +576,7 @@ class Row:
                 result[field] = self.fields_values_dict[field]
         self.fields_values_dict = result
 
-    def update_row(self, fields: typing.Tuple[str] = (), values: typing.Tuple = ()) -> typing.NoReturn:
+    def update_row(self, fields: typing.Tuple[str], values: typing.Tuple) -> typing.NoReturn:
         for index, field in enumerate(fields):
             self.fields_values_dict[field] = values[index]
         self.write_row_to_file()
