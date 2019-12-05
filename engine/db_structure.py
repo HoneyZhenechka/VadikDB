@@ -50,7 +50,7 @@ class Database:
         return False
 
     def __update_table_metadata(self, table) -> typing.NoReturn:
-        table.last_block_index = table.get_blocks()[-1].index_in_file
+        table.last_block_index = table.get_blocks_indexes()[-1]
         table.last_row_index = table.get_rows(False)[-1].index_in_file
         table.row_count = len(table.get_rows(False))
         table.write_meta_info()
@@ -216,14 +216,20 @@ class Table:
         result_block.write_file()
         return result_block
 
-    def get_blocks(self) -> typing.List:
-        blocks = []
+    def get_blocks_count(self) -> int:
+        blocks_count = 0
+        for _ in self.__iter_blocks():
+            blocks_count += 1
+        return blocks_count
+
+    def get_blocks_indexes(self) -> typing.List[int]:
+        result_list = []
         for block in self.__iter_blocks():
-            blocks.append(block)
-        return blocks
+            result_list.append(block.index_in_file)
+        return result_list
 
     def get_write_position(self):
-        for block in self.get_blocks():
+        for block in self.__iter_blocks():
             position = block.get_write_position()
             if position:
                 self.current_block_index = block.index_in_file
@@ -234,10 +240,10 @@ class Table:
             return new_block.get_write_position(), new_block
 
     def get_block_index_for_row(self, row) -> int:
-        if len(self.get_blocks()):
+        if self.get_blocks_count() == 1:
             return self.first_block_index
         else:
-            for block in self.get_blocks():
+            for block in self.__iter_blocks():
                 if block.next_block > row.index_in_file > block.previous_block:
                     return block.index_in_file
 
@@ -671,7 +677,7 @@ class Transaction:
         self.rollback_journal.get_blocks()
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
-        self.table.last_block_index = self.table.get_blocks()[-1].index_in_file
+        self.table.last_block_index = self.table.get_blocks_indexes()[-1]
         self.table.last_row_index = self.table.get_rows(False)[-1].index_in_file
         self.table.row_count = len(self.table.get_rows(False))
         self.table.write_meta_info()
