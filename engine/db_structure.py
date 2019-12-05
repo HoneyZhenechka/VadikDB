@@ -312,8 +312,7 @@ class Table:
 
     def __delete_row_and_add_block(self, row, transaction_id: int = 0) -> typing.NoReturn:
         if transaction_id > 0:
-            command = DBMethod(self.__delete_row, row)
-            self.transactions[transaction_id].execute(command)
+            self.__delete_row(row)
             self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
         else:
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
@@ -366,10 +365,8 @@ class Table:
         for i in range(len(rows)):
             if transaction_id > 0:
                 self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
-                first_update_command = DBMethod(rows[i].select_row, fields)
-                self.transactions[transaction_id].execute(first_update_command)
-                second_update_command = DBMethod(rows[i].update_row, fields, values[i])
-                self.transactions[transaction_id].execute(second_update_command)
+                rows[i].select_row(fields)
+                rows[i].update_row(fields, values[i])
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
@@ -380,11 +377,7 @@ class Table:
 
     def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
-        if transaction_id > 0:
-            method = DBMethod(self.__insert, fields, values, insert_index, test_rollback, transaction_id)
-            self.transactions[transaction_id].execute(method)
-        else:
-            self.__insert(fields, values, insert_index, test_rollback, transaction_id)
+        self.__insert(fields, values, insert_index, test_rollback, transaction_id)
 
     def __insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
@@ -627,18 +620,6 @@ class Type:
         return self.__dict__ == other.__dict__
 
 
-class DBMethod:
-    def __init__(self, method, *args):
-        self.method = method
-        self.args = args
-
-    def __call__(self):
-        result = self.method(*self.args)
-        self.method = None
-        self.args = None
-        return result
-
-
 class Transaction:
     def __init__(self, table: Table):
         table.max_transaction_id += 1
@@ -646,9 +627,6 @@ class Transaction:
         self.filename = f"rollback_journal_{self.id}.log"
         self.table = table
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
-
-    def execute(self, command: DBMethod) -> typing.NoReturn:
-        command()
 
     def commit(self, is_rollback: bool) -> typing.NoReturn:
         self.rollback_journal.file.close()
