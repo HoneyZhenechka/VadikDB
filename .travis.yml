@@ -4,10 +4,6 @@ python:
   - "3.7"
  
 install:
-  -pip install ply
+  -pip install -r requirements.txt
  
-install:
-  -pip install pythonds
- 
-
 script: py.test -s test_engine.py
