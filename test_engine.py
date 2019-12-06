@@ -114,16 +114,17 @@ def test_select():
 
 def test_transaction():
     id = db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]], id)
-    db.tables[0].update(["zhenya1"], [[98]], [db.tables[0].rows[0]], id)
+    rows_list = get_all_rows_list()
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [rows_list[0][0]], id)
+    db.tables[0].update(["zhenya1"], [[98]], [rows_list[0][0]], id)
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"], transaction_id=id)
     db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"], transaction_id=id)
-    db.tables[0].delete([db.tables[0].rows[-1].index_in_file], id)
+    db.tables[0].delete([rows_list[0][-1].index_in_file], id)
     db.tables[0].end_transaction(id)
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
-    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 98
-    assert len(db.tables[0].rows) == 3
+    rows_list = get_all_rows_list()
+    assert rows_list[0][0].fields_values_dict["zhenya2"] == "lovetsov"
+    assert rows_list[0][0].fields_values_dict["zhenya1"] == 98
+    assert len(rows_list[0]) == 3
 
 
 def test_read_commited():
