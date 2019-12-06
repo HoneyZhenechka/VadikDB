@@ -320,12 +320,9 @@ class Table:
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0):
         if not len(rows_indexes):
-            row_index = self.first_row_index
-            while row_index != 0:
-                current_row = Row(self, row_index)
-                current_row.read_info()
-                self.__delete_row_and_add_block(current_row, transaction_id)
-                row_index = current_row.next_index
+            for block in self.iter_blocks():
+                for row in block.iter_rows():
+                    self.__delete_row_and_add_block(row, transaction_id)
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
@@ -430,7 +427,6 @@ class Table:
         row.drop_row()
         row.row_available = 2
         row.previous_index = 0
-        row.next_index = 0
         row.write_info()
         if self.last_removed_index:
             previous_row = Row(self, self.last_removed_index)

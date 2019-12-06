@@ -76,14 +76,18 @@ def test_insert():
 
 
 def test_delete():
-    db.tables[0].delete([db.tables[0].rows[0].index_in_file])
-    db.tables[0].get_rows()
-    assert len(db.tables[0].rows)
-    assert not db.tables[0].rows[0].next_index
+    rows_list = []
+    for block in db.tables[0].iter_blocks():
+        rows_list = get_block_rows(block)
+    db.tables[0].delete([rows_list[0].index_in_file])
+    for block in db.tables[0].iter_blocks():
+        rows_list = get_block_rows(block)
+    assert len(rows_list) == 1
     db.tables[0].delete()
-    db.tables[0].get_rows()
-    assert not len(db.tables[0].rows)
-
+    rows_list.clear()
+    for block in db.tables[0].iter_blocks():
+        rows_list.append(get_block_rows(block))
+    assert len(rows_list[0]) == 0
 
 def test_update():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
