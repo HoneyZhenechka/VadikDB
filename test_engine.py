@@ -94,12 +94,12 @@ def test_delete():
 
 def test_update():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "test_string_123"
-    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].rows[0]])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[0].fields_values_dict["zhenya1"] == 99
-    assert db.tables[0].rows[0].fields_values_dict["zhenya2"] == "lovetsov"
+    rows_list = get_all_rows_list()
+    assert rows_list[0][0].fields_values_dict["zhenya2"] == "test_string_123"
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [rows_list[0][0]])
+    rows_list = get_all_rows_list()
+    assert rows_list[0][0].fields_values_dict["zhenya1"] == 99
+    assert rows_list[0][0].fields_values_dict["zhenya2"] == "lovetsov"
 
 
 def test_select():
