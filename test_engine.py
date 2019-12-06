@@ -65,29 +65,30 @@ def get_block_rows(block):
     return rows_list
 
 
+def get_all_rows_list():
+    all_rows_list = []
+    for block in db.tables[0].iter_blocks():
+        all_rows_list.append(get_block_rows(block))
+    return all_rows_list
+
+
 def test_insert():
     db.tables[0].insert(["zhenya2"], ["test_string_123"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    rows_list = []
-    for block in db.tables[0].iter_blocks():
-        rows_list.append(get_block_rows(block))
+    rows_list = get_all_rows_list()
     assert len(rows_list) == 1
     assert len(rows_list[0]) == 2
 
 
 def test_delete():
-    rows_list = []
-    for block in db.tables[0].iter_blocks():
-        rows_list = get_block_rows(block)
-    db.tables[0].delete([rows_list[0].index_in_file])
-    for block in db.tables[0].iter_blocks():
-        rows_list = get_block_rows(block)
-    assert len(rows_list) == 1
+    rows_list = get_all_rows_list()
+    db.tables[0].delete([rows_list[0][0].index_in_file])
+    rows_list = get_all_rows_list()
+    assert len(rows_list[0]) == 1
     db.tables[0].delete()
-    rows_list.clear()
-    for block in db.tables[0].iter_blocks():
-        rows_list.append(get_block_rows(block))
+    rows_list = get_all_rows_list()
     assert len(rows_list[0]) == 0
+
 
 def test_update():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
