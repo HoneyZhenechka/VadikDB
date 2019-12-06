@@ -104,10 +104,10 @@ def test_update():
 
 def test_select():
     db.tables[0].insert(["zhenya1", "zhenya2"], [218, "vadik_vadik"])
-    db.tables[0].get_rows()
-    result_rows_1 = db.tables[0].select(db.tables[0].fields, db.tables[0].rows)
+    rows_list = get_all_rows_list()
+    result_rows_1 = db.tables[0].select(db.tables[0].fields, rows_list[0])
     assert len(result_rows_1) == 2
-    result_rows_2 = db.tables[0].select(["zhenya1"], [db.tables[0].rows[1]])
+    result_rows_2 = db.tables[0].select(["zhenya1"], [rows_list[0][1]])
     assert len(result_rows_2) == 1
     assert result_rows_2[0].fields_values_dict["zhenya1"] == 218
 
