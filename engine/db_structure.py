@@ -165,7 +165,7 @@ class Table:
         return (self.name, self.fields, self.fields_count, self.types, self.positions, self.row_length) == \
                (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
 
-    def __iter_blocks(self) -> typing.Iterable:
+    def iter_blocks(self) -> typing.Iterable:
         current_index = self.first_block_index
         while current_index != 0:
             current_block = Block(current_index, self)
@@ -216,18 +216,18 @@ class Table:
 
     def get_blocks_count(self) -> int:
         blocks_count = 0
-        for _ in self.__iter_blocks():
+        for _ in self.iter_blocks():
             blocks_count += 1
         return blocks_count
 
     def get_blocks_indexes(self) -> typing.List[int]:
         result_list = []
-        for block in self.__iter_blocks():
+        for block in self.iter_blocks():
             result_list.append(block.index_in_file)
         return result_list
 
     def get_write_position(self):
-        for block in self.__iter_blocks():
+        for block in self.iter_blocks():
             position = block.get_write_position()
             if position:
                 self.current_block_index = block.index_in_file
@@ -241,7 +241,7 @@ class Table:
         if self.get_blocks_count() == 1:
             return self.first_block_index
         else:
-            for block in self.__iter_blocks():
+            for block in self.iter_blocks():
                 if block.next_block > row.index_in_file > block.previous_block:
                     return block.index_in_file
 
@@ -490,15 +490,16 @@ class Table:
 class Block:
     def __init__(self, start_index: int, table: Table) -> typing.NoReturn:
         self.table = table
-        self.block_size = 512
-        self.first_row_index = 12
+        self.max_row_len = 512
+        self.index_in_file = start_index
+        self.block_size = 12 + 512 * self.table.row_length
+        self.first_row_index = self.index_in_file + 12
         self.rows_count = 0
         self.previous_block = 0
         self.next_block = 0
-        self.index_in_file = start_index
 
     def get_write_position(self):
-        if self.rows_count >= self.block_size:
+        if self.rows_count >= self.max_row_len:
             return False
         else:
             start_pos = self.index_in_file + 12
@@ -523,7 +524,7 @@ class Block:
 
     def iter_rows(self):
         current_index = self.first_row_index
-        while (current_index < self.next_block) and (current_index != 0):
+        while (current_index < self.index_in_file + self.block_size) and (current_index != 0):
             current_row = Row(self.table, current_index)
             current_row.read_row_from_file()
             current_index = current_row.next_index

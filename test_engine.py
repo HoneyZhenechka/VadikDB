@@ -58,12 +58,21 @@ def test_show_create():
     assert result_string == excepted_string
 
 
+def get_block_rows(block):
+    rows_list = []
+    for row in block.iter_rows():
+        rows_list.append(row)
+    return rows_list
+
+
 def test_insert():
     db.tables[0].insert(["zhenya2"], ["test_string_123"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    db.tables[0].get_rows()
-    assert db.tables[0].rows[1].fields_values_dict["zhenya2"] == "test_string_123"
-    assert len(db.tables[0].rows) == 2
+    rows_list = []
+    for block in db.tables[0].iter_blocks():
+        rows_list.append(get_block_rows(block))
+    assert len(rows_list) == 1
+    assert len(rows_list[0]) == 2
 
 
 def test_delete():
