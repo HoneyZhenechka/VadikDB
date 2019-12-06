@@ -58,6 +58,8 @@ def test_show_create():
     assert result_string == excepted_string
 
 
+# Эти функции для тестов, помогают мне получить состояние всей таблицы. При нормальной работе СУБД,
+# логика будет бегать по блокам и строчкам с помощью iter_blocks / iter_rows.
 def get_block_rows(block):
     rows_list = []
     for row in block.iter_rows():
