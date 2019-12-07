@@ -360,12 +360,10 @@ class Table:
         for i in range(len(rows)):
             if transaction_id > 0:
                 self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
-                rows[i].select_row(fields)
                 rows[i].update_row(fields, values[i])
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
-                rows[i].select_row(fields)
                 rows[i].update_row(fields, values[i])
                 self.__close_local_rollback_journal(rollback_obj)
         threading_lock.release()
@@ -427,12 +425,17 @@ class Table:
         row.drop_row()
         row.row_available = 2
         row.previous_index = 0
+        row.next_index = 0
         row.write_info()
         if self.last_removed_index:
             previous_row = Row(self, self.last_removed_index)
             previous_row.read_info()
             previous_row.previous_index = row.index_in_file
             previous_row.write_info()
+        current_block = Block(self.get_block_index_for_row(row), self)
+        current_block.read_file()
+        current_block.rows_count -= 1
+        current_block.update_file()
         self.row_count -= 1
         self.last_removed_index = row.index_in_file
         self.write_meta_info()
@@ -520,10 +523,10 @@ class Block:
 
     def iter_rows(self):
         current_index = self.first_row_index
-        while (current_index < self.index_in_file + self.block_size) and (current_index != 0):
+        while current_index < self.index_in_file + self.block_size:
             current_row = Row(self.table, current_index)
             current_row.read_row_from_file()
-            current_index = current_row.next_index
+            current_index += self.table.row_length
             if current_row.row_available == 1:
                 yield current_row
 
