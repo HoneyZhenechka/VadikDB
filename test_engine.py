@@ -129,8 +129,9 @@ def test_transaction():
 
 def test_read_commited():
     id = db.tables[0].start_transaction()
-    db.tables[0].update(["zhenya2"], [["anime"]], [db.tables[0].rows[0]], id)
-    result_rows = db.tables[0].select(["zhenya2"], db.tables[0].rows, id)
+    rows_list = get_all_rows_list()
+    db.tables[0].update(["zhenya2"], [["anime"]], [rows_list[0][0]], id)
+    result_rows = db.tables[0].select(["zhenya2"], rows_list[0], id)
     result_value = result_rows[0].fields_values_dict["zhenya2"]
     db.tables[0].end_transaction(id)
     assert result_value == "lovetsov"
