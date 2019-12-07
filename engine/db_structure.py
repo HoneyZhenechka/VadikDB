@@ -529,6 +529,8 @@ class Block:
             current_index += self.table.row_length
             if current_row.row_available == 1:
                 yield current_row
+            if not current_row.row_available:
+                break
 
 
 class Row:
