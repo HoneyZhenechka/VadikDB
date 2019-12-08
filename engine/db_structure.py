@@ -51,8 +51,8 @@ class Database:
 
     def __update_table_metadata(self, table) -> typing.NoReturn:
         table.last_block_index = table.get_blocks_indexes()[-1]
-        table.last_row_index = table.get_rows(False)[-1].index_in_file
-        table.row_count = len(table.get_rows(False))
+        table.last_row_index = table.get_last_row().index_in_file
+        table.row_count = table.count_rows()
         table.write_meta_info()
 
     def wide_rollback(self) -> typing.NoReturn:
@@ -172,6 +172,19 @@ class Table:
             current_block.read_file()
             current_index = current_block.next_block
             yield current_block
+
+    def get_last_row(self):
+        for block in self.iter_blocks():
+            for row in block.iter_rows():
+                if row.next_index == 0:
+                    return row
+
+    def count_rows(self) -> int:
+        result = 0
+        for block in self.iter_blocks():
+            for _ in block.iter_rows():
+                result += 1
+        return result
 
     def __create_local_rollback_journal(self, name: str):
         rollback_obj = RollbackLog(self.file, self.row_length, name)
@@ -634,8 +647,8 @@ class Transaction:
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
         self.table.last_block_index = self.table.get_blocks_indexes()[-1]
-        self.table.last_row_index = self.table.get_rows(False)[-1].index_in_file
-        self.table.row_count = len(self.table.get_rows(False))
+        self.table.last_row_index = self.table.get_last_row().index_in_file
+        self.table.row_count = self.table.count_rows()
         self.table.write_meta_info()
         os.remove(self.filename)
 
