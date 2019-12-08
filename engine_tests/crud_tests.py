@@ -2,6 +2,7 @@ import engine.db_structure as db_py
 
 db = db_py.Database()
 
+
 def get_block_rows(block):
     rows_list = []
     for row in block.iter_rows():
