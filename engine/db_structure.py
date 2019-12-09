@@ -255,7 +255,9 @@ class Table:
             return self.first_block_index
         else:
             for block in self.iter_blocks():
-                if block.next_block > row.index_in_file > block.previous_block:
+                start_index = block.index_in_file
+                end_index = start_index + block.block_size
+                if end_index > row.index_in_file > start_index:
                     return block.index_in_file
 
     def write_meta_info(self) -> typing.NoReturn:
