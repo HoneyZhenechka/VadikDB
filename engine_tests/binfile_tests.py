@@ -1,8 +1,5 @@
-import sys
 import os
-sys.path.append("..")
 import engine.bin_file as bin_py
-
 
 
 def test_binfile():

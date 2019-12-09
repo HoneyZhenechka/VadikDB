@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 import engine.db_structure as db_py
 
 db = db_py.Database()
