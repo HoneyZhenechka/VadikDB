@@ -6,4 +6,4 @@ python:
 install:
   - pip install -r requirements.txt
  
-script: py.test -s engine_tests/test_binfile.py
+script: py.test -s engine_tests/binfile_tests.py
