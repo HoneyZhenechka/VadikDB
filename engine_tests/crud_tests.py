@@ -81,7 +81,5 @@ def test_select():
     result_rows_1 = db.tables[0].select(db.tables[0].fields, rows_list[0])
     assert len(result_rows_1) == 2
     result_rows_2 = db.tables[0].select(["zhenya1"], [rows_list[0][0]])
-    db.close_db()
-    os.remove("zhavoronkov.vdb")
     assert len(result_rows_2) == 1
     assert result_rows_2[0].fields_values_dict["zhenya1"] == 218
