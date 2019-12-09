@@ -39,3 +39,34 @@ def test_read_commited():
     db.tables[0].end_transaction(id)
     result_value = result_rows[0].fields_values_dict["zhenya2"]
     assert result_value == "lovetsov"
+
+
+def test_rollback():
+    id = db.tables[0].start_transaction()
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"], transaction_id=id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"], transaction_id=id)
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssttttt_string_321"], transaction_id=id)
+    db.tables[0].end_transaction(id, True)
+    db.tables[0].rollback_transaction(id)
+    rows_list = get_all_rows_list()
+    assert len(rows_list[0]) == 1
+    assert rows_list[0][0].fields_values_dict["zhenya2"] == "anime"
+
+
+def test_wide_rollback():
+    id = db.tables[0].start_transaction()
+    rows_list = get_all_rows_list()
+    db.tables[0].update(["zhenya2"], [["xxx"]], [rows_list[0][0]], id)
+    db.tables[0].end_transaction(id, True)
+    db.close_db()
+    db.connect_to_db("zhavoronkov.vdb")
+    rows_list = get_all_rows_list()
+    assert rows_list[0][0].fields_values_dict["zhenya2"] == "anime"
+
+
+def test_durability():
+    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"], test_rollback=True)
+    db.close_db()
+    db.connect_to_db("zhavoronkov.vdb")
+    rows_list = get_all_rows_list()
+    assert len(rows_list[0]) == 1
