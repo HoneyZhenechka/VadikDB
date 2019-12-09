@@ -6,7 +6,7 @@ sock = socket.socket()
 server_address = ('localhost', 9080)
 print('starting up on{} port {}'.format(*server_address))
 sock.bind(server_address)
-_logic = logic.Logic()
+_logic = logic.Logic('vadik')
 
 sock.listen(1)
 
@@ -21,7 +21,15 @@ while True:
             print('received {!r}'.format(data))
             if data:
                 print('sending data back to the client')
-                #connection.sendall(str.encode(_logic.query(data[1:])))
+                encoding = 'utf-8'
+                data = data.decode(encoding)
+                print(data)
+                data = _logic.query(data)
+                connection.sendall(str.encode(str(data.is_exception)))
+                connection.sendall(str.encode(data.str_for_print))
+                connection.sendall(str.encode(str(data.exception_func)))
+                connection.sendall(str.encode(data.fields_for_func))
+
             else:
                 print('no data from', client_address)
                 break
