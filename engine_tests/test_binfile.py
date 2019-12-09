@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.insert(0, 'engine/')
+sys.path.append('../')
 import engine.bin_file as bin_py
 
 
