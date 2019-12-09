@@ -741,6 +741,8 @@ class RollbackBlock:
         current_meta = row.get_row_meta_info(file, current_row_index)
         if not current_meta["row_available"]:
             return
+        else:
+            rows_indexes.append(current_meta["rollback_index"])
         while current_meta["row_available"]:
             current_row_index += row_length
             current_meta = row.get_row_meta_info(file, current_row_index)
