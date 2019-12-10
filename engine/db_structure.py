@@ -334,6 +334,7 @@ class Table:
             self.__close_local_rollback_journal(rollback_obj)
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0):
+        threading_lock.acquire()
         if not len(rows_indexes):
             for block in self.iter_blocks():
                 for row in block.iter_rows():
@@ -343,11 +344,14 @@ class Table:
                 current_row = Row(self, index)
                 current_row.read_info()
                 self.__delete_row_and_add_block(current_row, transaction_id)
+        threading_lock.release()
 
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
         selected_rows = []
         if transaction_id > 0:
             rollback_row = RollbackRow(self.row_length)
+            for row in rows:
+                self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
             rows_meta = []
             for block in self.transactions[transaction_id].rollback_journal.iter_blocks():
                 block.get_rows_indexes(self.transactions[transaction_id].rollback_journal.file, self.row_length)
@@ -385,7 +389,9 @@ class Table:
 
     def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
+        threading_lock.acquire()
         self.__insert(fields, values, insert_index, test_rollback, transaction_id)
+        threading_lock.release()
 
     def __insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
