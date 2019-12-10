@@ -1,7 +1,7 @@
 import engine.db_structure as db_py
 import threading
 
-db = db_py.Database()
+db = db_py.Database(False, "test.vdb")
 db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"})
 
 
