@@ -9,4 +9,5 @@ python:
 install:
   - pip install -r requirements.txt
  
-script: py.test -s engine_tests/binfile_tests.py engine_tests/crud_tests.py engine_tests/transaction_journal_tests.py engine_tests/concurrency_tests.py
+script: py.test -s engine_tests/binfile_tests.py engine_tests/crud_tests.py engine_tests/transaction_journal_tests.py
+  engine_tests/concurrency_tests.py
