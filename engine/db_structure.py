@@ -325,8 +325,8 @@ class Table:
 
     def __delete_row_and_add_block(self, row, transaction_id: int = 0) -> typing.NoReturn:
         if transaction_id > 0:
-            self.__delete_row(row)
             self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
+            self.__delete_row(row)
         else:
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
