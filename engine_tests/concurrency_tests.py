@@ -1,8 +1,11 @@
 import engine.db_structure as db_py
 import threading
+import os
 
-db = db_py.Database(False, "test.vdb")
+filename = "test.vdb"
+db = db_py.Database(False, filename)
 db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"})
+
 
 
 def get_block_rows(block):
@@ -70,3 +73,19 @@ def test_repeatable_read():
     selected_value_two = selected_rows_two[1].fields_values_dict["zhenya2"]
     db.tables[0].end_transaction(id)
     assert selected_value_one == selected_value_two
+
+
+def test_multithreading_delete():
+    def func():
+        for i in range(10):
+            db.tables[0].delete([db.tables[0].get_last_row().index_in_file])
+
+    thread = threading.Thread(target=func)
+    for i in range(10):
+        db.tables[0].delete([db.tables[0].get_last_row().index_in_file])
+    thread.start()
+    thread.join()
+    assert db.tables[0].count_rows() == 0
+    db.close_db()
+    if os.path.isfile(filename):
+        os.remove(filename)
