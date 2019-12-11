@@ -13,7 +13,9 @@ tokens = (
     'STAR', 'NOT_EQUAL', 'GREATER_THAN',
     'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
     'LESS_THAN_OR_EQUAL', 'OR',
-    'NOT', 'AND'
+    'NOT', 'AND',
+    'JOIN', 'LEFT', 'RIGHT', 'ON',
+    'USING', 'UNION', 'INTERSECT', 'OUTER'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -25,6 +27,15 @@ t_SELECT = r'SELECT'
 t_INSERT = r'INSERT'
 t_UPDATE = r'UPDATE'
 t_DELETE = r'DELETE'
+t_JOIN = r'JOIN'
+t_LEFT = r'LEFT'
+t_RIGHT = r'RIGHT'
+t_ON = r'ON'
+t_USING = r'USING'
+t_UNION = r'UNION'
+t_INTERSECT = r'INTERSECT'
+t_OUTER = r'OUTER'
+
 
 t_TABLE = r'TABLE'
 t_FROM = r'FROM'
@@ -56,7 +67,7 @@ t_AND = r'AND'
 
 @TOKEN(ident)
 def t_NAME(t):
-    if (t.value.upper() == 'CREATE'):
+    if t.value.upper() == 'CREATE':
         t.type = 'CREATE'
 
     elif t.value.upper() == 'SHOW':
@@ -76,6 +87,30 @@ def t_NAME(t):
 
     elif t.value.upper() == 'DELETE':
         t.type = 'DELETE'
+
+    elif t.value.upper() == 'JOIN':
+        t.type = 'JOIN'
+
+    elif t.value.upper() == 'LEFT':
+        t.type = 'LEFT'
+
+    elif t.value.upper() == 'RIGHT':
+        t.type = 'RIGHT'
+
+    elif t.value.upper() == 'ON':
+        t.type = 'ON'
+
+    elif t.value.upper() == 'USING':
+        t.type = 'USING'
+
+    elif t.value.upper() == 'UNION':
+        t.type = 'UNION'
+
+    elif t.value.upper() == 'INTERSECT':
+        t.type = 'INTERSECT'
+
+    elif t.value.upper() == 'OUTER':
+        t.type = 'OUTER'
 
     elif t.value.upper() == 'TABLE':
         t.type = 'TABLE'
