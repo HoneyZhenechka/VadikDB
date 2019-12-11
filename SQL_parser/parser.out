@@ -2,6 +2,7 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
+<<<<<<< HEAD
     INTERSECT
     JOIN
     LEFT
@@ -11,10 +12,14 @@ Unused terminals:
     RIGHT
     UNION
     USING
+=======
+    NOT
+>>>>>>> parent of 809bc72... refactoring
 
 Grammar
 
 Rule 0     S' -> start
+<<<<<<< HEAD
 Rule 1     start -> create ENDREQUEST
 Rule 2     start -> show ENDREQUEST
 Rule 3     start -> drop ENDREQUEST
@@ -37,12 +42,41 @@ Rule 19    insert -> INSERT insert_body
 Rule 20    insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET
 Rule 21    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
 Rule 22    update -> UPDATE update_body
+=======
+Rule 1     start -> create
+Rule 2     start -> show
+Rule 3     start -> drop
+Rule 4     start -> select
+Rule 5     start -> insert
+Rule 6     start -> update
+Rule 7     start -> delete
+Rule 8     create -> CREATE create_body ENDREQUEST
+Rule 9     create_body -> TABLE NAME LBRACKET values RBRACKET
+Rule 10    values -> NAME type
+Rule 11    values -> values COMMA NAME type
+Rule 12    show -> SHOW CREATE TABLE NAME ENDREQUEST
+Rule 13    drop -> DROP TABLE NAME ENDREQUEST
+Rule 14    select -> SELECT select_body ENDREQUEST
+Rule 15    select -> SELECT select_body condition ENDREQUEST
+Rule 16    select_body -> fields FROM NAME
+Rule 17    select_body -> STAR COMMA fields FROM NAME
+Rule 18    select_body -> STAR FROM NAME
+Rule 19    insert -> INSERT insert_body ENDREQUEST
+Rule 20    insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET
+Rule 21    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+Rule 22    update -> UPDATE update_body ENDREQUEST
+>>>>>>> parent of 809bc72... refactoring
 Rule 23    update_body -> NAME SET expression
 Rule 24    update_body -> NAME SET expression condition
 Rule 25    expression -> field EQUAL tree_expression
 Rule 26    expression -> expression COMMA field EQUAL tree_expression
+<<<<<<< HEAD
 Rule 27    delete -> DELETE FROM NAME
 Rule 28    delete -> DELETE FROM NAME condition
+=======
+Rule 27    delete -> DELETE FROM NAME ENDREQUEST
+Rule 28    delete -> DELETE FROM NAME condition ENDREQUEST
+>>>>>>> parent of 809bc72... refactoring
 Rule 29    fields -> NAME
 Rule 30    fields -> fields COMMA NAME
 Rule 31    field -> NAME
@@ -82,37 +116,56 @@ CREATE               : 8 12
 DELETE               : 27 28
 DIVISION             : 53
 DROP                 : 13
+<<<<<<< HEAD
 ENDREQUEST           : 1 2 3 4 5 6 7
+=======
+ENDREQUEST           : 8 12 13 14 15 19 22 27 28
+>>>>>>> parent of 809bc72... refactoring
 EQUAL                : 25 26 44
 FROM                 : 16 17 18 27 28
 GREATER_THAN         : 46
 GREATER_THAN_OR_EQUAL : 48
 INSERT               : 19
+<<<<<<< HEAD
 INTERSECT            : 
 INTO                 : 20 21
 JOIN                 : 
 LBRACKET             : 9 20 21 21 40
 LEFT                 : 
+=======
+INTO                 : 20 21
+LBRACKET             : 9 20 21 21 40
+>>>>>>> parent of 809bc72... refactoring
 LESS_THAN            : 47
 LESS_THAN_OR_EQUAL   : 49
 MINUS                : 51
 NAME                 : 9 10 11 12 13 16 17 18 20 21 23 24 27 28 29 30 31
 NOT                  : 
 NOT_EQUAL            : 45
+<<<<<<< HEAD
 ON                   : 
 OR                   : 43
 OUTER                : 
 PLUS                 : 50
 RBRACKET             : 9 20 21 21 40
 RIGHT                : 
+=======
+OR                   : 43
+PLUS                 : 50
+RBRACKET             : 9 20 21 21 40
+>>>>>>> parent of 809bc72... refactoring
 SELECT               : 14 15
 SET                  : 23 24
 SHOW                 : 12
 STAR                 : 17 18 52
 TABLE                : 9 12 13
+<<<<<<< HEAD
 UNION                : 
 UPDATE               : 22
 USING                : 
+=======
+UPDATE               : 22
+>>>>>>> parent of 809bc72... refactoring
 VALUES               : 20 21
 WHERE                : 32
 bol                  : 56
@@ -154,6 +207,7 @@ Parsing method: LALR
 state 0
 
     (0) S' -> . start
+<<<<<<< HEAD
     (1) start -> . create ENDREQUEST
     (2) start -> . show ENDREQUEST
     (3) start -> . drop ENDREQUEST
@@ -170,6 +224,24 @@ state 0
     (22) update -> . UPDATE update_body
     (27) delete -> . DELETE FROM NAME
     (28) delete -> . DELETE FROM NAME condition
+=======
+    (1) start -> . create
+    (2) start -> . show
+    (3) start -> . drop
+    (4) start -> . select
+    (5) start -> . insert
+    (6) start -> . update
+    (7) start -> . delete
+    (8) create -> . CREATE create_body ENDREQUEST
+    (12) show -> . SHOW CREATE TABLE NAME ENDREQUEST
+    (13) drop -> . DROP TABLE NAME ENDREQUEST
+    (14) select -> . SELECT select_body ENDREQUEST
+    (15) select -> . SELECT select_body condition ENDREQUEST
+    (19) insert -> . INSERT insert_body ENDREQUEST
+    (22) update -> . UPDATE update_body ENDREQUEST
+    (27) delete -> . DELETE FROM NAME ENDREQUEST
+    (28) delete -> . DELETE FROM NAME condition ENDREQUEST
+>>>>>>> parent of 809bc72... refactoring
 
     CREATE          shift and go to state 9
     SHOW            shift and go to state 10
@@ -196,55 +268,98 @@ state 1
 
 state 2
 
+<<<<<<< HEAD
     (1) start -> create . ENDREQUEST
 
     ENDREQUEST      shift and go to state 16
+=======
+    (1) start -> create .
+
+    $end            reduce using rule 1 (start -> create .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 3
 
+<<<<<<< HEAD
     (2) start -> show . ENDREQUEST
 
     ENDREQUEST      shift and go to state 17
+=======
+    (2) start -> show .
+
+    $end            reduce using rule 2 (start -> show .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 4
 
+<<<<<<< HEAD
     (3) start -> drop . ENDREQUEST
 
     ENDREQUEST      shift and go to state 18
+=======
+    (3) start -> drop .
+
+    $end            reduce using rule 3 (start -> drop .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 5
 
+<<<<<<< HEAD
     (4) start -> select . ENDREQUEST
 
     ENDREQUEST      shift and go to state 19
+=======
+    (4) start -> select .
+
+    $end            reduce using rule 4 (start -> select .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 6
 
+<<<<<<< HEAD
     (5) start -> insert . ENDREQUEST
 
     ENDREQUEST      shift and go to state 20
+=======
+    (5) start -> insert .
+
+    $end            reduce using rule 5 (start -> insert .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 7
 
+<<<<<<< HEAD
     (6) start -> update . ENDREQUEST
 
     ENDREQUEST      shift and go to state 21
+=======
+    (6) start -> update .
+
+    $end            reduce using rule 6 (start -> update .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 8
 
+<<<<<<< HEAD
     (7) start -> delete . ENDREQUEST
 
     ENDREQUEST      shift and go to state 22
+=======
+    (7) start -> delete .
+
+    $end            reduce using rule 7 (start -> delete .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 9
 
+<<<<<<< HEAD
     (8) create -> CREATE . create_body
     (9) create_body -> . TABLE NAME LBRACKET values RBRACKET
 
@@ -257,25 +372,51 @@ state 10
     (12) show -> SHOW . CREATE TABLE NAME
 
     CREATE          shift and go to state 25
+=======
+    (8) create -> CREATE . create_body ENDREQUEST
+    (9) create_body -> . TABLE NAME LBRACKET values RBRACKET
+
+    TABLE           shift and go to state 17
+
+    create_body                    shift and go to state 16
+
+state 10
+
+    (12) show -> SHOW . CREATE TABLE NAME ENDREQUEST
+
+    CREATE          shift and go to state 18
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 11
 
+<<<<<<< HEAD
     (13) drop -> DROP . TABLE NAME
 
     TABLE           shift and go to state 26
+=======
+    (13) drop -> DROP . TABLE NAME ENDREQUEST
+
+    TABLE           shift and go to state 19
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 12
 
+<<<<<<< HEAD
     (14) select -> SELECT . select_body
     (15) select -> SELECT . select_body condition
+=======
+    (14) select -> SELECT . select_body ENDREQUEST
+    (15) select -> SELECT . select_body condition ENDREQUEST
+>>>>>>> parent of 809bc72... refactoring
     (16) select_body -> . fields FROM NAME
     (17) select_body -> . STAR COMMA fields FROM NAME
     (18) select_body -> . STAR FROM NAME
     (29) fields -> . NAME
     (30) fields -> . fields COMMA NAME
 
+<<<<<<< HEAD
     STAR            shift and go to state 30
     NAME            shift and go to state 29
 
@@ -308,38 +449,97 @@ state 15
     (28) delete -> DELETE . FROM NAME condition
 
     FROM            shift and go to state 35
+=======
+    STAR            shift and go to state 23
+    NAME            shift and go to state 22
+
+    select_body                    shift and go to state 20
+    fields                         shift and go to state 21
+
+state 13
+
+    (19) insert -> INSERT . insert_body ENDREQUEST
+    (20) insert_body -> . INTO NAME VALUES LBRACKET fields RBRACKET
+    (21) insert_body -> . INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+
+    INTO            shift and go to state 25
+
+    insert_body                    shift and go to state 24
+
+state 14
+
+    (22) update -> UPDATE . update_body ENDREQUEST
+    (23) update_body -> . NAME SET expression
+    (24) update_body -> . NAME SET expression condition
+
+    NAME            shift and go to state 27
+
+    update_body                    shift and go to state 26
+
+state 15
+
+    (27) delete -> DELETE . FROM NAME ENDREQUEST
+    (28) delete -> DELETE . FROM NAME condition ENDREQUEST
+
+    FROM            shift and go to state 28
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 16
 
+<<<<<<< HEAD
     (1) start -> create ENDREQUEST .
 
     $end            reduce using rule 1 (start -> create ENDREQUEST .)
+=======
+    (8) create -> CREATE create_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 29
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 17
 
+<<<<<<< HEAD
     (2) start -> show ENDREQUEST .
 
     $end            reduce using rule 2 (start -> show ENDREQUEST .)
+=======
+    (9) create_body -> TABLE . NAME LBRACKET values RBRACKET
+
+    NAME            shift and go to state 30
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 18
 
+<<<<<<< HEAD
     (3) start -> drop ENDREQUEST .
 
     $end            reduce using rule 3 (start -> drop ENDREQUEST .)
+=======
+    (12) show -> SHOW CREATE . TABLE NAME ENDREQUEST
+
+    TABLE           shift and go to state 31
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 19
 
+<<<<<<< HEAD
     (4) start -> select ENDREQUEST .
 
     $end            reduce using rule 4 (start -> select ENDREQUEST .)
+=======
+    (13) drop -> DROP TABLE . NAME ENDREQUEST
+
+    NAME            shift and go to state 32
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 20
 
+<<<<<<< HEAD
     (5) start -> insert ENDREQUEST .
 
     $end            reduce using rule 5 (start -> insert ENDREQUEST .)
@@ -350,45 +550,99 @@ state 21
     (6) start -> update ENDREQUEST .
 
     $end            reduce using rule 6 (start -> update ENDREQUEST .)
+=======
+    (14) select -> SELECT select_body . ENDREQUEST
+    (15) select -> SELECT select_body . condition ENDREQUEST
+    (32) condition -> . WHERE tree_condition
+
+    ENDREQUEST      shift and go to state 33
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 34
+
+state 21
+
+    (16) select_body -> fields . FROM NAME
+    (30) fields -> fields . COMMA NAME
+
+    FROM            shift and go to state 36
+    COMMA           shift and go to state 37
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 22
 
+<<<<<<< HEAD
     (7) start -> delete ENDREQUEST .
 
     $end            reduce using rule 7 (start -> delete ENDREQUEST .)
+=======
+    (29) fields -> NAME .
+
+    FROM            reduce using rule 29 (fields -> NAME .)
+    COMMA           reduce using rule 29 (fields -> NAME .)
+    RBRACKET        reduce using rule 29 (fields -> NAME .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 23
 
+<<<<<<< HEAD
     (8) create -> CREATE create_body .
 
     ENDREQUEST      reduce using rule 8 (create -> CREATE create_body .)
+=======
+    (17) select_body -> STAR . COMMA fields FROM NAME
+    (18) select_body -> STAR . FROM NAME
+
+    COMMA           shift and go to state 38
+    FROM            shift and go to state 39
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 24
 
+<<<<<<< HEAD
     (9) create_body -> TABLE . NAME LBRACKET values RBRACKET
 
     NAME            shift and go to state 36
+=======
+    (19) insert -> INSERT insert_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 40
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 25
 
+<<<<<<< HEAD
     (12) show -> SHOW CREATE . TABLE NAME
 
     TABLE           shift and go to state 37
+=======
+    (20) insert_body -> INTO . NAME VALUES LBRACKET fields RBRACKET
+    (21) insert_body -> INTO . NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
+
+    NAME            shift and go to state 41
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 26
 
+<<<<<<< HEAD
     (13) drop -> DROP TABLE . NAME
 
     NAME            shift and go to state 38
+=======
+    (22) update -> UPDATE update_body . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 42
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 27
 
+<<<<<<< HEAD
     (14) select -> SELECT select_body .
     (15) select -> SELECT select_body . condition
     (32) condition -> . WHERE tree_condition
@@ -405,58 +659,109 @@ state 28
 
     FROM            shift and go to state 41
     COMMA           shift and go to state 42
+=======
+    (23) update_body -> NAME . SET expression
+    (24) update_body -> NAME . SET expression condition
+
+    SET             shift and go to state 43
+
+
+state 28
+
+    (27) delete -> DELETE FROM . NAME ENDREQUEST
+    (28) delete -> DELETE FROM . NAME condition ENDREQUEST
+
+    NAME            shift and go to state 44
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 29
 
+<<<<<<< HEAD
     (29) fields -> NAME .
 
     FROM            reduce using rule 29 (fields -> NAME .)
     COMMA           reduce using rule 29 (fields -> NAME .)
     RBRACKET        reduce using rule 29 (fields -> NAME .)
+=======
+    (8) create -> CREATE create_body ENDREQUEST .
+
+    $end            reduce using rule 8 (create -> CREATE create_body ENDREQUEST .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 30
 
+<<<<<<< HEAD
     (17) select_body -> STAR . COMMA fields FROM NAME
     (18) select_body -> STAR . FROM NAME
 
     COMMA           shift and go to state 43
     FROM            shift and go to state 44
+=======
+    (9) create_body -> TABLE NAME . LBRACKET values RBRACKET
+
+    LBRACKET        shift and go to state 45
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 31
 
+<<<<<<< HEAD
     (19) insert -> INSERT insert_body .
 
     ENDREQUEST      reduce using rule 19 (insert -> INSERT insert_body .)
+=======
+    (12) show -> SHOW CREATE TABLE . NAME ENDREQUEST
+
+    NAME            shift and go to state 46
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 32
 
+<<<<<<< HEAD
     (20) insert_body -> INTO . NAME VALUES LBRACKET fields RBRACKET
     (21) insert_body -> INTO . NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
 
     NAME            shift and go to state 45
+=======
+    (13) drop -> DROP TABLE NAME . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 47
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 33
 
+<<<<<<< HEAD
     (22) update -> UPDATE update_body .
 
     ENDREQUEST      reduce using rule 22 (update -> UPDATE update_body .)
+=======
+    (14) select -> SELECT select_body ENDREQUEST .
+
+    $end            reduce using rule 14 (select -> SELECT select_body ENDREQUEST .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 34
 
+<<<<<<< HEAD
     (23) update_body -> NAME . SET expression
     (24) update_body -> NAME . SET expression condition
 
     SET             shift and go to state 46
+=======
+    (15) select -> SELECT select_body condition . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 48
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 35
 
+<<<<<<< HEAD
     (27) delete -> DELETE FROM . NAME
     (28) delete -> DELETE FROM . NAME condition
 
@@ -493,6 +798,8 @@ state 39
 
 state 40
 
+=======
+>>>>>>> parent of 809bc72... refactoring
     (32) condition -> WHERE . tree_condition
     (33) tree_condition -> . tree_comparison operator_condition tree_condition
     (34) tree_condition -> . tree_comparison
@@ -509,6 +816,7 @@ state 40
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -537,11 +845,42 @@ state 42
 
 
 state 43
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    tree_condition                 shift and go to state 49
+    tree_comparison                shift and go to state 50
+    tree_expression                shift and go to state 51
+    field                          shift and go to state 52
+    operator_expression            shift and go to state 53
+
+state 36
+
+    (16) select_body -> fields FROM . NAME
+
+    NAME            shift and go to state 60
+
+
+state 37
+
+    (30) fields -> fields COMMA . NAME
+
+    NAME            shift and go to state 61
+
+
+state 38
+>>>>>>> parent of 809bc72... refactoring
 
     (17) select_body -> STAR COMMA . fields FROM NAME
     (29) fields -> . NAME
     (30) fields -> . fields COMMA NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 29
 
     fields                         shift and go to state 63
@@ -554,15 +893,51 @@ state 44
 
 
 state 45
+=======
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 62
+
+state 39
+
+    (18) select_body -> STAR FROM . NAME
+
+    NAME            shift and go to state 63
+
+
+state 40
+
+    (19) insert -> INSERT insert_body ENDREQUEST .
+
+    $end            reduce using rule 19 (insert -> INSERT insert_body ENDREQUEST .)
+
+
+state 41
+>>>>>>> parent of 809bc72... refactoring
 
     (20) insert_body -> INTO NAME . VALUES LBRACKET fields RBRACKET
     (21) insert_body -> INTO NAME . LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET
 
+<<<<<<< HEAD
     VALUES          shift and go to state 65
     LBRACKET        shift and go to state 66
 
 
 state 46
+=======
+    VALUES          shift and go to state 64
+    LBRACKET        shift and go to state 65
+
+
+state 42
+
+    (22) update -> UPDATE update_body ENDREQUEST .
+
+    $end            reduce using rule 22 (update -> UPDATE update_body ENDREQUEST .)
+
+
+state 43
+>>>>>>> parent of 809bc72... refactoring
 
     (23) update_body -> NAME SET . expression
     (24) update_body -> NAME SET . expression condition
@@ -570,6 +945,7 @@ state 46
     (26) expression -> . expression COMMA field EQUAL tree_expression
     (31) field -> . NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 56
 
     expression                     shift and go to state 67
@@ -587,6 +963,25 @@ state 47
     condition                      shift and go to state 69
 
 state 48
+=======
+    NAME            shift and go to state 55
+
+    expression                     shift and go to state 66
+    field                          shift and go to state 67
+
+state 44
+
+    (27) delete -> DELETE FROM NAME . ENDREQUEST
+    (28) delete -> DELETE FROM NAME . condition ENDREQUEST
+    (32) condition -> . WHERE tree_condition
+
+    ENDREQUEST      shift and go to state 68
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 69
+
+state 45
+>>>>>>> parent of 809bc72... refactoring
 
     (9) create_body -> TABLE NAME LBRACKET . values RBRACKET
     (10) values -> . NAME type
@@ -596,6 +991,7 @@ state 48
 
     values                         shift and go to state 71
 
+<<<<<<< HEAD
 state 49
 
     (12) show -> SHOW CREATE TABLE NAME .
@@ -604,13 +1000,41 @@ state 49
 
 
 state 50
+=======
+state 46
+
+    (12) show -> SHOW CREATE TABLE NAME . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 72
+
+
+state 47
+
+    (13) drop -> DROP TABLE NAME ENDREQUEST .
+
+    $end            reduce using rule 13 (drop -> DROP TABLE NAME ENDREQUEST .)
+
+
+state 48
+
+    (15) select -> SELECT select_body condition ENDREQUEST .
+
+    $end            reduce using rule 15 (select -> SELECT select_body condition ENDREQUEST .)
+
+
+state 49
+>>>>>>> parent of 809bc72... refactoring
 
     (32) condition -> WHERE tree_condition .
 
     ENDREQUEST      reduce using rule 32 (condition -> WHERE tree_condition .)
 
 
+<<<<<<< HEAD
 state 51
+=======
+state 50
+>>>>>>> parent of 809bc72... refactoring
 
     (33) tree_condition -> tree_comparison . operator_condition tree_condition
     (34) tree_condition -> tree_comparison .
@@ -619,12 +1043,21 @@ state 51
     (43) operator_condition -> . OR
 
     ENDREQUEST      reduce using rule 34 (tree_condition -> tree_comparison .)
+<<<<<<< HEAD
     AND             shift and go to state 73
     OR              shift and go to state 74
 
     operator_condition             shift and go to state 72
 
 state 52
+=======
+    AND             shift and go to state 74
+    OR              shift and go to state 75
+
+    operator_condition             shift and go to state 73
+
+state 51
+>>>>>>> parent of 809bc72... refactoring
 
     (36) tree_comparison -> tree_expression . operator_comparison tree_expression
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -639,6 +1072,7 @@ state 52
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     EQUAL           shift and go to state 77
     NOT_EQUAL       shift and go to state 78
     GREATER_THAN    shift and go to state 79
@@ -654,6 +1088,23 @@ state 52
     operator_expression            shift and go to state 76
 
 state 53
+=======
+    EQUAL           shift and go to state 78
+    NOT_EQUAL       shift and go to state 79
+    GREATER_THAN    shift and go to state 80
+    LESS_THAN       shift and go to state 81
+    GREATER_THAN_OR_EQUAL shift and go to state 82
+    LESS_THAN_OR_EQUAL shift and go to state 83
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_comparison            shift and go to state 76
+    operator_expression            shift and go to state 77
+
+state 52
+>>>>>>> parent of 809bc72... refactoring
 
     (37) tree_expression -> field .
     (38) tree_expression -> field . operator_expression tree_expression
@@ -678,19 +1129,32 @@ state 53
     ENDREQUEST      reduce using rule 37 (tree_expression -> field .)
     COMMA           reduce using rule 37 (tree_expression -> field .)
     WHERE           reduce using rule 37 (tree_expression -> field .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
     DIVISION        shift and go to state 60
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+>>>>>>> parent of 809bc72... refactoring
 
   ! PLUS            [ reduce using rule 37 (tree_expression -> field .) ]
   ! MINUS           [ reduce using rule 37 (tree_expression -> field .) ]
   ! STAR            [ reduce using rule 37 (tree_expression -> field .) ]
   ! DIVISION        [ reduce using rule 37 (tree_expression -> field .) ]
 
+<<<<<<< HEAD
     operator_expression            shift and go to state 83
 
 state 54
+=======
+    operator_expression            shift and go to state 84
+
+state 53
+>>>>>>> parent of 809bc72... refactoring
 
     (39) tree_expression -> operator_expression . tree_expression
     (37) tree_expression -> . field
@@ -704,6 +1168,7 @@ state 54
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -716,6 +1181,20 @@ state 54
     field                          shift and go to state 53
 
 state 55
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_expression            shift and go to state 53
+    tree_expression                shift and go to state 85
+    field                          shift and go to state 52
+
+state 54
+>>>>>>> parent of 809bc72... refactoring
 
     (40) tree_expression -> LBRACKET . tree_expression RBRACKET
     (37) tree_expression -> . field
@@ -729,6 +1208,7 @@ state 55
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -741,6 +1221,20 @@ state 55
     operator_expression            shift and go to state 54
 
 state 56
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    tree_expression                shift and go to state 86
+    field                          shift and go to state 52
+    operator_expression            shift and go to state 53
+
+state 55
+>>>>>>> parent of 809bc72... refactoring
 
     (31) field -> NAME .
 
@@ -762,7 +1256,11 @@ state 56
     WHERE           reduce using rule 31 (field -> NAME .)
 
 
+<<<<<<< HEAD
 state 57
+=======
+state 56
+>>>>>>> parent of 809bc72... refactoring
 
     (50) operator_expression -> PLUS .
 
@@ -774,7 +1272,11 @@ state 57
     DIVISION        reduce using rule 50 (operator_expression -> PLUS .)
 
 
+<<<<<<< HEAD
 state 58
+=======
+state 57
+>>>>>>> parent of 809bc72... refactoring
 
     (51) operator_expression -> MINUS .
 
@@ -786,7 +1288,11 @@ state 58
     DIVISION        reduce using rule 51 (operator_expression -> MINUS .)
 
 
+<<<<<<< HEAD
 state 59
+=======
+state 58
+>>>>>>> parent of 809bc72... refactoring
 
     (52) operator_expression -> STAR .
 
@@ -798,7 +1304,11 @@ state 59
     DIVISION        reduce using rule 52 (operator_expression -> STAR .)
 
 
+<<<<<<< HEAD
 state 60
+=======
+state 59
+>>>>>>> parent of 809bc72... refactoring
 
     (53) operator_expression -> DIVISION .
 
@@ -810,6 +1320,7 @@ state 60
     DIVISION        reduce using rule 53 (operator_expression -> DIVISION .)
 
 
+<<<<<<< HEAD
 state 61
 
     (16) select_body -> fields FROM NAME .
@@ -819,6 +1330,17 @@ state 61
 
 
 state 62
+=======
+state 60
+
+    (16) select_body -> fields FROM NAME .
+
+    ENDREQUEST      reduce using rule 16 (select_body -> fields FROM NAME .)
+    WHERE           reduce using rule 16 (select_body -> fields FROM NAME .)
+
+
+state 61
+>>>>>>> parent of 809bc72... refactoring
 
     (30) fields -> fields COMMA NAME .
 
@@ -827,11 +1349,16 @@ state 62
     RBRACKET        reduce using rule 30 (fields -> fields COMMA NAME .)
 
 
+<<<<<<< HEAD
 state 63
+=======
+state 62
+>>>>>>> parent of 809bc72... refactoring
 
     (17) select_body -> STAR COMMA fields . FROM NAME
     (30) fields -> fields . COMMA NAME
 
+<<<<<<< HEAD
     FROM            shift and go to state 86
     COMMA           shift and go to state 42
 
@@ -852,16 +1379,46 @@ state 65
 
 
 state 66
+=======
+    FROM            shift and go to state 87
+    COMMA           shift and go to state 37
+
+
+state 63
+
+    (18) select_body -> STAR FROM NAME .
+
+    ENDREQUEST      reduce using rule 18 (select_body -> STAR FROM NAME .)
+    WHERE           reduce using rule 18 (select_body -> STAR FROM NAME .)
+
+
+state 64
+
+    (20) insert_body -> INTO NAME VALUES . LBRACKET fields RBRACKET
+
+    LBRACKET        shift and go to state 88
+
+
+state 65
+>>>>>>> parent of 809bc72... refactoring
 
     (21) insert_body -> INTO NAME LBRACKET . fields RBRACKET VALUES LBRACKET fields RBRACKET
     (29) fields -> . NAME
     (30) fields -> . fields COMMA NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 29
 
     fields                         shift and go to state 88
 
 state 67
+=======
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 89
+
+state 66
+>>>>>>> parent of 809bc72... refactoring
 
     (23) update_body -> NAME SET expression .
     (24) update_body -> NAME SET expression . condition
@@ -869,6 +1426,7 @@ state 67
     (32) condition -> . WHERE tree_condition
 
     ENDREQUEST      reduce using rule 23 (update_body -> NAME SET expression .)
+<<<<<<< HEAD
     COMMA           shift and go to state 90
     WHERE           shift and go to state 40
 
@@ -879,13 +1437,38 @@ state 68
     (25) expression -> field . EQUAL tree_expression
 
     EQUAL           shift and go to state 91
+=======
+    COMMA           shift and go to state 91
+    WHERE           shift and go to state 35
+
+    condition                      shift and go to state 90
+
+state 67
+
+    (25) expression -> field . EQUAL tree_expression
+
+    EQUAL           shift and go to state 92
+
+
+state 68
+
+    (27) delete -> DELETE FROM NAME ENDREQUEST .
+
+    $end            reduce using rule 27 (delete -> DELETE FROM NAME ENDREQUEST .)
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 69
 
+<<<<<<< HEAD
     (28) delete -> DELETE FROM NAME condition .
 
     ENDREQUEST      reduce using rule 28 (delete -> DELETE FROM NAME condition .)
+=======
+    (28) delete -> DELETE FROM NAME condition . ENDREQUEST
+
+    ENDREQUEST      shift and go to state 93
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 70
@@ -897,6 +1480,7 @@ state 70
     (57) type -> . bool
     (58) type -> . float
 
+<<<<<<< HEAD
     int             shift and go to state 93
     str             shift and go to state 94
     bol             shift and go to state 95
@@ -904,18 +1488,42 @@ state 70
     float           shift and go to state 97
 
     type                           shift and go to state 92
+=======
+    int             shift and go to state 95
+    str             shift and go to state 96
+    bol             shift and go to state 97
+    bool            shift and go to state 98
+    float           shift and go to state 99
+
+    type                           shift and go to state 94
+>>>>>>> parent of 809bc72... refactoring
 
 state 71
 
     (9) create_body -> TABLE NAME LBRACKET values . RBRACKET
     (11) values -> values . COMMA NAME type
 
+<<<<<<< HEAD
     RBRACKET        shift and go to state 98
     COMMA           shift and go to state 99
+=======
+    RBRACKET        shift and go to state 100
+    COMMA           shift and go to state 101
+>>>>>>> parent of 809bc72... refactoring
 
 
 state 72
 
+<<<<<<< HEAD
+=======
+    (12) show -> SHOW CREATE TABLE NAME ENDREQUEST .
+
+    $end            reduce using rule 12 (show -> SHOW CREATE TABLE NAME ENDREQUEST .)
+
+
+state 73
+
+>>>>>>> parent of 809bc72... refactoring
     (33) tree_condition -> tree_comparison operator_condition . tree_condition
     (35) tree_condition -> tree_comparison operator_condition . tree_comparison
     (33) tree_condition -> . tree_comparison operator_condition tree_condition
@@ -933,6 +1541,7 @@ state 72
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -947,6 +1556,22 @@ state 72
     operator_expression            shift and go to state 54
 
 state 73
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    tree_comparison                shift and go to state 102
+    tree_condition                 shift and go to state 103
+    tree_expression                shift and go to state 51
+    field                          shift and go to state 52
+    operator_expression            shift and go to state 53
+
+state 74
+>>>>>>> parent of 809bc72... refactoring
 
     (42) operator_condition -> AND .
 
@@ -958,7 +1583,11 @@ state 73
     DIVISION        reduce using rule 42 (operator_condition -> AND .)
 
 
+<<<<<<< HEAD
 state 74
+=======
+state 75
+>>>>>>> parent of 809bc72... refactoring
 
     (43) operator_condition -> OR .
 
@@ -970,7 +1599,11 @@ state 74
     DIVISION        reduce using rule 43 (operator_condition -> OR .)
 
 
+<<<<<<< HEAD
 state 75
+=======
+state 76
+>>>>>>> parent of 809bc72... refactoring
 
     (36) tree_comparison -> tree_expression operator_comparison . tree_expression
     (37) tree_expression -> . field
@@ -984,6 +1617,7 @@ state 75
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -996,6 +1630,20 @@ state 75
     operator_expression            shift and go to state 54
 
 state 76
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    tree_expression                shift and go to state 104
+    field                          shift and go to state 52
+    operator_expression            shift and go to state 53
+
+state 77
+>>>>>>> parent of 809bc72... refactoring
 
     (41) tree_expression -> tree_expression operator_expression . tree_expression
     (37) tree_expression -> . field
@@ -1009,6 +1657,7 @@ state 76
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -1021,6 +1670,20 @@ state 76
     field                          shift and go to state 53
 
 state 77
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    tree_expression                shift and go to state 105
+    operator_expression            shift and go to state 53
+    field                          shift and go to state 52
+
+state 78
+>>>>>>> parent of 809bc72... refactoring
 
     (44) operator_comparison -> EQUAL .
 
@@ -1032,7 +1695,11 @@ state 77
     DIVISION        reduce using rule 44 (operator_comparison -> EQUAL .)
 
 
+<<<<<<< HEAD
 state 78
+=======
+state 79
+>>>>>>> parent of 809bc72... refactoring
 
     (45) operator_comparison -> NOT_EQUAL .
 
@@ -1044,7 +1711,11 @@ state 78
     DIVISION        reduce using rule 45 (operator_comparison -> NOT_EQUAL .)
 
 
+<<<<<<< HEAD
 state 79
+=======
+state 80
+>>>>>>> parent of 809bc72... refactoring
 
     (46) operator_comparison -> GREATER_THAN .
 
@@ -1056,7 +1727,11 @@ state 79
     DIVISION        reduce using rule 46 (operator_comparison -> GREATER_THAN .)
 
 
+<<<<<<< HEAD
 state 80
+=======
+state 81
+>>>>>>> parent of 809bc72... refactoring
 
     (47) operator_comparison -> LESS_THAN .
 
@@ -1068,7 +1743,11 @@ state 80
     DIVISION        reduce using rule 47 (operator_comparison -> LESS_THAN .)
 
 
+<<<<<<< HEAD
 state 81
+=======
+state 82
+>>>>>>> parent of 809bc72... refactoring
 
     (48) operator_comparison -> GREATER_THAN_OR_EQUAL .
 
@@ -1080,7 +1759,11 @@ state 81
     DIVISION        reduce using rule 48 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
 
 
+<<<<<<< HEAD
 state 82
+=======
+state 83
+>>>>>>> parent of 809bc72... refactoring
 
     (49) operator_comparison -> LESS_THAN_OR_EQUAL .
 
@@ -1092,7 +1775,11 @@ state 82
     DIVISION        reduce using rule 49 (operator_comparison -> LESS_THAN_OR_EQUAL .)
 
 
+<<<<<<< HEAD
 state 83
+=======
+state 84
+>>>>>>> parent of 809bc72... refactoring
 
     (38) tree_expression -> field operator_expression . tree_expression
     (37) tree_expression -> . field
@@ -1106,6 +1793,7 @@ state 83
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -1118,6 +1806,20 @@ state 83
     tree_expression                shift and go to state 104
 
 state 84
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    field                          shift and go to state 52
+    operator_expression            shift and go to state 53
+    tree_expression                shift and go to state 106
+
+state 85
+>>>>>>> parent of 809bc72... refactoring
 
     (39) tree_expression -> operator_expression tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1142,19 +1844,32 @@ state 84
     ENDREQUEST      reduce using rule 39 (tree_expression -> operator_expression tree_expression .)
     COMMA           reduce using rule 39 (tree_expression -> operator_expression tree_expression .)
     WHERE           reduce using rule 39 (tree_expression -> operator_expression tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
     DIVISION        shift and go to state 60
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+>>>>>>> parent of 809bc72... refactoring
 
   ! PLUS            [ reduce using rule 39 (tree_expression -> operator_expression tree_expression .) ]
   ! MINUS           [ reduce using rule 39 (tree_expression -> operator_expression tree_expression .) ]
   ! STAR            [ reduce using rule 39 (tree_expression -> operator_expression tree_expression .) ]
   ! DIVISION        [ reduce using rule 39 (tree_expression -> operator_expression tree_expression .) ]
 
+<<<<<<< HEAD
     operator_expression            shift and go to state 76
 
 state 85
+=======
+    operator_expression            shift and go to state 77
+
+state 86
+>>>>>>> parent of 809bc72... refactoring
 
     (40) tree_expression -> LBRACKET tree_expression . RBRACKET
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1163,6 +1878,7 @@ state 85
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     RBRACKET        shift and go to state 105
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
@@ -1179,41 +1895,87 @@ state 86
 
 
 state 87
+=======
+    RBRACKET        shift and go to state 107
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_expression            shift and go to state 77
+
+state 87
+
+    (17) select_body -> STAR COMMA fields FROM . NAME
+
+    NAME            shift and go to state 108
+
+
+state 88
+>>>>>>> parent of 809bc72... refactoring
 
     (20) insert_body -> INTO NAME VALUES LBRACKET . fields RBRACKET
     (29) fields -> . NAME
     (30) fields -> . fields COMMA NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 29
 
     fields                         shift and go to state 107
 
 state 88
+=======
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 109
+
+state 89
+>>>>>>> parent of 809bc72... refactoring
 
     (21) insert_body -> INTO NAME LBRACKET fields . RBRACKET VALUES LBRACKET fields RBRACKET
     (30) fields -> fields . COMMA NAME
 
+<<<<<<< HEAD
     RBRACKET        shift and go to state 108
     COMMA           shift and go to state 42
 
 
 state 89
+=======
+    RBRACKET        shift and go to state 110
+    COMMA           shift and go to state 37
+
+
+state 90
+>>>>>>> parent of 809bc72... refactoring
 
     (24) update_body -> NAME SET expression condition .
 
     ENDREQUEST      reduce using rule 24 (update_body -> NAME SET expression condition .)
 
 
+<<<<<<< HEAD
 state 90
+=======
+state 91
+>>>>>>> parent of 809bc72... refactoring
 
     (26) expression -> expression COMMA . field EQUAL tree_expression
     (31) field -> . NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 56
 
     field                          shift and go to state 109
 
 state 91
+=======
+    NAME            shift and go to state 55
+
+    field                          shift and go to state 111
+
+state 92
+>>>>>>> parent of 809bc72... refactoring
 
     (25) expression -> field EQUAL . tree_expression
     (37) tree_expression -> . field
@@ -1227,6 +1989,7 @@ state 91
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -1239,6 +2002,27 @@ state 91
     operator_expression            shift and go to state 54
 
 state 92
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    field                          shift and go to state 52
+    tree_expression                shift and go to state 112
+    operator_expression            shift and go to state 53
+
+state 93
+
+    (28) delete -> DELETE FROM NAME condition ENDREQUEST .
+
+    $end            reduce using rule 28 (delete -> DELETE FROM NAME condition ENDREQUEST .)
+
+
+state 94
+>>>>>>> parent of 809bc72... refactoring
 
     (10) values -> NAME type .
 
@@ -1246,7 +2030,11 @@ state 92
     COMMA           reduce using rule 10 (values -> NAME type .)
 
 
+<<<<<<< HEAD
 state 93
+=======
+state 95
+>>>>>>> parent of 809bc72... refactoring
 
     (54) type -> int .
 
@@ -1254,7 +2042,11 @@ state 93
     COMMA           reduce using rule 54 (type -> int .)
 
 
+<<<<<<< HEAD
 state 94
+=======
+state 96
+>>>>>>> parent of 809bc72... refactoring
 
     (55) type -> str .
 
@@ -1262,7 +2054,11 @@ state 94
     COMMA           reduce using rule 55 (type -> str .)
 
 
+<<<<<<< HEAD
 state 95
+=======
+state 97
+>>>>>>> parent of 809bc72... refactoring
 
     (56) type -> bol .
 
@@ -1270,7 +2066,11 @@ state 95
     COMMA           reduce using rule 56 (type -> bol .)
 
 
+<<<<<<< HEAD
 state 96
+=======
+state 98
+>>>>>>> parent of 809bc72... refactoring
 
     (57) type -> bool .
 
@@ -1278,7 +2078,11 @@ state 96
     COMMA           reduce using rule 57 (type -> bool .)
 
 
+<<<<<<< HEAD
 state 97
+=======
+state 99
+>>>>>>> parent of 809bc72... refactoring
 
     (58) type -> float .
 
@@ -1286,13 +2090,18 @@ state 97
     COMMA           reduce using rule 58 (type -> float .)
 
 
+<<<<<<< HEAD
 state 98
+=======
+state 100
+>>>>>>> parent of 809bc72... refactoring
 
     (9) create_body -> TABLE NAME LBRACKET values RBRACKET .
 
     ENDREQUEST      reduce using rule 9 (create_body -> TABLE NAME LBRACKET values RBRACKET .)
 
 
+<<<<<<< HEAD
 state 99
 
     (11) values -> values COMMA . NAME type
@@ -1301,6 +2110,16 @@ state 99
 
 
 state 100
+=======
+state 101
+
+    (11) values -> values COMMA . NAME type
+
+    NAME            shift and go to state 113
+
+
+state 102
+>>>>>>> parent of 809bc72... refactoring
 
     (35) tree_condition -> tree_comparison operator_condition tree_comparison .
     (33) tree_condition -> tree_comparison . operator_condition tree_condition
@@ -1311,6 +2130,7 @@ state 100
 
   ! reduce/reduce conflict for ENDREQUEST resolved using rule 34 (tree_condition -> tree_comparison .)
     ENDREQUEST      reduce using rule 34 (tree_condition -> tree_comparison .)
+<<<<<<< HEAD
     AND             shift and go to state 73
     OR              shift and go to state 74
 
@@ -1319,13 +2139,27 @@ state 100
     operator_condition             shift and go to state 72
 
 state 101
+=======
+    AND             shift and go to state 74
+    OR              shift and go to state 75
+
+  ! ENDREQUEST      [ reduce using rule 35 (tree_condition -> tree_comparison operator_condition tree_comparison .) ]
+
+    operator_condition             shift and go to state 73
+
+state 103
+>>>>>>> parent of 809bc72... refactoring
 
     (33) tree_condition -> tree_comparison operator_condition tree_condition .
 
     ENDREQUEST      reduce using rule 33 (tree_condition -> tree_comparison operator_condition tree_condition .)
 
 
+<<<<<<< HEAD
 state 102
+=======
+state 104
+>>>>>>> parent of 809bc72... refactoring
 
     (36) tree_comparison -> tree_expression operator_comparison tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1337,6 +2171,7 @@ state 102
     AND             reduce using rule 36 (tree_comparison -> tree_expression operator_comparison tree_expression .)
     OR              reduce using rule 36 (tree_comparison -> tree_expression operator_comparison tree_expression .)
     ENDREQUEST      reduce using rule 36 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
@@ -1345,6 +2180,16 @@ state 102
     operator_expression            shift and go to state 76
 
 state 103
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_expression            shift and go to state 77
+
+state 105
+>>>>>>> parent of 809bc72... refactoring
 
     (41) tree_expression -> tree_expression operator_expression tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1369,19 +2214,32 @@ state 103
     ENDREQUEST      reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .)
     COMMA           reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .)
     WHERE           reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
     DIVISION        shift and go to state 60
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+>>>>>>> parent of 809bc72... refactoring
 
   ! PLUS            [ reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .) ]
   ! MINUS           [ reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .) ]
   ! STAR            [ reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .) ]
   ! DIVISION        [ reduce using rule 41 (tree_expression -> tree_expression operator_expression tree_expression .) ]
 
+<<<<<<< HEAD
     operator_expression            shift and go to state 76
 
 state 104
+=======
+    operator_expression            shift and go to state 77
+
+state 106
+>>>>>>> parent of 809bc72... refactoring
 
     (38) tree_expression -> field operator_expression tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1406,19 +2264,32 @@ state 104
     ENDREQUEST      reduce using rule 38 (tree_expression -> field operator_expression tree_expression .)
     COMMA           reduce using rule 38 (tree_expression -> field operator_expression tree_expression .)
     WHERE           reduce using rule 38 (tree_expression -> field operator_expression tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
     DIVISION        shift and go to state 60
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+>>>>>>> parent of 809bc72... refactoring
 
   ! PLUS            [ reduce using rule 38 (tree_expression -> field operator_expression tree_expression .) ]
   ! MINUS           [ reduce using rule 38 (tree_expression -> field operator_expression tree_expression .) ]
   ! STAR            [ reduce using rule 38 (tree_expression -> field operator_expression tree_expression .) ]
   ! DIVISION        [ reduce using rule 38 (tree_expression -> field operator_expression tree_expression .) ]
 
+<<<<<<< HEAD
     operator_expression            shift and go to state 76
 
 state 105
+=======
+    operator_expression            shift and go to state 77
+
+state 107
+>>>>>>> parent of 809bc72... refactoring
 
     (40) tree_expression -> LBRACKET tree_expression RBRACKET .
 
@@ -1440,6 +2311,7 @@ state 105
     WHERE           reduce using rule 40 (tree_expression -> LBRACKET tree_expression RBRACKET .)
 
 
+<<<<<<< HEAD
 state 106
 
     (17) select_body -> STAR COMMA fields FROM NAME .
@@ -1449,10 +2321,22 @@ state 106
 
 
 state 107
+=======
+state 108
+
+    (17) select_body -> STAR COMMA fields FROM NAME .
+
+    ENDREQUEST      reduce using rule 17 (select_body -> STAR COMMA fields FROM NAME .)
+    WHERE           reduce using rule 17 (select_body -> STAR COMMA fields FROM NAME .)
+
+
+state 109
+>>>>>>> parent of 809bc72... refactoring
 
     (20) insert_body -> INTO NAME VALUES LBRACKET fields . RBRACKET
     (30) fields -> fields . COMMA NAME
 
+<<<<<<< HEAD
     RBRACKET        shift and go to state 112
     COMMA           shift and go to state 42
 
@@ -1472,6 +2356,27 @@ state 109
 
 
 state 110
+=======
+    RBRACKET        shift and go to state 114
+    COMMA           shift and go to state 37
+
+
+state 110
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET . VALUES LBRACKET fields RBRACKET
+
+    VALUES          shift and go to state 115
+
+
+state 111
+
+    (26) expression -> expression COMMA field . EQUAL tree_expression
+
+    EQUAL           shift and go to state 116
+
+
+state 112
+>>>>>>> parent of 809bc72... refactoring
 
     (25) expression -> field EQUAL tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1483,6 +2388,7 @@ state 110
     COMMA           reduce using rule 25 (expression -> field EQUAL tree_expression .)
     WHERE           reduce using rule 25 (expression -> field EQUAL tree_expression .)
     ENDREQUEST      reduce using rule 25 (expression -> field EQUAL tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
@@ -1491,6 +2397,16 @@ state 110
     operator_expression            shift and go to state 76
 
 state 111
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_expression            shift and go to state 77
+
+state 113
+>>>>>>> parent of 809bc72... refactoring
 
     (11) values -> values COMMA NAME . type
     (54) type -> . int
@@ -1499,6 +2415,7 @@ state 111
     (57) type -> . bool
     (58) type -> . float
 
+<<<<<<< HEAD
     int             shift and go to state 93
     str             shift and go to state 94
     bol             shift and go to state 95
@@ -1508,12 +2425,24 @@ state 111
     type                           shift and go to state 115
 
 state 112
+=======
+    int             shift and go to state 95
+    str             shift and go to state 96
+    bol             shift and go to state 97
+    bool            shift and go to state 98
+    float           shift and go to state 99
+
+    type                           shift and go to state 117
+
+state 114
+>>>>>>> parent of 809bc72... refactoring
 
     (20) insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .
 
     ENDREQUEST      reduce using rule 20 (insert_body -> INTO NAME VALUES LBRACKET fields RBRACKET .)
 
 
+<<<<<<< HEAD
 state 113
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET fields RBRACKET
@@ -1522,6 +2451,16 @@ state 113
 
 
 state 114
+=======
+state 115
+
+    (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET fields RBRACKET
+
+    LBRACKET        shift and go to state 118
+
+
+state 116
+>>>>>>> parent of 809bc72... refactoring
 
     (26) expression -> expression COMMA field EQUAL . tree_expression
     (37) tree_expression -> . field
@@ -1535,6 +2474,7 @@ state 114
     (52) operator_expression -> . STAR
     (53) operator_expression -> . DIVISION
 
+<<<<<<< HEAD
     LBRACKET        shift and go to state 55
     NAME            shift and go to state 56
     PLUS            shift and go to state 57
@@ -1547,6 +2487,20 @@ state 114
     operator_expression            shift and go to state 54
 
 state 115
+=======
+    LBRACKET        shift and go to state 54
+    NAME            shift and go to state 55
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    field                          shift and go to state 52
+    tree_expression                shift and go to state 119
+    operator_expression            shift and go to state 53
+
+state 117
+>>>>>>> parent of 809bc72... refactoring
 
     (11) values -> values COMMA NAME type .
 
@@ -1554,17 +2508,29 @@ state 115
     COMMA           reduce using rule 11 (values -> values COMMA NAME type .)
 
 
+<<<<<<< HEAD
 state 116
+=======
+state 118
+>>>>>>> parent of 809bc72... refactoring
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET . fields RBRACKET
     (29) fields -> . NAME
     (30) fields -> . fields COMMA NAME
 
+<<<<<<< HEAD
     NAME            shift and go to state 29
 
     fields                         shift and go to state 118
 
 state 117
+=======
+    NAME            shift and go to state 22
+
+    fields                         shift and go to state 120
+
+state 119
+>>>>>>> parent of 809bc72... refactoring
 
     (26) expression -> expression COMMA field EQUAL tree_expression .
     (41) tree_expression -> tree_expression . operator_expression tree_expression
@@ -1576,6 +2542,7 @@ state 117
     COMMA           reduce using rule 26 (expression -> expression COMMA field EQUAL tree_expression .)
     WHERE           reduce using rule 26 (expression -> expression COMMA field EQUAL tree_expression .)
     ENDREQUEST      reduce using rule 26 (expression -> expression COMMA field EQUAL tree_expression .)
+<<<<<<< HEAD
     PLUS            shift and go to state 57
     MINUS           shift and go to state 58
     STAR            shift and go to state 59
@@ -1584,15 +2551,33 @@ state 117
     operator_expression            shift and go to state 76
 
 state 118
+=======
+    PLUS            shift and go to state 56
+    MINUS           shift and go to state 57
+    STAR            shift and go to state 58
+    DIVISION        shift and go to state 59
+
+    operator_expression            shift and go to state 77
+
+state 120
+>>>>>>> parent of 809bc72... refactoring
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields . RBRACKET
     (30) fields -> fields . COMMA NAME
 
+<<<<<<< HEAD
     RBRACKET        shift and go to state 119
     COMMA           shift and go to state 42
 
 
 state 119
+=======
+    RBRACKET        shift and go to state 121
+    COMMA           shift and go to state 37
+
+
+state 121
+>>>>>>> parent of 809bc72... refactoring
 
     (21) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET .
 
@@ -1601,6 +2586,7 @@ state 119
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
+<<<<<<< HEAD
 WARNING: shift/reduce conflict for PLUS in state 53 resolved as shift
 WARNING: shift/reduce conflict for MINUS in state 53 resolved as shift
 WARNING: shift/reduce conflict for STAR in state 53 resolved as shift
@@ -1619,4 +2605,24 @@ WARNING: shift/reduce conflict for STAR in state 104 resolved as shift
 WARNING: shift/reduce conflict for DIVISION in state 104 resolved as shift
 WARNING: reduce/reduce conflict in state 100 resolved using rule (tree_condition -> tree_comparison)
 WARNING: rejected rule (tree_condition -> tree_comparison operator_condition tree_comparison) in state 100
+=======
+WARNING: shift/reduce conflict for PLUS in state 52 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 52 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 52 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 52 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 85 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 85 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 85 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 85 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 105 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 105 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 105 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 105 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 106 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 106 resolved as shift
+WARNING: shift/reduce conflict for STAR in state 106 resolved as shift
+WARNING: shift/reduce conflict for DIVISION in state 106 resolved as shift
+WARNING: reduce/reduce conflict in state 102 resolved using rule (tree_condition -> tree_comparison)
+WARNING: rejected rule (tree_condition -> tree_comparison operator_condition tree_comparison) in state 102
+>>>>>>> parent of 809bc72... refactoring
 WARNING: Rule (tree_condition -> tree_comparison operator_condition tree_comparison) is never reduced
