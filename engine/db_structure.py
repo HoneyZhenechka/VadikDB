@@ -176,14 +176,15 @@ class Table:
     def get_last_row(self):
         for block in self.iter_blocks():
             for row in block.iter_rows():
-                if row.next_index == 0:
+                if (row.next_index == 0) and (row.row_available == 1):
                     return row
 
     def count_rows(self) -> int:
         result = 0
         for block in self.iter_blocks():
-            for _ in block.iter_rows():
-                result += 1
+            for row in block.iter_rows():
+                if row.row_available == 1:
+                    result += 1
         return result
 
     def __create_local_rollback_journal(self, name: str):
@@ -338,7 +339,8 @@ class Table:
         if not len(rows_indexes):
             for block in self.iter_blocks():
                 for row in block.iter_rows():
-                    self.__delete_row_and_add_block(row, transaction_id)
+                    if row.row_available == 1:
+                        self.__delete_row_and_add_block(row, transaction_id)
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
@@ -548,7 +550,7 @@ class Block:
             current_row = Row(self.table, current_index)
             current_row.read_row_from_file()
             current_index += self.table.row_length
-            if current_row.row_available == 1:
+            if current_row.row_available != 0:
                 yield current_row
             if not current_row.row_available:
                 break

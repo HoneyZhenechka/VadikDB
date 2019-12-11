@@ -9,7 +9,8 @@ db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"})
 def get_block_rows(block):
     rows_list = []
     for row in block.iter_rows():
-        rows_list.append(row)
+        if row.row_available == 1:
+            rows_list.append(row)
     return rows_list
 
 

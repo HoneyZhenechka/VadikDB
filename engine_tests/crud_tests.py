@@ -6,7 +6,8 @@ db = db_py.Database()
 def get_block_rows(block):
     rows_list = []
     for row in block.iter_rows():
-        rows_list.append(row)
+        if row.row_available == 1:
+            rows_list.append(row)
     return rows_list
 
 
