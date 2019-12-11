@@ -180,20 +180,20 @@ class PDelete(Struct):
 
 
 def p_start(p):
-    '''start : create
-             | show
-             | drop
-             | select
-             | insert
-             | update
-             | delete'''
+    '''start : create ENDREQUEST
+             | show ENDREQUEST
+             | drop ENDREQUEST
+             | select ENDREQUEST
+             | insert ENDREQUEST
+             | update ENDREQUEST
+             | delete ENDREQUEST'''
 
 
     p[0] = p[1]
 
 
 def p_create(p):
-    '''create : CREATE create_body ENDREQUEST'''
+    '''create : CREATE create_body'''
 
     p[0] = p[2]
 
@@ -217,21 +217,21 @@ def p_values(p):
 
 
 def p_show(p):
-    '''show : SHOW CREATE TABLE NAME ENDREQUEST'''
+    '''show : SHOW CREATE TABLE NAME'''
 
     p[0] = PShow(p[4])
 
 
 def p_drop(p):
-    '''drop : DROP TABLE NAME ENDREQUEST'''
+    '''drop : DROP TABLE NAME'''
 
     p[0] = PDrop(p[3])
 
 
 def p_select(p):
-    '''select : SELECT select_body ENDREQUEST
-              | SELECT select_body condition ENDREQUEST'''
-    if (len(p) == 4):
+    '''select : SELECT select_body
+              | SELECT select_body condition'''
+    if (len(p) == 3):
         p[0] = PSelect(p[2])
     else:
         p[0] = PSelect(p[2], p[3])
@@ -251,7 +251,7 @@ def p_select_body(p):
 
 
 def p_insert(p):
-    '''insert : INSERT insert_body ENDREQUEST'''
+    '''insert : INSERT insert_body'''
 
     p[0] = PInsert(p[2])
 
@@ -267,7 +267,7 @@ def p_insert_body(p):
 
 
 def p_update(p):
-    '''update : UPDATE update_body ENDREQUEST'''
+    '''update : UPDATE update_body'''
 
     p[0] = p[2]
 
@@ -297,9 +297,9 @@ def p_expression(p):
 
 
 def p_delete(p):
-    '''delete : DELETE FROM NAME ENDREQUEST
-              | DELETE FROM NAME condition ENDREQUEST'''
-    if len(p) == 5:
+    '''delete : DELETE FROM NAME
+              | DELETE FROM NAME condition'''
+    if len(p) == 4:
         p[0] = PDelete(p[3])
     else:
         p[0] = PDelete(p[3], p[4])
