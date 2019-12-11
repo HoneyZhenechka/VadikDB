@@ -51,7 +51,7 @@ class Database:
 
     def __update_table_metadata(self, table) -> typing.NoReturn:
         table.last_block_index = table.get_blocks_indexes()[-1]
-        table.last_row_index = table.get_last_row().index_in_file
+        table.last_row_index = table.get_last_row_index()
         table.row_count = table.count_rows()
         table.write_meta_info()
 
@@ -173,11 +173,12 @@ class Table:
             current_index = current_block.next_block
             yield current_block
 
-    def get_last_row(self):
+    def get_last_row_index(self):
         for block in self.iter_blocks():
             for row in block.iter_rows():
                 if (row.next_index == 0) and (row.row_available == 1):
-                    return row
+                    return row.index_in_file
+                return 0
 
     def count_rows(self) -> int:
         result = 0
@@ -657,7 +658,7 @@ class Transaction:
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
         self.table.last_block_index = self.table.get_blocks_indexes()[-1]
-        self.table.last_row_index = self.table.get_last_row().index_in_file
+        self.table.last_row_index = self.table.get_last_row_index()
         self.table.row_count = self.table.count_rows()
         self.table.write_meta_info()
         os.remove(self.filename)
