@@ -30,8 +30,7 @@ def test_multithreading_insert():
     thread2.start()
     thread1.join()
     thread2.join()
-    rows_list = get_all_rows_list()
-    assert len(rows_list[0]) == 20
+    assert db.tables[0].count_rows() == 20
 
 
 def test_multithreading_update():
