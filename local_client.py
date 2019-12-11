@@ -1,6 +1,19 @@
 import sys
 import logic
 
+
+def call_exception(func, fields=()):
+    try:
+        if type(fields) is str:
+            raise func(fields)
+        elif len(fields) == 0:
+            raise func()
+        elif len(fields) == 2:
+            raise func(fields[0], fields[1])
+    except Exception as ex:
+        pass
+
+
 print("Enter file name:")
 filename = input()
 request = ""
@@ -9,6 +22,10 @@ while True:
     print("Enter sql query:")
     request = input()
     if request != "exit":
-        db_logic.query(request)
+        result = db_logic.query(request)
+        if result.is_exception:
+            call_exception(result.exception_func, result.fields_for_func)
+        elif result.str_for_print != "":
+            print(result.str_for_print)
     else:
         sys.exit()

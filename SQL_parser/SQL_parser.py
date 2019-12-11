@@ -417,7 +417,4 @@ parser = yacc.yacc()
 
 
 def build_tree(code):
-
-    result = parser.parse(code)
-
-    return result
+    return parser.parse(code)
