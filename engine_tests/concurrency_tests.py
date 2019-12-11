@@ -1,6 +1,5 @@
 import engine.db_structure as db_py
 import threading
-import os
 
 filename = "test.vdb"
 db = db_py.Database(False, filename)
