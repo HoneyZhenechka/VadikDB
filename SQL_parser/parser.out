@@ -12,7 +12,7 @@ Rule 0     S' -> start
 Rule 1     start -> create ENDREQUEST
 Rule 2     start -> show ENDREQUEST
 Rule 3     start -> drop ENDREQUEST
-Rule 4     start -> tree_select ENDREQUEST
+Rule 4     start -> tree_selects ENDREQUEST
 Rule 5     start -> insert ENDREQUEST
 Rule 6     start -> update ENDREQUEST
 Rule 7     start -> delete ENDREQUEST
@@ -22,11 +22,11 @@ Rule 10    values -> NAME type
 Rule 11    values -> values COMMA NAME type
 Rule 12    show -> SHOW CREATE TABLE NAME
 Rule 13    drop -> DROP TABLE NAME
-Rule 14    tree_select -> nested_select
-Rule 15    nested_select -> select join nested_select
-Rule 16    nested_select -> select UNION nested_select
-Rule 17    nested_select -> select INTERSECT nested_select
-Rule 18    nested_select -> select
+Rule 14    tree_selects -> nested_selects
+Rule 15    nested_selects -> select join nested_selects
+Rule 16    nested_selects -> select UNION nested_selects
+Rule 17    nested_selects -> select INTERSECT nested_selects
+Rule 18    nested_selects -> select
 Rule 19    join -> JOIN
 Rule 20    join -> LEFT JOIN
 Rule 21    join -> RIGHT JOIN
@@ -139,7 +139,7 @@ fields               : 27 28 31 32 32 41
 insert               : 5
 insert_body          : 30
 join                 : 15
-nested_select        : 14 15 16 17
+nested_selects       : 14 15 16 17
 operator_comparison  : 46
 operator_condition   : 44
 operator_expression  : 48 49 51
@@ -150,7 +150,7 @@ start                : 0
 tree_comparison      : 44 45
 tree_condition       : 43 44
 tree_expression      : 36 37 46 46 48 49 50 51 51
-tree_select          : 4
+tree_selects         : 4
 type                 : 10 11
 update               : 6
 update_body          : 33
@@ -164,22 +164,22 @@ state 0
     (1) start -> . create ENDREQUEST
     (2) start -> . show ENDREQUEST
     (3) start -> . drop ENDREQUEST
-    (4) start -> . tree_select ENDREQUEST
+    (4) start -> . tree_selects ENDREQUEST
     (5) start -> . insert ENDREQUEST
     (6) start -> . update ENDREQUEST
     (7) start -> . delete ENDREQUEST
     (8) create -> . CREATE create_body
     (12) show -> . SHOW CREATE TABLE NAME
     (13) drop -> . DROP TABLE NAME
-    (14) tree_select -> . nested_select
+    (14) tree_selects -> . nested_selects
     (30) insert -> . INSERT insert_body
     (33) update -> . UPDATE update_body
     (38) delete -> . DELETE FROM NAME
     (39) delete -> . DELETE FROM NAME condition
-    (15) nested_select -> . select join nested_select
-    (16) nested_select -> . select UNION nested_select
-    (17) nested_select -> . select INTERSECT nested_select
-    (18) nested_select -> . select
+    (15) nested_selects -> . select join nested_selects
+    (16) nested_selects -> . select UNION nested_selects
+    (17) nested_selects -> . select INTERSECT nested_selects
+    (18) nested_selects -> . select
     (25) select -> . SELECT select_body
     (26) select -> . SELECT select_body condition
 
@@ -195,11 +195,11 @@ state 0
     create                         shift and go to state 2
     show                           shift and go to state 3
     drop                           shift and go to state 4
-    tree_select                    shift and go to state 5
+    tree_selects                   shift and go to state 5
     insert                         shift and go to state 6
     update                         shift and go to state 7
     delete                         shift and go to state 8
-    nested_select                  shift and go to state 12
+    nested_selects                 shift and go to state 12
     select                         shift and go to state 16
 
 state 1
@@ -231,7 +231,7 @@ state 4
 
 state 5
 
-    (4) start -> tree_select . ENDREQUEST
+    (4) start -> tree_selects . ENDREQUEST
 
     ENDREQUEST      shift and go to state 21
 
@@ -282,9 +282,9 @@ state 11
 
 state 12
 
-    (14) tree_select -> nested_select .
+    (14) tree_selects -> nested_selects .
 
-    ENDREQUEST      reduce using rule 14 (tree_select -> nested_select .)
+    ENDREQUEST      reduce using rule 14 (tree_selects -> nested_selects .)
 
 
 state 13
@@ -317,10 +317,10 @@ state 15
 
 state 16
 
-    (15) nested_select -> select . join nested_select
-    (16) nested_select -> select . UNION nested_select
-    (17) nested_select -> select . INTERSECT nested_select
-    (18) nested_select -> select .
+    (15) nested_selects -> select . join nested_selects
+    (16) nested_selects -> select . UNION nested_selects
+    (17) nested_selects -> select . INTERSECT nested_selects
+    (18) nested_selects -> select .
     (19) join -> . JOIN
     (20) join -> . LEFT JOIN
     (21) join -> . RIGHT JOIN
@@ -330,7 +330,7 @@ state 16
 
     UNION           shift and go to state 35
     INTERSECT       shift and go to state 36
-    ENDREQUEST      reduce using rule 18 (nested_select -> select .)
+    ENDREQUEST      reduce using rule 18 (nested_selects -> select .)
     JOIN            shift and go to state 37
     LEFT            shift and go to state 38
     RIGHT           shift and go to state 39
@@ -377,9 +377,9 @@ state 20
 
 state 21
 
-    (4) start -> tree_select ENDREQUEST .
+    (4) start -> tree_selects ENDREQUEST .
 
-    $end            reduce using rule 4 (start -> tree_select ENDREQUEST .)
+    $end            reduce using rule 4 (start -> tree_selects ENDREQUEST .)
 
 
 state 22
@@ -471,48 +471,48 @@ state 33
 
 state 34
 
-    (15) nested_select -> select join . nested_select
-    (15) nested_select -> . select join nested_select
-    (16) nested_select -> . select UNION nested_select
-    (17) nested_select -> . select INTERSECT nested_select
-    (18) nested_select -> . select
+    (15) nested_selects -> select join . nested_selects
+    (15) nested_selects -> . select join nested_selects
+    (16) nested_selects -> . select UNION nested_selects
+    (17) nested_selects -> . select INTERSECT nested_selects
+    (18) nested_selects -> . select
     (25) select -> . SELECT select_body
     (26) select -> . SELECT select_body condition
 
     SELECT          shift and go to state 17
 
     select                         shift and go to state 16
-    nested_select                  shift and go to state 51
+    nested_selects                 shift and go to state 51
 
 state 35
 
-    (16) nested_select -> select UNION . nested_select
-    (15) nested_select -> . select join nested_select
-    (16) nested_select -> . select UNION nested_select
-    (17) nested_select -> . select INTERSECT nested_select
-    (18) nested_select -> . select
+    (16) nested_selects -> select UNION . nested_selects
+    (15) nested_selects -> . select join nested_selects
+    (16) nested_selects -> . select UNION nested_selects
+    (17) nested_selects -> . select INTERSECT nested_selects
+    (18) nested_selects -> . select
     (25) select -> . SELECT select_body
     (26) select -> . SELECT select_body condition
 
     SELECT          shift and go to state 17
 
     select                         shift and go to state 16
-    nested_select                  shift and go to state 52
+    nested_selects                 shift and go to state 52
 
 state 36
 
-    (17) nested_select -> select INTERSECT . nested_select
-    (15) nested_select -> . select join nested_select
-    (16) nested_select -> . select UNION nested_select
-    (17) nested_select -> . select INTERSECT nested_select
-    (18) nested_select -> . select
+    (17) nested_selects -> select INTERSECT . nested_selects
+    (15) nested_selects -> . select join nested_selects
+    (16) nested_selects -> . select UNION nested_selects
+    (17) nested_selects -> . select INTERSECT nested_selects
+    (18) nested_selects -> . select
     (25) select -> . SELECT select_body
     (26) select -> . SELECT select_body condition
 
     SELECT          shift and go to state 17
 
     select                         shift and go to state 16
-    nested_select                  shift and go to state 53
+    nested_selects                 shift and go to state 53
 
 state 37
 
@@ -646,23 +646,23 @@ state 50
 
 state 51
 
-    (15) nested_select -> select join nested_select .
+    (15) nested_selects -> select join nested_selects .
 
-    ENDREQUEST      reduce using rule 15 (nested_select -> select join nested_select .)
+    ENDREQUEST      reduce using rule 15 (nested_selects -> select join nested_selects .)
 
 
 state 52
 
-    (16) nested_select -> select UNION nested_select .
+    (16) nested_selects -> select UNION nested_selects .
 
-    ENDREQUEST      reduce using rule 16 (nested_select -> select UNION nested_select .)
+    ENDREQUEST      reduce using rule 16 (nested_selects -> select UNION nested_selects .)
 
 
 state 53
 
-    (17) nested_select -> select INTERSECT nested_select .
+    (17) nested_selects -> select INTERSECT nested_selects .
 
-    ENDREQUEST      reduce using rule 17 (nested_select -> select INTERSECT nested_select .)
+    ENDREQUEST      reduce using rule 17 (nested_selects -> select INTERSECT nested_selects .)
 
 
 state 54

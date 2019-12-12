@@ -191,6 +191,81 @@ class Preprocessor:
         else:
             return Result(False)
 
+    def are_rows_equal(self, first_row, second_row):
+        if len(first_row[0]) != len(second_row[0]):
+            return False
+        for i in range(len(first_row[0])):
+            if first_row[0][i] != second_row[0][i]:
+                return False
+        for field in first_row[0]:
+            if first_row[1].fields_values_dict[field] != second_row[1].fields_values_dict[field]:
+                return False
+        return True
+
+    def union(self, first_table, second_table):
+        pass
+
+    def intersect(self, first_table, second_table):
+        pass
+
+    def join(self, first_table, second_table):
+        pass
+
+    def left_join(self, first_table, second_table):
+        pass
+
+    def right_join(self, first_table, second_table):
+        pass
+
+    def outer_join(self, first_table, second_table):
+        pass
+
+    def left_outer_join(self, first_table, second_table):
+        pass
+
+    def right_outer_join(self, first_table, second_table):
+        pass
+
+    def solve_tree_selects(self, root):
+        el = root.getRootVal()
+        try:
+            if el.upper() == "UNION":
+                return self.union(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+            elif el.upper() == "INTERSECT":
+                return self.intersect(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+        except:
+            if el.type == "join":
+                if el.form == "":
+                    return self.join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+                elif el.form.upper() == "LEFT":
+                    return self.left_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+                elif el.form.upper() == "RIGHT":
+                    return self.right_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+                elif el.form.upper() == "OUTER":
+                    return self.outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+                elif el.form.upper() == "LEFT OUTER":
+                    return self.left_outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+                elif el.form.upper() == "RIGHT OUTER":
+                    return self.right_outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
+            elif el.type == "select":
+                return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
+
+
+    def tree_selects(self, tree):
+        fields_and_rows = self.solve_tree_selects(tree)
+        if type(fields_and_rows) is Result:
+            return fields_and_rows
+        result = "\n| "
+        for field in fields_and_rows[0]:
+            result += field + " | "
+        result += "\n"
+        for row in fields_and_rows[1]:
+            result += "| "
+            for field in row.fields_values_dict:
+                result += str(row.fields_values_dict[field]) + " | "
+            result += "\n"
+        return Result(False, result)
+
     def select(self, name: str, fields: list, is_star: bool, condition):
         if not self.is_table_exists(name):
             return Result(True, "", exception.TableNotExists, name)
@@ -201,20 +276,12 @@ class Preprocessor:
             rows = []
             for block in self.db.tables[table_index].iter_blocks():
                 for row in block.iter_rows():
-                    if self.solve_condition(condition, row):
-                        rows.append(row)
+                    if row.row_available == 1:
+                        if self.solve_condition(condition, row):
+                            rows.append(row)
             fields = self.build_fields(fields, is_star, table_index)
             rows = self.db.tables[table_index].select(fields, rows)
-            result = "\n| "
-            for field in fields:
-                result += field + " | "
-            result += "\n"
-            for row in rows:
-                result += "| "
-                for field in row.fields_values_dict:
-                    result += str(row.fields_values_dict[field]) + " | "
-                result += "\n"
-            return Result(False, result)
+            return fields, rows
 
     def insert(self, name: str, fields: list, values: list):
         if not (self.is_table_exists(name)):

@@ -5,9 +5,12 @@ from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
 
 
-def build_select_tree(elements):
+def build_tree_selects(elements):
     stack = Stack()
     tree = BinaryTree('')
+    if len(elements) == 1:
+        tree.setRootVal(elements[0])
+        return tree
     for i in range(len(elements)):
         if i == 0:
             stack.push(tree)
@@ -148,6 +151,13 @@ class PShow(Struct):
         self.type = "show"
 
 
+class PTreeSelects(Struct):
+
+    def __init__(self, tree):
+        self.type = "tree selects"
+        self.tree = tree
+
+
 class PDrop(Struct):
 
     def __init__(self, name=""):
@@ -215,7 +225,7 @@ def p_start(p):
     '''start : create ENDREQUEST
              | show ENDREQUEST
              | drop ENDREQUEST
-             | tree_select ENDREQUEST
+             | tree_selects ENDREQUEST
              | insert ENDREQUEST
              | update ENDREQUEST
              | delete ENDREQUEST'''
@@ -259,16 +269,16 @@ def p_drop(p):
 
     p[0] = PDrop(p[3])
 
-def p_tree_select(p):
-    '''tree_select : nested_select'''
+def p_tree_selects(p):
+    '''tree_selects : nested_selects'''
 
-    p[0] = build_select_tree(p[1])
+    p[0] = PTreeSelects(build_tree_selects(p[1]))
 
 
-def p_nested_select(p):
-    '''nested_select : select join nested_select
-                    | select UNION nested_select
-                    | select INTERSECT nested_select
+def p_nested_selects(p):
+    '''nested_selects : select join nested_selects
+                    | select UNION nested_selects
+                    | select INTERSECT nested_selects
                     | select'''
 
     p[0] = []
