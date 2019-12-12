@@ -346,7 +346,8 @@ class Table:
             for index in rows_indexes:
                 current_row = Row(self, index)
                 current_row.read_info()
-                self.__delete_row_and_add_block(current_row, transaction_id)
+                if current_row.row_available == 1:
+                    self.__delete_row_and_add_block(current_row, transaction_id)
         threading_lock.release()
 
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
