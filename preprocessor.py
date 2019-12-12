@@ -206,7 +206,12 @@ class Preprocessor:
         pass
 
     def intersect(self, first_table, second_table):
-        pass
+        rows = [first_table[0], []]
+        for first_row in first_table[1]:
+            for second_row in second_table[1]:
+                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
+                    rows[1].append(first_row)
+        return rows
 
     def join(self, first_table, second_table):
         pass
@@ -228,27 +233,33 @@ class Preprocessor:
 
     def solve_tree_selects(self, root):
         el = root.getRootVal()
-        try:
-            if el.upper() == "UNION":
-                return self.union(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-            elif el.upper() == "INTERSECT":
-                return self.intersect(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-        except:
-            if el.type == "join":
-                if el.form == "":
-                    return self.join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-                elif el.form.upper() == "LEFT":
-                    return self.left_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-                elif el.form.upper() == "RIGHT":
-                    return self.right_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-                elif el.form.upper() == "OUTER":
-                    return self.outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-                elif el.form.upper() == "LEFT OUTER":
-                    return self.left_outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-                elif el.form.upper() == "RIGHT OUTER":
-                    return self.right_outer_join(self.solve_tree_selects(root.getLeftChild()), self.solve_tree_selects(root.getRightChild()))
-            elif el.type == "select":
-                return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
+        if el.type == "union":
+            return self.union(self.solve_tree_selects(root.getLeftChild()),
+                              self.solve_tree_selects(root.getRightChild()))
+        elif el.type == "intersect":
+            return self.intersect(self.solve_tree_selects(root.getLeftChild()),
+                                  self.solve_tree_selects(root.getRightChild()))
+        elif el.type == "join":
+            if el.form == "":
+                return self.join(self.solve_tree_selects(root.getLeftChild()),
+                                 self.solve_tree_selects(root.getRightChild()))
+            elif el.form.upper() == "LEFT":
+                return self.left_join(self.solve_tree_selects(root.getLeftChild()),
+                                      self.solve_tree_selects(root.getRightChild()))
+            elif el.form.upper() == "RIGHT":
+                return self.right_join(self.solve_tree_selects(root.getLeftChild()),
+                                       self.solve_tree_selects(root.getRightChild()))
+            elif el.form.upper() == "OUTER":
+                return self.outer_join(self.solve_tree_selects(root.getLeftChild()),
+                                       self.solve_tree_selects(root.getRightChild()))
+            elif el.form.upper() == "LEFT OUTER":
+                return self.left_outer_join(self.solve_tree_selects(root.getLeftChild()),
+                                            self.solve_tree_selects(root.getRightChild()))
+            elif el.form.upper() == "RIGHT OUTER":
+                return self.right_outer_join(self.solve_tree_selects(root.getLeftChild()),
+                                             self.solve_tree_selects(root.getRightChild()))
+        elif el.type == "select":
+            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
 
 
     def tree_selects(self, tree):
@@ -257,7 +268,7 @@ class Preprocessor:
             return fields_and_rows
         result = "\n| "
         for field in fields_and_rows[0]:
-            result += field + " | "
+            result += str(field) + " | "
         result += "\n"
         for row in fields_and_rows[1]:
             result += "| "

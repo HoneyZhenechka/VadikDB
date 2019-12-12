@@ -221,6 +221,18 @@ class PJoin(Struct):
         self.type = "join"
 
 
+class PUnion(Struct):
+
+    def __init__(self):
+        self.type = "union"
+
+
+class PIntersect(Struct):
+
+    def __init__(self):
+        self.type = "intersect"
+
+
 def p_start(p):
     '''start : create ENDREQUEST
              | show ENDREQUEST
@@ -277,8 +289,8 @@ def p_tree_selects(p):
 
 def p_nested_selects(p):
     '''nested_selects : select join nested_selects
-                    | select UNION nested_selects
-                    | select INTERSECT nested_selects
+                    | select union nested_selects
+                    | select intersect nested_selects
                     | select'''
 
     p[0] = []
@@ -305,6 +317,16 @@ def p_join(p):
     else:
         p[0] = PJoin(p[1] + p[2])
 
+
+def p_union(p):
+    '''union : UNION'''
+
+    p[0] = PUnion()
+
+def p_intersect(p):
+    '''intersect : INTERSECT'''
+
+    p[0] = PIntersect()
 
 
 def p_select(p):
