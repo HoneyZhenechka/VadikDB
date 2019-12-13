@@ -448,10 +448,10 @@ class Table:
         new_row = Row(self, position)
         new_row.row_id = self.row_count
         if transaction_id > 0:
-            new_row.transaction_start = get_current_timestamp()
-        else:
             new_row.transaction_id = self.transactions[transaction_id].id
             new_row.transaction_start = self.transactions[transaction_id].transaction_start
+        else:
+            new_row.transaction_start = get_current_timestamp()
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
