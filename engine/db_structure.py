@@ -494,7 +494,7 @@ class Table:
         for index, field in enumerate(self.fields):
             self.positions[field] = self.row_length
             self.row_length += self.types[index].size
-        self.row_length += 6
+        self.row_length += 49
 
     def __check_type_name(self, typename) -> bool:
         for key in self.types_dict:
@@ -574,18 +574,25 @@ class Row:
         self.row_available = 0
         self.transaction_start = 0
         self.transaction_end = 0
+        self.transaction_id = 0
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
         self.table.file.write_integer(self.row_available, self.index_in_file, 1)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
+        self.table.file.write_integer(self.transaction_start, row_size - 20, 14)
+        self.table.file.write_integer(self.transaction_end, row_size - 34, 14)
+        self.table.file.write_integer(self.transaction_id, row_size - 48, 14)
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
         self.row_available = self.table.file.read_integer(self.index_in_file, 1)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
+        self.transaction_start = self.table.file.read_integer(row_size - 20, 14)
+        self.transaction_end = self.table.file.read_integer(row_size - 34, 14)
+        self.transaction_end = self.table.file.read_integer(row_size - 48, 14)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}
@@ -777,6 +784,9 @@ class RollbackRow:
         meta_dict = {"row_available": file.read_integer(row_index, 1),
                      "previous_index": file.read_integer(row_size - 3, 3),
                      "next_index": file.read_integer(row_size - 6, 3),
+                     "transaction_start": file.read_integer(row_size - 20, 14),
+                     "transaction_end": file.read_integer(row_size - 34, 14),
+                     "transaction_id": file.read_integer(row_size - 48, 14),
                      "rollback_index": row_index}
         return meta_dict
 
@@ -787,6 +797,9 @@ class RollbackRow:
         rollback_row.row_available = meta_dict["row_available"]
         rollback_row.previous_index = meta_dict["previous_index"]
         rollback_row.next_index = meta_dict["next_index"]
+        rollback_row.transaction_start = meta_dict["transaction_start"]
+        rollback_row.transaction_end = meta_dict["transaction_end"]
+        rollback_row.transaction_id = meta_dict["transaction_id"]
         for field, pos in table.positions.items():
             if field not in fields:
                 continue
