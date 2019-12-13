@@ -340,10 +340,12 @@ class Table:
             self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
         else:
+            row.transaction_start = get_current_timestamp()
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
             self.__close_local_rollback_journal(rollback_obj)
+            row.transaction_end = get_current_timestamp()
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         threading_lock.acquire()
@@ -376,7 +378,7 @@ class Table:
             for row in rows:
                 for meta in rows_meta:
                     if ((meta["next_index"] == row.next_index) and (meta["previous_index"] == row.previous_index) and
-                            (meta["row_available"] == row.row_available) and row.row_available):
+                            (meta["row_available"] == row.row_available) and row.row_available == 1):
                         selected_rollback_meta.append(meta)
             for meta in selected_rollback_meta:
                 selected_rows.append(rollback_row.get_row(self.transactions[transaction_id].rollback_journal.file,
@@ -397,8 +399,10 @@ class Table:
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
+                rows[i].transaction_start = get_current_timestamp()
                 rows[i].update_row(fields, values[i])
                 self.__close_local_rollback_journal(rollback_obj)
+                rows[i].transaction_end = get_current_timestamp()
         threading_lock.release()
 
     def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
@@ -435,6 +439,8 @@ class Table:
             next_row.write_info()
         new_row = Row(self, position)
         new_row.row_id = self.row_count
+        if not transaction_id:
+            new_row.transaction_start = get_current_timestamp()
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
@@ -449,6 +455,7 @@ class Table:
             self.write_meta_info()
         self.row_count += 1
         if not transaction_id:
+            new_row.transaction_end = get_current_timestamp()
             self.__close_local_rollback_journal(local_rollback_obj)
 
     def __delete_row(self, row) -> typing.NoReturn:
@@ -565,6 +572,8 @@ class Row:
         self.previous_index = 0
         self.next_index = 0
         self.row_available = 0
+        self.transaction_start = 0
+        self.transaction_end = 0
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
