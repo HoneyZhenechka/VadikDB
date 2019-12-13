@@ -447,8 +447,11 @@ class Table:
             next_row.write_info()
         new_row = Row(self, position)
         new_row.row_id = self.row_count
-        if not transaction_id:
+        if transaction_id > 0:
             new_row.transaction_start = get_current_timestamp()
+        else:
+            new_row.transaction_id = self.transactions[transaction_id].id
+            new_row.transaction_start = self.transactions[transaction_id].transaction_start
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
@@ -462,7 +465,7 @@ class Table:
             self.last_row_index = position
             self.write_meta_info()
         self.row_count += 1
-        if not transaction_id:
+        if transaction_id == 0:
             new_row.transaction_end = get_current_timestamp()
             self.__close_local_rollback_journal(local_rollback_obj)
 
