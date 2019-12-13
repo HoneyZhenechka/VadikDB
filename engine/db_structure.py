@@ -1,4 +1,6 @@
 import engine.bin_file as bin_py
+from datetime import datetime
+import time
 import threading
 import typing
 import random
@@ -134,6 +136,14 @@ def get_random_string(length: int) -> str:
     return ''.join(random.choice(letters) for i in range(length))
 
 
+def get_current_timestamp() -> int:
+    return int(time.mktime(datetime.now().timetuple()))
+
+
+def convert_timestamp_to_datetime(timestamp: int) -> datetime:
+    return datetime.fromtimestamp(timestamp)
+
+
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
@@ -158,7 +168,6 @@ class Table:
         self.transactions = {}
         self.max_transaction_id = 0
         self.rollback_filenames = []
-        self.io_count = 0
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -174,7 +183,7 @@ class Table:
             current_index = current_block.next_block
             yield current_block
 
-    def get_last_row_index(self):
+    def get_last_row_index(self) -> int:
         for block in self.iter_blocks():
             for row in block.iter_rows():
                 if (row.next_index == 0) and (row.row_available == 1):
@@ -336,7 +345,7 @@ class Table:
             self.__delete_row(row)
             self.__close_local_rollback_journal(rollback_obj)
 
-    def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0):
+    def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         threading_lock.acquire()
         if not len(rows_indexes):
             for block in self.iter_blocks():
@@ -480,7 +489,7 @@ class Table:
             self.row_length += self.types[index].size
         self.row_length += 6
 
-    def __check_type_name(self, typename):
+    def __check_type_name(self, typename) -> bool:
         for key in self.types_dict:
             if typename == self.types_dict[key].name:
                 return True
@@ -536,7 +545,7 @@ class Block:
         self.previous_block = self.table.file.read_integer(self.index_in_file + 6, 3)
         self.next_block = self.table.file.read_integer(self.index_in_file + 9, 3)
 
-    def iter_rows(self):
+    def iter_rows(self) -> typing.Iterable:
         current_index = self.first_row_index
         while current_index < self.index_in_file + self.block_size:
             current_row = Row(self.table, current_index)
