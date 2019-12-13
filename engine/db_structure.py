@@ -210,13 +210,21 @@ class Table:
     def start_transaction(self) -> int:
         transaction_obj = Transaction(self)
         self.transactions[transaction_obj.id] = transaction_obj
+        self.transactions[transaction_obj.id].transaction_start = get_current_timestamp()
         self.transactions[transaction_obj.id].rollback_journal.create_file()
         return transaction_obj.id
 
+    def ___update_end_timestamp_in_rows(self, transaction_id: int, timestamp: int) -> typing.NoReturn:
+        for block in self.iter_blocks():
+            for row in block.iter_rows():
+                if row.transaction_id == transaction_id:
+                    row.transaction_end = timestamp
+                    row.write_info()
+
     def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
         self.transactions[transaction_id].commit(is_rollback)
-        if not is_rollback:
-            del self.transactions[transaction_id]
+        self.transactions[transaction_id].transactions_end = get_current_timestamp()
+        self.___update_end_timestamp_in_rows(transaction_id, self.transactions[transaction_id].transactions_end)
 
     def rollback_transaction(self, transaction_id: int) -> typing.NoReturn:
         self.transactions[transaction_id].rollback()
@@ -658,6 +666,8 @@ class Transaction:
         self.id = table.max_transaction_id
         self.filename = f"rollback_journal_{self.id}.log"
         self.table = table
+        self.transaction_start = 0
+        self.transaction_end = 0
         self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
 
     def commit(self, is_rollback: bool) -> typing.NoReturn:
