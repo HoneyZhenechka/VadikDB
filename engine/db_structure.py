@@ -158,6 +158,7 @@ class Table:
         self.transactions = {}
         self.max_transaction_id = 0
         self.rollback_filenames = []
+        self.io_count = 0
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -466,20 +467,9 @@ class Table:
         self.write_meta_info()
 
     def get_free_row(self) -> int:
-        if not self.last_removed_index:
-            position, block = self.get_write_position()
-            block.rows_count += 1
-            block.update_file()
-        else:
-            removed_row = Row(self, self.last_removed_index)
-            removed_row.read_info()
-            if removed_row.next_index:
-                next_row = Row(self, removed_row.next_index)
-                next_row.read_info()
-                next_row.previous_index = 0
-                next_row.write_info()
-            position = self.last_removed_index
-            self.last_removed_index = removed_row.next_index
+        position, block = self.get_write_position()
+        block.rows_count += 1
+        block.update_file()
         return position
 
     def calc_row_size(self) -> typing.NoReturn:
