@@ -603,7 +603,7 @@ class Row:
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
         self.transaction_start = self.table.file.read_integer(row_size - 20, 14)
         self.transaction_end = self.table.file.read_integer(row_size - 34, 14)
-        self.transaction_end = self.table.file.read_integer(row_size - 48, 14)
+        self.transaction_id = self.table.file.read_integer(row_size - 48, 14)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}
