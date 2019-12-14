@@ -228,8 +228,7 @@ class Preprocessor:
         elif self.is_table_exists(name):
             return Result(True, "", exception.TableAlreadyExists, name)
         else:
-            self.db.create_table(name, self.table_count, correct_fields)
-            self.table_count += 1
+            self.db.create_table(name, correct_fields)
             return Result(False)
 
     def show_create_table(self, name: str) -> Result:
