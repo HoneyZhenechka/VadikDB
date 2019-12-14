@@ -3,7 +3,7 @@ import threading
 
 filename = "test.vdb"
 db = db_py.Database(False, filename)
-db.create_table("vadik_table", 0, {"zhenya1": "int", "zhenya2": "str"})
+db.create_table("vadik_table", {"zhenya1": "int", "zhenya2": "str"})
 
 
 def get_block_rows(block):
