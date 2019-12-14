@@ -134,8 +134,9 @@ class Preprocessor:
         for first_row in first_table[1]:
             for second_row in second_table[1]:
                 if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
+                    rows[1].append(first_row)
                     if is_all:
-                        rows[1].append(first_row)
+                        rows[1].append(second_row)
                 else:
                     rows[1].append(first_row)
                     rows[1].append(second_row)
