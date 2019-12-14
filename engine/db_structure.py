@@ -81,7 +81,6 @@ class Database:
 
     def write_table_count(self, count: int) -> typing.NoReturn:
         self.file.write_integer(count, 14, 2)
-        self.tables_count = count
 
     def read_file(self) -> typing.NoReturn:
         signature_len = self.file.read_integer(0, 1)
@@ -109,17 +108,18 @@ class Database:
         if self.__check_journal():
             self.wide_rollback()
 
-    def create_table(self, table_name: str, tables_count: int, fields: typing.Dict) -> typing.List:
+    def create_table(self, table_name: str, fields: typing.Dict) -> typing.List:
         self.file.open("r+")
         self.file.seek(0, 2)
         new_table = Table(self.file)
         new_table.name = table_name
-        new_table.index_in_file = 16 + tables_count * new_table.size
+        new_table.index_in_file = 16 + self.tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
         new_table.write_file()
         self.tables.append(new_table)
-        self.write_table_count(tables_count + 1)
+        self.tables_count += 1
+        self.write_table_count(self.tables_count)
         table_index = self.tables.index(new_table)
         self.tables[table_index].create_block()
         return self.tables[table_index]
