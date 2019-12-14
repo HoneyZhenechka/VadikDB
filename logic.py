@@ -24,8 +24,8 @@ class Logic:
                 return self.pr.update(request.name, request.fields, request.values, request.condition)
             elif request.type.lower() == "delete":
                 return self.pr.delete(request.name, request.condition)
-        except:
-            pass
+        except Exception as ex:
+            print(ex)
 
 #temp = Logic()
 #temp.query("CREATE TABLE VADICS (id int, name str);")
