@@ -400,6 +400,17 @@ class Table:
                 selected_rows.append(row)
         return selected_rows
 
+    def __copy_row(self, row_index: int):
+        old_row = Row(self, row_index)
+        old_row.read_row_from_file()
+        fields = []
+        values = []
+        for field, value in old_row.fields_values_dict.items():
+            fields.append(field)
+            values.append(value)
+        new_row = self.__insert(tuple(fields), tuple(values))
+        return new_row
+
     def update(self, fields: typing.Tuple[str], values: typing.Tuple,
                rows: typing.Tuple, transaction_id: int = 0) -> typing.NoReturn:
         threading_lock.acquire()
@@ -416,14 +427,14 @@ class Table:
                 rows[i].transaction_end = get_current_timestamp()
         threading_lock.release()
 
-    def insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
+    def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
         threading_lock.acquire()
         self.__insert(fields, values, insert_index, test_rollback, transaction_id)
         threading_lock.release()
 
-    def __insert(self, fields: typing.Tuple[str] = (), values: typing.Tuple = (), insert_index: int = -1,
-                 test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
+    def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
+                 test_rollback: bool = False, transaction_id: int = 0):
         local_rollback_obj = None
         position = self.get_free_row()
         if not transaction_id:
@@ -471,6 +482,7 @@ class Table:
         if transaction_id == 0:
             new_row.transaction_end = get_current_timestamp()
             self.__close_local_rollback_journal(local_rollback_obj)
+        return new_row
 
     def __delete_row(self, row) -> typing.NoReturn:
         if row.index_in_file == self.first_row_index:
