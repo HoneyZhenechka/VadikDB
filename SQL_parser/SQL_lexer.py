@@ -15,7 +15,7 @@ tokens = (
     'LESS_THAN_OR_EQUAL', 'OR',
     'NOT', 'AND',
     'JOIN', 'LEFT', 'RIGHT', 'ON',
-    'USING', 'UNION', 'INTERSECT', 'OUTER'
+    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -33,6 +33,7 @@ t_RIGHT = r'RIGHT'
 t_ON = r'ON'
 t_USING = r'USING'
 t_UNION = r'UNION'
+t_ALL = r'ALL'
 t_INTERSECT = r'INTERSECT'
 t_OUTER = r'OUTER'
 
@@ -105,6 +106,9 @@ def t_NAME(t):
 
     elif t.value.upper() == 'UNION':
         t.type = 'UNION'
+
+    elif t.value.upper() == 'ALL':
+        t.type = 'ALL'
 
     elif t.value.upper() == 'INTERSECT':
         t.type = 'INTERSECT'

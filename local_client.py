@@ -23,9 +23,12 @@ while True:
     request = input()
     if request != "exit":
         result = db_logic.query(request)
-        if result.is_exception:
-            call_exception(result.exception_func, result.fields_for_func)
-        elif result.str_for_print != "":
-            print(result.str_for_print)
+        try:
+            if result.is_exception:
+                call_exception(result.exception_func, result.fields_for_func)
+            elif result.str_for_print != "":
+                print(result.str_for_print)
+        except:
+            print("В КЛИЕНТ ПРИШЛО NONE")
     else:
         sys.exit()

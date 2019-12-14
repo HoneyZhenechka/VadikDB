@@ -21,7 +21,8 @@ class Preprocessor:
         else:
             self.db = eng.Database(False, db_filename)
 
-    def get_correct_fields(self, fields=()) -> dict or list:
+    @staticmethod
+    def get_correct_fields(fields=()) -> dict or list:
         correct_fields = {}
         for field in fields:
             if field[0] in correct_fields:
@@ -99,7 +100,7 @@ class Preprocessor:
             result.append(field)
         return result
 
-    def get_types(self, name: str, values: list, fields = ()) -> list:
+    def get_types(self, name: str, values: list, fields=()) -> list:
         table_index = self.get_table_index(name)
         types = []
 
@@ -113,6 +114,58 @@ class Preprocessor:
                     if field == self.db.tables[table_index].fields[index_of_field]:
                         types.append(self.db.tables[table_index].types[index_of_field])
         return types
+
+    @staticmethod
+    def are_rows_equal(first_row, second_row) -> bool:
+        if len(first_row[0]) != len(second_row[0]):
+            return False
+        for i in range(len(first_row[0])):
+            if first_row[0][i] != second_row[0][i]:
+                return False
+        for field in first_row[0]:
+            if first_row[1].fields_values_dict[field] != second_row[1].fields_values_dict[field]:
+                return False
+        return True
+
+    def union(self, first_table, second_table, is_all=False):
+        if len(first_table[0]) != len(second_table[0]):
+            return Result(True, "", exception.DifferentNumberOfColumns)
+        rows = [first_table[0], []]
+        for first_row in first_table[1]:
+            for second_row in second_table[1]:
+                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
+                    if is_all:
+                        rows[1].append(first_row)
+                else:
+                    rows[1].append(first_row)
+                    rows[1].append(second_row)
+        return rows
+
+    def intersect(self, first_table, second_table):
+        rows = [first_table[0], []]
+        for first_row in first_table[1]:
+            for second_row in second_table[1]:
+                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
+                    rows[1].append(first_row)
+        return rows
+
+    def join(self, first_table, second_table):
+        pass
+
+    def left_join(self, first_table, second_table):
+        pass
+
+    def right_join(self, first_table, second_table):
+        pass
+
+    def outer_join(self, first_table, second_table):
+        pass
+
+    def left_outer_join(self, first_table, second_table):
+        pass
+
+    def right_outer_join(self, first_table, second_table):
+        pass
 
     def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list:
         types = self.get_types(name, values, fields)
@@ -167,7 +220,7 @@ class Preprocessor:
                     return []
         return values
 
-    def create_table(self, name: str, fields: list = ()):
+    def create_table(self, name: str, fields: list = ()) -> Result:
         correct_fields = self.get_correct_fields(fields)
         if not(type(correct_fields) is dict):
             return Result(True, "", exception.DuplicateFields, correct_fields)
@@ -178,64 +231,26 @@ class Preprocessor:
             self.table_count += 1
             return Result(False)
 
-    def show_create_table(self, name: str):
+    def show_create_table(self, name: str) -> Result:
         if not self.is_table_exists(name):
             return Result(True, "", exception.TableNotExists, name)
         else:
             table_index = self.get_table_index(name)
             return Result(False, self.db.tables[table_index].show_create())
 
-    def drop_table(self, name: str):
+    def drop_table(self, name: str) -> Result:
         if not self.is_table_exists(name):
             return Result(True, "", exception.TableNotExists, name)
         else:
             return Result(False)
 
-    def are_rows_equal(self, first_row, second_row):
-        if len(first_row[0]) != len(second_row[0]):
-            return False
-        for i in range(len(first_row[0])):
-            if first_row[0][i] != second_row[0][i]:
-                return False
-        for field in first_row[0]:
-            if first_row[1].fields_values_dict[field] != second_row[1].fields_values_dict[field]:
-                return False
-        return True
-
-    def union(self, first_table, second_table):
-        pass
-
-    def intersect(self, first_table, second_table):
-        rows = [first_table[0], []]
-        for first_row in first_table[1]:
-            for second_row in second_table[1]:
-                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
-                    rows[1].append(first_row)
-        return rows
-
-    def join(self, first_table, second_table):
-        pass
-
-    def left_join(self, first_table, second_table):
-        pass
-
-    def right_join(self, first_table, second_table):
-        pass
-
-    def outer_join(self, first_table, second_table):
-        pass
-
-    def left_outer_join(self, first_table, second_table):
-        pass
-
-    def right_outer_join(self, first_table, second_table):
-        pass
-
     def solve_tree_selects(self, root):
         el = root.getRootVal()
-        if el.type == "union":
+        if type(root) is Result:
+            return root
+        elif el.type == "union":
             return self.union(self.solve_tree_selects(root.getLeftChild()),
-                              self.solve_tree_selects(root.getRightChild()))
+                              self.solve_tree_selects(root.getRightChild()), el.is_all)
         elif el.type == "intersect":
             return self.intersect(self.solve_tree_selects(root.getLeftChild()),
                                   self.solve_tree_selects(root.getRightChild()))
@@ -260,7 +275,6 @@ class Preprocessor:
                                              self.solve_tree_selects(root.getRightChild()))
         elif el.type == "select":
             return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
-
 
     def tree_selects(self, tree):
         fields_and_rows = self.solve_tree_selects(tree)

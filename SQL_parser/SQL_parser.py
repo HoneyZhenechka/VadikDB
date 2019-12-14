@@ -223,8 +223,9 @@ class PJoin(Struct):
 
 class PUnion(Struct):
 
-    def __init__(self):
+    def __init__(self, is_all=False):
         self.type = "union"
+        self.is_all = is_all
 
 
 class PIntersect(Struct):
@@ -319,9 +320,13 @@ def p_join(p):
 
 
 def p_union(p):
-    '''union : UNION'''
+    '''union : UNION
+            | UNION ALL'''
 
-    p[0] = PUnion()
+    if len(p) == 2:
+        p[0] = PUnion()
+    else:
+        p[0] = PUnion(True)
 
 def p_intersect(p):
     '''intersect : INTERSECT'''
