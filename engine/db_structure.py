@@ -403,6 +403,8 @@ class Table:
     def __copy_row(self, row_index: int):
         old_row = Row(self, row_index)
         old_row.read_row_from_file()
+        old_row.row_available = 3
+        old_row.write_info()
         fields = []
         values = []
         for field, value in old_row.fields_values_dict.items():
@@ -417,14 +419,19 @@ class Table:
         for i in range(len(rows)):
             if transaction_id > 0:
                 self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
-                rows[i].update_row(fields, values[i])
+                new_row = self.__copy_row(rows[i].index_in_file)
+                new_row.transaction_id = self.transactions[transaction_id].id
+                new_row.transaction_start = self.transactions[transaction_id].transaction_start
+                new_row.update_row(fields, values[i])
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
-                rows[i].transaction_start = get_current_timestamp()
-                rows[i].update_row(fields, values[i])
+                new_row = self.__copy_row(rows[i].index_in_file)
+                new_row.transaction_start = get_current_timestamp()
+                new_row.update_row(fields, values[i])
                 self.__close_local_rollback_journal(rollback_obj)
-                rows[i].transaction_end = get_current_timestamp()
+                new_row.transaction_end = get_current_timestamp()
+                new_row.write_info()
         threading_lock.release()
 
     def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
