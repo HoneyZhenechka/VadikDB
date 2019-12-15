@@ -136,11 +136,11 @@ def get_random_string(length: int) -> str:
     return ''.join(random.choice(letters) for i in range(length))
 
 
-def get_current_timestamp() -> int:
-    return int(time.mktime(datetime.now().timetuple()))
+def get_current_timestamp() -> float:
+    return datetime.now().timestamp()
 
 
-def convert_timestamp_to_datetime(timestamp: int) -> datetime:
+def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp)
 
 
@@ -376,8 +376,16 @@ class Table:
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
         selected_rows = []
         if transaction_id > 0:
-            for row in rows:
-                pass
+            transaction_start_datetime = convert_timestamp_to_datetime(
+                self.transactions[transaction_id].transaction_start
+            )
+            commited_rows = []
+            for block in self.iter_blocks():
+                for row in block.iter_rows():
+                    row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
+                    if (row.row_available in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
+                        commited_rows.append(row)
+            return commited_rows
         else:
             for row in rows:
                 selected_rows.append(row.select_row(fields))
@@ -393,7 +401,7 @@ class Table:
         for field, value in old_row.fields_values_dict.items():
             fields.append(field)
             values.append(value)
-        new_row = self.__insert(tuple(fields), tuple(values))
+        new_row = self.__insert(tuple(fields), tuple(values), is_copy=True)
         return new_row
 
     def update(self, fields: typing.Tuple[str], values: typing.Tuple,
@@ -452,11 +460,12 @@ class Table:
         new_row = Row(self, position)
         if not is_copy:
             new_row.row_id = self.row_count
-        if transaction_id > 0:
-            new_row.transaction_id = self.transactions[transaction_id].id
-            new_row.transaction_start = self.transactions[transaction_id].transaction_start
-        else:
-            new_row.transaction_start = get_current_timestamp()
+        if not is_copy:
+            if transaction_id > 0:
+                new_row.transaction_id = self.transactions[transaction_id].id
+                new_row.transaction_start = self.transactions[transaction_id].transaction_start
+            else:
+                new_row.transaction_start = get_current_timestamp()
         new_row.row_available = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
@@ -492,10 +501,6 @@ class Table:
             previous_row.read_info()
             previous_row.previous_index = row.index_in_file
             previous_row.write_info()
-        current_block = Block(self.get_block_index_for_row(row), self)
-        current_block.read_file()
-        current_block.rows_count -= 1
-        current_block.update_file()
         self.row_count -= 1
         self.last_removed_index = row.index_in_file
         self.write_meta_info()
@@ -512,7 +517,7 @@ class Table:
         for index, field in enumerate(self.fields):
             self.positions[field] = self.row_length
             self.row_length += self.types[index].size
-        self.row_length += 53
+        self.row_length += 41
 
     def __check_type_name(self, typename) -> bool:
         for key in self.types_dict:
@@ -600,20 +605,20 @@ class Row:
         self.table.file.write_integer(self.row_available, self.index_in_file, 1)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
-        self.table.file.write_integer(self.transaction_start, row_size - 20, 14)
-        self.table.file.write_integer(self.transaction_end, row_size - 34, 14)
-        self.table.file.write_integer(self.transaction_id, row_size - 48, 14)
-        self.table.file.write_integer(self.row_id, row_size - 52, 4)
+        self.table.file.write_float(self.transaction_start, row_size - 14)
+        self.table.file.write_float(self.transaction_end, row_size - 22)
+        self.table.file.write_integer(self.transaction_id, row_size - 36, 14)
+        self.table.file.write_integer(self.row_id, row_size - 40, 4)
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
         self.row_available = self.table.file.read_integer(self.index_in_file, 1)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
-        self.transaction_start = self.table.file.read_integer(row_size - 20, 14)
-        self.transaction_end = self.table.file.read_integer(row_size - 34, 14)
-        self.transaction_id = self.table.file.read_integer(row_size - 48, 14)
-        self.row_id = self.table.file.read_integer(row_size - 52, 4)
+        self.transaction_start = self.table.file.read_float(row_size - 14)
+        self.transaction_end = self.table.file.read_float(row_size - 22)
+        self.transaction_id = self.table.file.read_integer(row_size - 36, 14)
+        self.row_id = self.table.file.read_integer(row_size - 40, 4)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}

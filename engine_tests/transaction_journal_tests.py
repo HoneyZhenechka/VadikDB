@@ -24,8 +24,8 @@ def test_transaction():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"], transaction_id=id)
     db.tables[0].insert(["zhenya1", "zhenya2"], [992, "test_string_321"], transaction_id=id)
     rows_list = get_all_rows_list()
-    db.tables[0].update(["zhenya2"], [["lovetsov"]], [rows_list[0][0]])
-    db.tables[0].delete([rows_list[0][1].index_in_file])
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [rows_list[0][0]], id)
+    db.tables[0].delete([rows_list[0][1].index_in_file], id)
     db.tables[0].end_transaction(id)
     rows_list = get_all_rows_list()
     assert db.tables[0].count_rows() == 1
