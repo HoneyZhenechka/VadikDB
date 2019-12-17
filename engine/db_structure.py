@@ -499,6 +499,7 @@ class Table:
             self.row_count += 1
         if transaction_id == 0:
             new_row.transaction_end = get_current_timestamp()
+            new_row.write_info()
             self.__close_local_rollback_journal(local_rollback_obj)
         return new_row
 

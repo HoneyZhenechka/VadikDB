@@ -39,10 +39,9 @@ def test_multithreading_insert():
 
 
 def test_multithreading_update():
-    rows_list = get_all_rows_list()
-
     def update_func_n(n):
         def update_func():
+            rows_list = get_all_rows_list()
             db.tables[0].update(["zhenya1"], [[n]], [rows_list[0][1]])
         return update_func
 
