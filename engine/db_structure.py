@@ -404,7 +404,8 @@ class Table:
             selected_rows = self.__get_unique_rows(commited_rows)
         else:
             for row in rows:
-                selected_rows.append(row.select_row(fields))
+                row.select_row(fields)
+                selected_rows.append(row)
         return selected_rows
 
     def __copy_row(self, row_index: int):
