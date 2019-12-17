@@ -3,13 +3,6 @@ import engine.db_structure as db_py
 db = db_py.Database()
 
 
-def get_row_by_id(id):
-    for block in db.tables[0].iter_blocks():
-        for row in block.iter_rows():
-            if (row.row_available == 1) and (row.row_id == id):
-                return row
-
-
 def test_create():
     excepted_table = db_py.Table(db.file)
     excepted_table.name = "vadik_table"
@@ -46,7 +39,7 @@ def test_insert():
 
 
 def test_delete():
-    db.tables[0].delete([get_row_by_id(0).index_in_file])
+    db.tables[0].delete([db.tables[0].get_row_by_id(0).index_in_file])
     assert db.tables[0].count_rows() == 1
     db.tables[0].delete()
     assert db.tables[0].count_rows() == 0
@@ -54,10 +47,10 @@ def test_delete():
 
 def test_update():
     db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
-    assert get_row_by_id(0).fields_values_dict["zhenya2"] == "test_string_123"
-    db.tables[0].update(["zhenya2"], [["lovetsov"]], [get_row_by_id(0)])
-    assert get_row_by_id(0).fields_values_dict["zhenya1"] == 99
-    assert get_row_by_id(0).fields_values_dict["zhenya2"] == "lovetsov"
+    assert db.tables[0].get_row_by_id(0).fields_values_dict["zhenya2"] == "test_string_123"
+    db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].get_row_by_id(0)])
+    assert db.tables[0].get_row_by_id(0).fields_values_dict["zhenya1"] == 99
+    assert db.tables[0].get_row_by_id(0).fields_values_dict["zhenya2"] == "lovetsov"
 
 
 def test_select():
@@ -65,9 +58,9 @@ def test_select():
     max_id = db.tables[0].count_rows()
     rows_list = []
     for id in range(max_id):
-        rows_list.append(get_row_by_id(id))
+        rows_list.append(db.tables[0].get_row_by_id(id))
     result_rows_1 = db.tables[0].select(db.tables[0].fields, rows_list)
     assert len(result_rows_1) == 2
-    result_rows_2 = db.tables[0].select(["zhenya1"], [get_row_by_id(1)])
+    result_rows_2 = db.tables[0].select(["zhenya1"], [db.tables[0].get_row_by_id(1)])
     assert len(result_rows_2) == 1
     assert result_rows_2[0].fields_values_dict["zhenya1"] == 218

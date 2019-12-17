@@ -247,6 +247,13 @@ class Table:
         result_block.write_file()
         return result_block
 
+    def get_row_by_id(self, id: int):
+        for block in self.iter_blocks():
+            for row in block.iter_rows():
+                if (row.row_available == 1) and (row.row_id == id):
+                    return row
+            return False
+
     def get_blocks_count(self) -> int:
         blocks_count = 0
         for _ in self.iter_blocks():
