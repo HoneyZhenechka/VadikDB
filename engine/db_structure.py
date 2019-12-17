@@ -426,6 +426,8 @@ class Table:
             fields.append(field)
             values.append(value)
         new_row = self.__insert(tuple(fields), tuple(values), is_copy=True)
+        new_row.row_id = old_row.row_id
+        new_row.write_info()
         return new_row
 
     def update(self, fields: typing.Tuple[str], values: typing.Tuple,
