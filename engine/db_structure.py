@@ -373,6 +373,22 @@ class Table:
                     self.__delete_row_and_add_block(current_row, transaction_id)
         threading_lock.release()
 
+    def __get_unique_rows(self, rows_list: typing.List) -> typing.List:
+        unique_rows = rows_list.copy()
+        removed_dict = {}
+        for i in range(len(unique_rows)):
+            removed_dict[i] = 0
+        for i in range(len(unique_rows)):
+            for j in range(len(unique_rows)):
+                if i != j:
+                    if ((unique_rows[i].row_id == unique_rows[j].row_id) and
+                            (unique_rows[i].index_in_file < unique_rows[j].index_in_file)):
+                        removed_dict[i] = 1
+        for i in range(len(unique_rows)):
+            if removed_dict[i] == 1:
+                del unique_rows[i]
+        return unique_rows
+
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
         selected_rows = []
         if transaction_id > 0:
@@ -385,7 +401,7 @@ class Table:
                     row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
                     if (row.row_available in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
                         commited_rows.append(row)
-            return commited_rows
+            selected_rows = self.__get_unique_rows(commited_rows)
         else:
             for row in rows:
                 selected_rows.append(row.select_row(fields))
