@@ -40,3 +40,19 @@ def test_repeatable_read():
     selected_value_two = selected_rows_two[0].fields_values_dict["zhenya2"]
     db.tables[0].end_transaction(id)
     assert selected_value_one == selected_value_two
+
+
+def test_multithreading_update():
+    def update_func_n(n):
+        def update_func():
+            db.tables[0].update(["zhenya1"], [[n]], [db.tables[0].get_row_by_id(4)])
+        return update_func
+
+    threads = []
+    for i in range(200):
+        func = update_func_n(i)
+        threads.append(threading.Thread(target=func))
+    for thread in threads:
+        thread.start()
+        thread.join()
+    assert db.tables[0].get_row_by_id(4).fields_values_dict["zhenya1"] == 199
