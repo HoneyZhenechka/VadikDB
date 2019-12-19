@@ -147,7 +147,7 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
-        self.size = 32 + 22 + max_fields_count * 24
+        self.size = 32 + 25 + max_fields_count * 24
         self.row_length = 0
         self.index_in_file = -1
         self.name = ""
@@ -294,14 +294,15 @@ class Table:
         self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
         self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
         self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
+        self.file.write_integer(self.max_transaction_id, self.index_in_file + 32 + 18, 3)
 
     def write_file(self) -> typing.NoReturn:
         # Table meta
         self.file.write_str(self.name, self.index_in_file, 32)
         self.write_meta_info()
-        self.file.write_integer(self.row_length, self.index_in_file + 32 + 18, 2)
-        self.file.write_integer(self.fields_count, self.index_in_file + 32 + 20, 2)
-        current_position = self.index_in_file + 32 + 22
+        self.file.write_integer(self.row_length, self.index_in_file + 32 + 21, 2)
+        self.file.write_integer(self.fields_count, self.index_in_file + 32 + 23, 2)
+        current_position = self.index_in_file + 32 + 25
         for index, field in enumerate(self.fields):
             self.file.write_str(field + self.types[index].name[:3], current_position, 24)
             current_position += 24
@@ -317,9 +318,10 @@ class Table:
         self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
         self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
         self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
-        self.row_length = self.file.read_integer(self.index_in_file + 32 + 18, 2)
-        self.fields_count = self.file.read_integer(self.index_in_file + 32 + 20, 2)
-        current_position = self.index_in_file + 32 + 22
+        self.max_transaction_id = self.file.read_integer(self.index_in_file + 32 + 18, 3)
+        self.row_length = self.file.read_integer(self.index_in_file + 32 + 21, 2)
+        self.fields_count = self.file.read_integer(self.index_in_file + 32 + 23, 2)
+        current_position = self.index_in_file + 32 + 25
         field_position = 4
         for i in range(self.fields_count):
             field = self.file.read_str(current_position + i * 24, 21)
@@ -366,7 +368,6 @@ class Table:
             row.transaction_end = get_current_timestamp()
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
-        threading_lock.acquire()
         if not len(rows_indexes):
             for block in self.iter_blocks():
                 for row in block.iter_rows():
@@ -378,7 +379,6 @@ class Table:
                 current_row.read_info()
                 if current_row.row_available == 1:
                     self.__delete_row_and_add_block(current_row, transaction_id)
-        threading_lock.release()
 
     def __get_unique_rows(self, rows_list: typing.List) -> typing.List:
         unique_rows = rows_list.copy()
@@ -432,7 +432,6 @@ class Table:
 
     def update(self, fields: typing.Tuple[str], values: typing.Tuple,
                rows: typing.Tuple, transaction_id: int = 0) -> typing.NoReturn:
-        threading_lock.acquire()
         for i in range(len(rows)):
             if transaction_id > 0:
                 self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
@@ -449,13 +448,10 @@ class Table:
                 self.__close_local_rollback_journal(rollback_obj)
                 new_row.transaction_end = get_current_timestamp()
                 new_row.write_info()
-        threading_lock.release()
 
     def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
-        threading_lock.acquire()
         self.__insert(fields, values, insert_index, test_rollback, transaction_id)
-        threading_lock.release()
 
     def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False, transaction_id: int = 0, is_copy: bool = False):
@@ -707,7 +703,10 @@ class Type:
 
 class Transaction:
     def __init__(self, table: Table):
+        if not table.max_transaction_id:
+            table.read_file()
         table.max_transaction_id += 1
+        table.write_meta_info()
         self.id = table.max_transaction_id
         self.filename = f"rollback_journal_{self.id}.log"
         self.table = table

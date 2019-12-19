@@ -18,8 +18,8 @@ def test_multithreading_insert():
     thread1 = threading.Thread(target=insert_func)
     thread2 = threading.Thread(target=insert_func)
     thread1.start()
-    thread2.start()
     thread1.join()
+    thread2.start()
     thread2.join()
     assert db.tables[0].count_rows() == 20
 
