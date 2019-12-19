@@ -104,11 +104,13 @@ class Database:
         if self.__check_journal():
             self.wide_rollback()
 
-    def create_table(self, table_name: str, fields: typing.Dict) -> typing.List:
+    def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
         self.file.open("r+")
         self.file.seek(0, 2)
         new_table = Table(self.file)
         new_table.name = table_name
+        if is_versioning:
+            new_table.is_versioning = True
         new_table.index_in_file = 16 + self.tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
@@ -143,7 +145,7 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
-        self.size = 32 + 25 + max_fields_count * 24
+        self.size = 32 + 26 + max_fields_count * 24
         self.row_length = 0
         self.index_in_file = -1
         self.name = ""
@@ -162,6 +164,7 @@ class Table:
                            "str": Type("str", 256)}
         self.positions = {"row_id": 1}
         self.transactions = {}
+        self.is_versioning = False
         self.max_transaction_id = 0
         self.rollback_filenames = []
 
@@ -298,7 +301,8 @@ class Table:
         self.write_meta_info()
         self.file.write_integer(self.row_length, self.index_in_file + 32 + 21, 2)
         self.file.write_integer(self.fields_count, self.index_in_file + 32 + 23, 2)
-        current_position = self.index_in_file + 32 + 25
+        self.file.write_bool(self.is_versioning, self.index_in_file + 32 + 25)
+        current_position = self.index_in_file + 32 + 26
         for index, field in enumerate(self.fields):
             self.file.write_str(field + self.types[index].name[:3], current_position, 24)
             current_position += 24
@@ -317,7 +321,8 @@ class Table:
         self.max_transaction_id = self.file.read_integer(self.index_in_file + 32 + 18, 3)
         self.row_length = self.file.read_integer(self.index_in_file + 32 + 21, 2)
         self.fields_count = self.file.read_integer(self.index_in_file + 32 + 23, 2)
-        current_position = self.index_in_file + 32 + 25
+        self.is_versioning = self.file.read_bool(self.index_in_file + 32 + 25)
+        current_position = self.index_in_file + 32 + 26
         field_position = 4
         for i in range(self.fields_count):
             field = self.file.read_str(current_position + i * 24, 21)
@@ -557,6 +562,14 @@ class Table:
             else:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
+
+    def get_versioning_rows(self, start_date: datetime, end_date: datetime) -> typing.List:
+        rows_list = []
+        for block in self.iter_blocks():
+            for row in block.iter_rows():
+                if end_date > convert_timestamp_to_datetime(row.transaction_end) > start_date:
+                    rows_list.append(row)
+        return rows_list
 
 
 class Block:
