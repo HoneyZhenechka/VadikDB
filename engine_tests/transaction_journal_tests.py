@@ -1,6 +1,10 @@
 import engine.db_structure as db_py
+import os
 
-db = db_py.Database()
+filename = "transaction.vdb"
+if os.path.isfile(filename):
+    os.remove(filename)
+db = db_py.Database(False, filename)
 db.create_table("vadik_table", {"zhenya1": "int", "zhenya2": "str"})
 
 
