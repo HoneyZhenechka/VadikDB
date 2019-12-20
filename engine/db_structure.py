@@ -53,6 +53,10 @@ class Database:
         table.row_count = table.count_rows()
         table.write_meta_info()
 
+    def get_io_count(self) -> int:
+        if type(self.file) == bin_py.BinFile:
+            return self.file.io_count
+
     def wide_rollback(self) -> typing.NoReturn:
         filename_list = self.__get_journal_files()
         for filename in filename_list:
