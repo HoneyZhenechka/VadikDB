@@ -1,6 +1,6 @@
 import engine.bin_file as bin_py
-from cachetools import cached, LRUCache
 from datetime import datetime
+import cacheout
 import typing
 import random
 import string
@@ -147,6 +147,9 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp)
 
 
+cache = cacheout.mru.MRUCache(maxsize=16)
+
+
 class Table:
     def __init__(self, file: bin_py.BinFile):
         max_fields_count = 14
@@ -182,7 +185,7 @@ class Table:
     def __hash__(self):
         return hash(self.name) ^ hash(self.size) ^ hash(self.fields_count) ^ hash(self.row_length)
 
-    @cached(cache=LRUCache(maxsize=16))
+    @cache.memoize()
     def get_block_by_index(self, index: int):
         current_block = Block(index, self)
         current_block.read_file()
