@@ -1,4 +1,5 @@
 import engine.bin_file as bin_py
+from cachetools import cached, LRUCache, TTLCache
 from datetime import datetime
 import typing
 import random
@@ -175,14 +176,22 @@ class Table:
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
             return NotImplemented
-        return (self.name, self.fields, self.fields_count, self.types, self.positions, self.row_length) == \
-               (other.name, other.fields, other.fields_count, other.types, other.positions, other.row_length)
+        return ((self.name, self.size, self.fields_count, self.row_length) ==
+                (other.name, other.size, other.fields_count, other.row_length))
+
+    def __hash__(self):
+        return hash(self.name) ^ hash(self.size) ^ hash(self.fields_count) ^ hash(self.row_length)
+
+    @cached(cache=LRUCache(maxsize=16))
+    def get_block_by_index(self, index: int):
+        current_block = Block(index, self)
+        current_block.read_file()
+        return current_block
 
     def iter_blocks(self) -> typing.Iterable:
         current_index = self.first_block_index
         while current_index != 0:
-            current_block = Block(current_index, self)
-            current_block.read_file()
+            current_block = self.get_block_by_index(current_index)
             current_index = current_block.next_block
             yield current_block
 
