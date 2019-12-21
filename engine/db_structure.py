@@ -147,7 +147,7 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp)
 
 
-cache = cacheout.mru.MRUCache()
+cache = cacheout.mru.MRUCache(maxsize=64)
 
 
 class Table:
@@ -189,6 +189,7 @@ class Table:
     def get_block_by_index(self, index: int):
         current_block = Block(index, self)
         current_block.read_file()
+        current_block.get_rows()
         return current_block
 
     def iter_blocks(self) -> typing.Iterable:
@@ -595,6 +596,7 @@ class Block:
         self.index_in_file = start_index
         self.block_size = 12 + 512 * self.table.row_length
         self.first_row_index = self.index_in_file + 12
+        self.rows = []
         self.rows_count = 0
         self.previous_block = 0
         self.next_block = 0
@@ -633,6 +635,10 @@ class Block:
                 yield current_row
             if not current_row.row_available:
                 break
+
+    def get_rows(self) -> typing.NoReturn:
+        for row in self.iter_rows():
+            self.rows.append(row)
 
 
 class Row:
