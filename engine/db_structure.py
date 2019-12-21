@@ -147,7 +147,7 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp)
 
 
-cache = cacheout.mru.MRUCache(maxsize=16)
+cache = cacheout.mru.MRUCache()
 
 
 class Table:
