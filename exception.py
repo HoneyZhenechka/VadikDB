@@ -80,6 +80,7 @@ class TypeNotExists(DBException):
         self.error_code = "12"
         print("Error code: " + self.error_code + " -- Type not exists: " + str(type_name))
 
+
 class DifferentNumberOfColumns(DBException):
     def __init__(self):
         self.error_code = "13"

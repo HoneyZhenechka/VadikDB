@@ -38,8 +38,8 @@ def test_show_create():
 
 
 def test_insert():
-    db.tables[0].insert(["zhenya2"], ["test_string_123"])
-    db.tables[0].insert(["zhenya1", "zhenya2"], [99, "test_string_123"])
+    db.tables[0].insert(["zhenya1", "zhenya2"], [5000,"b"])
+    db.tables[0].insert(["zhenya1", "zhenya2"], [929, "a"])
     assert db.tables[0].count_rows() == 2
 
 

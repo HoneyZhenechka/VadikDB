@@ -1,5 +1,6 @@
 import engine.bin_file as bin_py
 from datetime import datetime
+from sortedcontainers import SortedDict
 import cacheout
 import typing
 import random
@@ -175,6 +176,8 @@ class Table:
         self.is_versioning = False
         self.max_transaction_id = 0
         self.rollback_filenames = []
+        self.indexes = []
+        self.max_index_id = 0
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -588,6 +591,27 @@ class Table:
                     rows_list.append(row)
         return rows_list
 
+    def create_index(self, indexed_fields: typing.Tuple[str]) -> int:
+        for field in indexed_fields:
+            if field not in self.fields:
+                raise exception.FieldNotExists
+        self.max_index_id += 1
+        index_id = self.max_index_id
+        new_index = Index(index_id, indexed_fields)
+        for block in self.iter_blocks():
+            for row in block.iter_rows():
+                values_list = []
+                for field_name in indexed_fields:
+                    values_list.append(row.fields_values_dict[field_name])
+                values_tuple = tuple(values_list)
+                if values_tuple not in new_index.index_dict:
+                    new_index.index_dict[values_tuple] = []
+                    new_index.index_dict[values_tuple].append(row.index_in_file)
+                else:
+                    new_index.index_dict[values_tuple].append(row.index_in_file)
+        self.indexes.append(new_index)
+        return index_id
+
 
 class Block:
     def __init__(self, start_index: int, table: Table) -> typing.NoReturn:
@@ -730,6 +754,13 @@ class Type:
         if not isinstance(other, Type):
             return NotImplemented
         return self.__dict__ == other.__dict__
+
+
+class Index:
+    def __init__(self, index_id: int, fields: typing.Tuple[str]):
+        self.index_id = index_id
+        self.fields = fields
+        self.index_dict = SortedDict()
 
 
 class Transaction:
