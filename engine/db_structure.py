@@ -474,6 +474,18 @@ class Table:
                test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
         self.__insert(fields, values, insert_index, test_rollback, transaction_id)
 
+    def __add_row_to_indexes(self, row) -> typing.NoReturn:
+        for index in self.indexes:
+            key_list = []
+            for field in index.fields:
+                key_list.append(row.fields_values_dict[field])
+            key_tuple = tuple(key_list)
+            if key_tuple not in index.index_dict:
+                index.index_dict[key_tuple] = []
+                index.index_dict[key_tuple].append(row.index_in_file)
+            else:
+                index.index_dict[key_tuple].append(row.index_in_file)
+
     def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False, transaction_id: int = 0, is_copy: bool = False):
         local_rollback_obj = None
@@ -518,6 +530,7 @@ class Table:
             local_rollback_obj.file.close()
             return
         new_row.write_row_to_file()
+        self.__add_row_to_indexes(new_row)
         if self.last_row_index == insert_index:
             self.last_row_index = position
             self.write_meta_info()
