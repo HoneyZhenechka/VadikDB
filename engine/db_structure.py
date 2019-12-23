@@ -612,6 +612,12 @@ class Table:
         self.indexes.append(new_index)
         return index_id
 
+    def delete_index(self, index_id: int) -> typing.NoReturn:
+        for index in self.indexes:
+            if index.index_id == index_id:
+                self.indexes.remove(index)
+                break
+
 
 class Block:
     def __init__(self, start_index: int, table: Table) -> typing.NoReturn:
