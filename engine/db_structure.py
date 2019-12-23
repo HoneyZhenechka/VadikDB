@@ -440,6 +440,7 @@ class Table:
         old_row = Row(self, row_index)
         old_row.read_row_from_file()
         old_row.row_available = 3
+        self.__delete_row_from_indexes(old_row)
         old_row.write_info()
         fields = []
         values = []
@@ -542,12 +543,25 @@ class Table:
             self.__close_local_rollback_journal(local_rollback_obj)
         return new_row
 
+    def __delete_row_from_indexes(self, row) -> typing.NoReturn:
+        for index in self.indexes:
+            key_list = []
+            for field in index.fields:
+                key_list.append(row.fields_values_dict[field])
+            key_tuple = tuple(key_list)
+            if len(index.index_dict[key_tuple]) > 1:
+                index.index_dict[key_tuple].remove(row.index_in_file)
+            else:
+                index.index_dict[key_tuple].remove(row.index_in_file)
+                del index.index_dict[key_tuple]
+
     def __delete_row(self, row) -> typing.NoReturn:
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
         if row.index_in_file == self.last_row_index:
             self.last_row_index = row.previous_index
-        row.read_info()
+        row.read_row_from_file()
+        self.__delete_row_from_indexes(row)
         row.drop_row()
         row.row_available = 2
         row.previous_index = 0
@@ -617,17 +631,17 @@ class Table:
                 for field_name in indexed_fields:
                     values_list.append(row.fields_values_dict[field_name])
                 values_tuple = tuple(values_list)
-                if values_tuple not in new_index.index_dict:
-                    new_index.index_dict[values_tuple] = []
-                    new_index.index_dict[values_tuple].append(row.index_in_file)
+                if values_tuple not in new_index.data_dict:
+                    new_index.data_dict[values_tuple] = []
+                    new_index.data_dict[values_tuple].append(row.index_in_file)
                 else:
-                    new_index.index_dict[values_tuple].append(row.index_in_file)
+                    new_index.data_dict[values_tuple].append(row.index_in_file)
         self.indexes.append(new_index)
         return index_id
 
     def delete_index(self, index_id: int) -> typing.NoReturn:
         for index in self.indexes:
-            if index.index_id == index_id:
+            if index.id == index_id:
                 self.indexes.remove(index)
                 break
 
@@ -777,9 +791,9 @@ class Type:
 
 class Index:
     def __init__(self, index_id: int, fields: typing.Tuple[str]):
-        self.index_id = index_id
+        self.id = index_id
         self.fields = fields
-        self.index_dict = SortedDict()
+        self.data_dict = SortedDict()
 
 
 class Transaction:
