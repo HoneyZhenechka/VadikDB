@@ -466,12 +466,14 @@ class Table:
                 new_row.transaction_id = self.transactions[transaction_id].id
                 new_row.transaction_start = self.transactions[transaction_id].transaction_start
                 new_row.update_row(fields, values[i])
+                self.__add_row_to_indexes(new_row)
             else:
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
                 new_row = self.__copy_row(rows[i].index_in_file)
                 new_row.transaction_start = get_current_timestamp()
                 new_row.update_row(fields, values[i])
+                self.__add_row_to_indexes(new_row)
                 self.__close_local_rollback_journal(rollback_obj)
                 new_row.transaction_end = get_current_timestamp()
                 new_row.write_info()
@@ -486,11 +488,11 @@ class Table:
             for field in index.fields:
                 key_list.append(row.fields_values_dict[field])
             key_tuple = tuple(key_list)
-            if key_tuple not in index.index_dict:
-                index.index_dict[key_tuple] = []
-                index.index_dict[key_tuple].append(row.index_in_file)
+            if key_tuple not in index.data_dict:
+                index.data_dict[key_tuple] = []
+                index.data_dict[key_tuple].append(row.index_in_file)
             else:
-                index.index_dict[key_tuple].append(row.index_in_file)
+                index.data_dict[key_tuple].append(row.index_in_file)
 
     def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                  test_rollback: bool = False, transaction_id: int = 0, is_copy: bool = False):
@@ -536,7 +538,8 @@ class Table:
             local_rollback_obj.file.close()
             return
         new_row.write_row_to_file()
-        self.__add_row_to_indexes(new_row)
+        if not is_copy:
+            self.__add_row_to_indexes(new_row)
         if self.last_row_index == insert_index:
             self.last_row_index = position
             self.write_meta_info()
@@ -554,11 +557,11 @@ class Table:
             for field in index.fields:
                 key_list.append(row.fields_values_dict[field])
             key_tuple = tuple(key_list)
-            if len(index.index_dict[key_tuple]) > 1:
-                index.index_dict[key_tuple].remove(row.index_in_file)
+            if len(index.data_dict[key_tuple]) > 1:
+                index.data_dict[key_tuple].remove(row.index_in_file)
             else:
-                index.index_dict[key_tuple].remove(row.index_in_file)
-                del index.index_dict[key_tuple]
+                index.data_dict[key_tuple].remove(row.index_in_file)
+                del index.data_dict[key_tuple]
 
     def __delete_row(self, row) -> typing.NoReturn:
         if row.index_in_file == self.first_row_index:
@@ -632,15 +635,16 @@ class Table:
         new_index = Index(index_id, indexed_fields)
         for block in self.iter_blocks():
             for row in block.rows:
-                values_list = []
-                for field_name in indexed_fields:
-                    values_list.append(row.fields_values_dict[field_name])
-                values_tuple = tuple(values_list)
-                if values_tuple not in new_index.data_dict:
-                    new_index.data_dict[values_tuple] = []
-                    new_index.data_dict[values_tuple].append(row.index_in_file)
-                else:
-                    new_index.data_dict[values_tuple].append(row.index_in_file)
+                if row.status == 1:
+                    values_list = []
+                    for field_name in indexed_fields:
+                        values_list.append(row.fields_values_dict[field_name])
+                    values_tuple = tuple(values_list)
+                    if values_tuple not in new_index.data_dict:
+                        new_index.data_dict[values_tuple] = []
+                        new_index.data_dict[values_tuple].append(row.index_in_file)
+                    else:
+                        new_index.data_dict[values_tuple].append(row.index_in_file)
         self.indexes.append(new_index)
         return index_id
 
