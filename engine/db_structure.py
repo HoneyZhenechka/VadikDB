@@ -190,8 +190,8 @@ class Table:
 
     def get_block_by_index(self, index: int):
         current_block = Block(index, self)
-        row_count_list = current_block.count_rows()
-        cache_key = (index, row_count_list[0], row_count_list[1], row_count_list[2])
+        row_count_dict = current_block.count_rows()
+        cache_key = (index, row_count_dict["available"], row_count_dict["removed"], row_count_dict["updated"])
         if cache.get(cache_key) is None:
             current_block.read_file()
             current_block.get_rows()
@@ -698,16 +698,16 @@ class Block:
             if not current_row.status:
                 break
 
-    def count_rows(self) -> typing.List[int]:
-        count_list = [0, 0, 0]
+    def count_rows(self) -> typing.Dict[str, int]:
+        count_dict = {"available": 0, "removed": 0, "updated": 0}
         for row in self.iter_rows():
             if row.status == 1:
-                count_list[0] += 1
+                count_dict["available"] += 1
             if row.status == 2:
-                count_list[1] += 1
+                count_dict["removed"] += 1
             if row.status == 3:
-                count_list[2] += 1
-        return count_list
+                count_dict["updated"] += 1
+        return count_dict
 
     def get_rows(self) -> typing.NoReturn:
         for row in self.iter_rows():
