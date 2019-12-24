@@ -188,7 +188,6 @@ class Table:
     def __hash__(self):
         return hash(self.name) ^ hash(self.size) ^ hash(self.fields_count) ^ hash(self.row_length)
 
-    @cache.memoize()
     def get_block_by_index(self, index: int):
         current_block = Block(index, self)
         current_block.read_file()
@@ -204,7 +203,7 @@ class Table:
 
     def get_last_row_index(self) -> int:
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 if (row.next_index == 0) and (row.row_available == 1):
                     return row.index_in_file
                 return 0
@@ -212,7 +211,7 @@ class Table:
     def count_rows(self) -> int:
         result = 0
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 if row.row_available == 1:
                     result += 1
         return result
@@ -235,7 +234,7 @@ class Table:
 
     def ___update_end_timestamp_in_rows(self, transaction_id: int, timestamp: int) -> typing.NoReturn:
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 if row.transaction_id == transaction_id:
                     row.transaction_end = timestamp
                     row.write_info()
@@ -268,7 +267,7 @@ class Table:
 
     def get_row_by_id(self, id: int):
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 if (row.row_available == 1) and (row.row_id == id):
                     return row
             return False
@@ -391,7 +390,7 @@ class Table:
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         if not len(rows_indexes):
             for block in self.iter_blocks():
-                for row in block.iter_rows():
+                for row in block.rows:
                     if row.row_available == 1:
                         self.__delete_row_and_add_block(row, transaction_id)
         else:
@@ -425,7 +424,7 @@ class Table:
             )
             commited_rows = []
             for block in self.iter_blocks():
-                for row in block.iter_rows():
+                for row in block.rows:
                     row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
                     if (row.row_available in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
                         commited_rows.append(row)
@@ -613,7 +612,7 @@ class Table:
     def get_versioning_rows(self, start_date: datetime, end_date: datetime) -> typing.List:
         rows_list = []
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 if end_date > convert_timestamp_to_datetime(row.transaction_end) > start_date:
                     rows_list.append(row)
         return rows_list
@@ -626,7 +625,7 @@ class Table:
         index_id = self.max_index_id
         new_index = Index(index_id, indexed_fields)
         for block in self.iter_blocks():
-            for row in block.iter_rows():
+            for row in block.rows:
                 values_list = []
                 for field_name in indexed_fields:
                     values_list.append(row.fields_values_dict[field_name])
