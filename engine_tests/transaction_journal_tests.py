@@ -47,9 +47,3 @@ def test_wide_rollback():
     db.connect_to_db(filename)
     assert db.tables[0].get_row_by_id(0).fields_values_dict["zhenya2"] == "anime"
 
-
-def test_durability():
-    db.tables[0].insert(["zhenya1", "zhenya2"], [992, "tesssst_string_321"], test_rollback=True)
-    db.close_db()
-    db.connect_to_db(filename)
-    assert db.tables[0].count_rows() == 1
