@@ -148,7 +148,7 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(timestamp)
 
 
-cache = cacheout.mru.MRUCache(maxsize=64)
+cache = cacheout.lfu.LFUCache(maxsize=16)
 
 
 class Table:
@@ -190,8 +190,14 @@ class Table:
 
     def get_block_by_index(self, index: int):
         current_block = Block(index, self)
-        current_block.read_file()
-        current_block.get_rows()
+        row_count_list = current_block.count_rows()
+        cache_key = (index, row_count_list[0], row_count_list[1], row_count_list[2])
+        if cache.get(cache_key) is None:
+            current_block.read_file()
+            current_block.get_rows()
+            cache.set(cache_key, current_block)
+        else:
+            current_block = cache.get(cache_key)
         return current_block
 
     def iter_blocks(self) -> typing.Iterable:
@@ -204,7 +210,7 @@ class Table:
     def get_last_row_index(self) -> int:
         for block in self.iter_blocks():
             for row in block.rows:
-                if (row.next_index == 0) and (row.row_available == 1):
+                if (row.next_index == 0) and (row.status == 1):
                     return row.index_in_file
                 return 0
 
@@ -212,7 +218,7 @@ class Table:
         result = 0
         for block in self.iter_blocks():
             for row in block.rows:
-                if row.row_available == 1:
+                if row.status == 1:
                     result += 1
         return result
 
@@ -268,7 +274,7 @@ class Table:
     def get_row_by_id(self, id: int):
         for block in self.iter_blocks():
             for row in block.rows:
-                if (row.row_available == 1) and (row.row_id == id):
+                if (row.status == 1) and (row.row_id == id):
                     return row
             return False
 
@@ -391,13 +397,13 @@ class Table:
         if not len(rows_indexes):
             for block in self.iter_blocks():
                 for row in block.rows:
-                    if row.row_available == 1:
+                    if row.status == 1:
                         self.__delete_row_and_add_block(row, transaction_id)
         else:
             for index in rows_indexes:
                 current_row = Row(self, index)
                 current_row.read_info()
-                if current_row.row_available == 1:
+                if current_row.status == 1:
                     self.__delete_row_and_add_block(current_row, transaction_id)
 
     def __get_unique_rows(self, rows_list: typing.List) -> typing.List:
@@ -426,7 +432,7 @@ class Table:
             for block in self.iter_blocks():
                 for row in block.rows:
                     row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
-                    if (row.row_available in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
+                    if (row.status in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
                         commited_rows.append(row)
             selected_rows = self.__get_unique_rows(commited_rows)
         else:
@@ -438,7 +444,7 @@ class Table:
     def __copy_row(self, row_index: int):
         old_row = Row(self, row_index)
         old_row.read_row_from_file()
-        old_row.row_available = 3
+        old_row.status = 3
         self.__delete_row_from_indexes(old_row)
         old_row.write_info()
         fields = []
@@ -521,7 +527,7 @@ class Table:
                 new_row.transaction_start = self.transactions[transaction_id].transaction_start
             else:
                 new_row.transaction_start = get_current_timestamp()
-        new_row.row_available = 1
+        new_row.status = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
         new_row.fields_values_dict = {field: values[index] for index, field in enumerate(fields)}
@@ -562,7 +568,7 @@ class Table:
         row.read_row_from_file()
         self.__delete_row_from_indexes(row)
         row.drop_row()
-        row.row_available = 2
+        row.status = 2
         row.previous_index = 0
         row.next_index = 0
         row.write_info()
@@ -687,10 +693,21 @@ class Block:
             current_row = Row(self.table, current_index)
             current_row.read_row_from_file()
             current_index += self.table.row_length
-            if current_row.row_available != 0:
+            if current_row.status != 0:
                 yield current_row
-            if not current_row.row_available:
+            if not current_row.status:
                 break
+
+    def count_rows(self) -> typing.List[int]:
+        count_list = [0, 0, 0]
+        for row in self.iter_rows():
+            if row.status == 1:
+                count_list[0] += 1
+            if row.status == 2:
+                count_list[1] += 1
+            if row.status == 3:
+                count_list[2] += 1
+        return count_list
 
     def get_rows(self) -> typing.NoReturn:
         for row in self.iter_rows():
@@ -704,7 +721,7 @@ class Row:
         self.fields_values_dict = {}
         self.previous_index = 0
         self.next_index = 0
-        self.row_available = 0
+        self.status = 0
         self.transaction_start = 0
         self.transaction_end = 0
         self.transaction_id = 0
@@ -712,7 +729,7 @@ class Row:
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.table.file.write_integer(self.row_available, self.index_in_file, 1)
+        self.table.file.write_integer(self.status, self.index_in_file, 1)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
         self.table.file.write_float(self.transaction_start, row_size - 14)
@@ -722,7 +739,7 @@ class Row:
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.row_available = self.table.file.read_integer(self.index_in_file, 1)
+        self.status = self.table.file.read_integer(self.index_in_file, 1)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
         self.transaction_start = self.table.file.read_float(row_size - 14)
