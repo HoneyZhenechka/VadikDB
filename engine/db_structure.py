@@ -56,7 +56,7 @@ class Database:
         table.write_meta_info()
 
     def get_io_count(self) -> int:
-        if type(self.file) == bin_py.BinFile:
+        if isinstance(self.file, bin_py.BinFile):
             return self.file.io_count
 
     def wide_rollback(self) -> typing.NoReturn:
@@ -425,10 +425,11 @@ class Table:
     def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0,
                start_time: datetime = None, end_time: datetime = None) -> typing.List:
         selected_rows = []
-        if self.is_versioning and (start_time is not None) and (end_time is not None):
+        if self.is_versioning and (isinstance(start_time, datetime)) and (isinstance(end_time, datetime)):
             for block in self.iter_blocks():
                 for row in block.rows:
                     if end_time > convert_timestamp_to_datetime(row.transaction_end) > start_time:
+                        row.select_row(fields)
                         selected_rows.append(row)
             return selected_rows
         if transaction_id > 0:
@@ -440,6 +441,7 @@ class Table:
                 for row in block.rows:
                     row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
                     if (row.status in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
+                        row.select_row(fields)
                         commited_rows.append(row)
             selected_rows = self.__get_unique_rows(commited_rows)
         else:
