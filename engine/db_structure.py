@@ -145,7 +145,10 @@ def get_current_timestamp() -> float:
 
 
 def convert_timestamp_to_datetime(timestamp: float) -> datetime:
-    return datetime.fromtimestamp(timestamp)
+    if timestamp == -1.0:
+        return datetime.max
+    else:
+        return datetime.fromtimestamp(timestamp)
 
 
 cache = cacheout.lfu.LFUCache(maxsize=16)
@@ -423,7 +426,8 @@ class Table:
         if self.is_versioning and (isinstance(start_time, datetime)) and (isinstance(end_time, datetime)):
             for block in self.iter_blocks():
                 for row in block.rows:
-                    if end_time > convert_timestamp_to_datetime(row.transaction_end) > start_time:
+                    if ((convert_timestamp_to_datetime(row.transaction_start) < end_time) and
+                            (convert_timestamp_to_datetime(row.end_active) > start_time)):
                         row.select_row(fields)
                         selected_rows.append(row)
             return selected_rows
@@ -448,6 +452,7 @@ class Table:
     def __copy_row(self, row_index: int):
         old_row = Row(self, row_index)
         old_row.read_row_from_file()
+        old_row.end_active = get_current_timestamp()
         old_row.status = 3
         self.__delete_row_from_indexes(old_row)
         old_row.write_info()
@@ -571,6 +576,7 @@ class Table:
         row.read_row_from_file()
         self.__delete_row_from_indexes(row)
         row.drop_row()
+        row.end_active = get_current_timestamp()
         row.status = 2
         row.previous_index = 0
         row.next_index = 0
@@ -596,7 +602,7 @@ class Table:
         for index, field in enumerate(self.fields):
             self.positions[field] = self.row_length
             self.row_length += self.types[index].size
-        self.row_length += 41
+        self.row_length += 49
 
     def __check_type_name(self, typename) -> bool:
         for key in self.types_dict:
@@ -722,6 +728,7 @@ class Row:
         self.transaction_end = 0
         self.transaction_id = 0
         self.row_id = 0
+        self.end_active = -1.0
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
@@ -732,6 +739,7 @@ class Row:
         self.table.file.write_float(self.transaction_end, row_size - 22)
         self.table.file.write_integer(self.transaction_id, row_size - 36, 14)
         self.table.file.write_integer(self.row_id, row_size - 40, 4)
+        self.table.file.write_float(self.end_active, row_size - 48)
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
@@ -742,6 +750,7 @@ class Row:
         self.transaction_end = self.table.file.read_float(row_size - 22)
         self.transaction_id = self.table.file.read_integer(row_size - 36, 14)
         self.row_id = self.table.file.read_integer(row_size - 40, 4)
+        self.end_active = self.table.file.read_float(row_size - 48)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}

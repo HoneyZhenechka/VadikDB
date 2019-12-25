@@ -14,14 +14,14 @@ def test_create_io():
 
 def test_insert_io():
     db.tables[0].insert(["zhenya1", "zhenya2"], [5000, "b"])
-    assert db.get_io_count() == 96
+    assert db.get_io_count() == 101
 
 
 def test_update_io():
     db.tables[0].update(["zhenya2"], [["lovetsov"]], [db.tables[0].get_row_by_id(0)])
-    assert db.get_io_count() == 292
+    assert db.get_io_count() == 318
 
 
 def test_delete_io():
     db.tables[0].delete()
-    assert db.get_io_count() == 414
+    assert db.get_io_count() == 453

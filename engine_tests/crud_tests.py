@@ -15,7 +15,7 @@ def test_create():
     excepted_table.fields_count = 2
     excepted_table.types = [db_py.Type("int", 4), db_py.Type("str", 256)]
     excepted_table.positions = {"row_id": 1, "zhenya1": 4, "zhenya2": 8}
-    excepted_table.row_length = 305
+    excepted_table.row_length = 313
     result_table = db.create_table("vadik_table", {"zhenya1": "int", "zhenya2": "str"})
     assert excepted_table == result_table
 
