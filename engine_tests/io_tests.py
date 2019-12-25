@@ -25,3 +25,13 @@ def test_update_io():
 def test_delete_io():
     db.tables[0].delete()
     assert db.get_io_count() == 453
+
+
+def test_cache_io():
+    db.tables[0].insert(["zhenya1", "zhenya2"], [5000, "b"])
+    io_count_first = db.get_io_count()
+    db.tables[0].get_row_by_id(0)
+    io_count_second = db.get_io_count()
+    db.tables[0].get_row_by_id(0)
+    io_count_third = db.get_io_count()
+    assert (io_count_second - io_count_first) > (io_count_third - io_count_second)
