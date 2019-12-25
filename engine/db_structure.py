@@ -422,8 +422,15 @@ class Table:
                 del unique_rows[i]
         return unique_rows
 
-    def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0) -> typing.List:
+    def select(self, fields: typing.Tuple[str], rows: typing.Tuple, transaction_id: int = 0,
+               start_time: datetime = None, end_time: datetime = None) -> typing.List:
         selected_rows = []
+        if self.is_versioning and (start_time is not None) and (end_time is not None):
+            for block in self.iter_blocks():
+                for row in block.rows:
+                    if end_time > convert_timestamp_to_datetime(row.transaction_end) > start_time:
+                        selected_rows.append(row)
+            return selected_rows
         if transaction_id > 0:
             transaction_start_datetime = convert_timestamp_to_datetime(
                 self.transactions[transaction_id].transaction_start
@@ -613,14 +620,6 @@ class Table:
             else:
                 raise exception.TypeNotExists(type_name)
         self.fields_count = len(self.fields)
-
-    def get_versioning_rows(self, start_date: datetime, end_date: datetime) -> typing.List:
-        rows_list = []
-        for block in self.iter_blocks():
-            for row in block.rows:
-                if end_date > convert_timestamp_to_datetime(row.transaction_end) > start_date:
-                    rows_list.append(row)
-        return rows_list
 
     def create_index(self, indexed_fields: typing.Tuple[str]) -> int:
         for field in indexed_fields:
