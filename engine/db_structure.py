@@ -381,17 +381,12 @@ class Table:
     def __delete_row_and_add_block(self, row, transaction_id: int = 0) -> typing.NoReturn:
         if transaction_id > 0:
             self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
-            row.transaction_start = self.transactions[transaction_id].transaction_start
-            row.transaction_id = self.transactions[transaction_id].id
-            row.write_info()
             self.__delete_row(row)
         else:
-            row.transaction_start = get_current_timestamp()
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
             self.__delete_row(row)
             self.__close_local_rollback_journal(rollback_obj)
-            row.transaction_end = get_current_timestamp()
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         if not len(rows_indexes):
