@@ -479,8 +479,8 @@ class Table:
                 new_row.write_info()
 
     def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
-               test_rollback: bool = False, transaction_id: int = 0) -> typing.NoReturn:
-        self.__insert(fields, values, insert_index, test_rollback, transaction_id)
+               transaction_id: int = 0) -> typing.NoReturn:
+        self.__insert(fields, values, insert_index, transaction_id)
 
     def __add_row_to_indexes(self, row) -> typing.NoReturn:
         for index in self.indexes:
@@ -495,7 +495,7 @@ class Table:
                 index.data_dict[key_tuple].append(row.index_in_file)
 
     def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
-                 test_rollback: bool = False, transaction_id: int = 0, is_copy: bool = False):
+                 transaction_id: int = 0, is_copy: bool = False):
         local_rollback_obj = None
         position = self.get_free_row()
         if not transaction_id:
@@ -533,10 +533,6 @@ class Table:
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
         new_row.fields_values_dict = {field: values[index] for index, field in enumerate(fields)}
-        if test_rollback:
-            new_row.write_row_to_file(True)
-            local_rollback_obj.file.close()
-            return
         new_row.write_row_to_file()
         if not is_copy:
             self.__add_row_to_indexes(new_row)
@@ -775,14 +771,12 @@ class Row:
             previous_row.next_index = self.next_index
             previous_row.write_info()
 
-    def write_row_to_file(self, is_test: bool = False):
+    def write_row_to_file(self):
         self.write_info()
         for field in self.fields_values_dict:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            if is_test and field_index:
-                return
             self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
 
