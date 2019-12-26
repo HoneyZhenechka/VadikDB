@@ -9,7 +9,7 @@ tokens = (
     'NAME', 'VALUES',
     'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
+    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
     'STAR', 'NOT_EQUAL', 'GREATER_THAN',
     'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
     'LESS_THAN_OR_EQUAL', 'OR',
@@ -49,6 +49,7 @@ t_VALUES = r'VALUES'
 t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
 t_COMMA = r','
+t_DOT = r'.'
 t_ENDREQUEST = r'\;'
 t_PLUS = r'\+'
 t_MINUS = r'\-'
@@ -88,6 +89,12 @@ def t_NAME(t):
 
     elif t.value.upper() == 'DELETE':
         t.type = 'DELETE'
+
+    elif t.value == ',':
+        t.type = 'COMMA'
+
+    elif t.value == '.':
+        t.type = 'DOT'
 
     elif t.value.upper() == 'JOIN':
         t.type = 'JOIN'

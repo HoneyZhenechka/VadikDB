@@ -1,15 +1,8 @@
 import exception
 import engine.db_structure as eng
 import typing
-
-
-class Result:
-
-    def __init__(self, is_exception: bool, str_for_print: str = "", exception_func=None, fields_for_func=()):
-        self.is_exception = is_exception
-        self.str_for_print = str_for_print
-        self.exception_func = exception_func
-        self.fields_for_func = fields_for_func
+import Result
+import exception_for_client
 
 
 class Preprocessor:
@@ -33,8 +26,8 @@ class Preprocessor:
 
     def is_fields_exist(self, name: str, fields=()) -> str or bool:
         for field in fields:
-            if not field in self.db.tables[self.get_table_index(name)].fields:
-                return field
+            if not field.name in self.db.tables[self.get_table_index(name)].fields:
+                return field.name
         return True
 
     def is_table_exists(self, name: str) -> bool:
@@ -59,12 +52,12 @@ class Preprocessor:
             value = self.solve_expression(root.getLeftChild(), row) / self.solve_expression(root.getRightChild(), row)
         else:
             try:
-                value = float(root.getRootVal())
+                value = float(root.getRootVal().name)
             except:
-                if not (root.getRootVal() in row.fields_values_dict):
-                    value = root.getRootVal()
+                if not (root.getRootVal().name in row.fields_values_dict):
+                    value = root.getRootVal().name
                 else:
-                    value = row.fields_values_dict[root.getRootVal()]
+                    value = row.fields_values_dict[root.getRootVal().name]
         return value
 
     def solve_comparison(self, root, row) -> bool:
@@ -111,7 +104,7 @@ class Preprocessor:
         else:
             for field in fields:
                 for index_of_field in range(len(self.db.tables[table_index].fields)):
-                    if field == self.db.tables[table_index].fields[index_of_field]:
+                    if field.name == self.db.tables[table_index].fields[index_of_field]:
                         types.append(self.db.tables[table_index].types[index_of_field])
         return types
 
@@ -129,7 +122,7 @@ class Preprocessor:
 
     def union(self, first_table, second_table, is_all=False):
         if len(first_table[0]) != len(second_table[0]):
-            return Result(True, "", exception.DifferentNumberOfColumns)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().DifferentNumberOfColumns())
         rows = [first_table[0], []]
         for first_row in first_table[1]:
             for second_row in second_table[1]:
@@ -151,15 +144,6 @@ class Preprocessor:
         return rows
 
     def join(self, first_table, second_table):
-        pass
-
-    def left_join(self, first_table, second_table):
-        pass
-
-    def right_join(self, first_table, second_table):
-        pass
-
-    def outer_join(self, first_table, second_table):
         pass
 
     def left_outer_join(self, first_table, second_table):
@@ -192,8 +176,10 @@ class Preprocessor:
                     new_values.append(True)
                 else:
                     return []
+            elif types[i].name == "str":
+                new_values.append(values[i].name)
             else:
-                new_values.append(str(values[i].getRootVal()))
+                return []
         return new_values
 
     def get_values(self, name: str, values: list, fields=()) -> list:
@@ -204,49 +190,53 @@ class Preprocessor:
         for i in range(len(values)):
             if types[i].name == 'float':
                 try:
-                    values[i] = float(values[i])
+                    values[i] = float(values[i].name)
                 except:
                     return []
-            if types[i].name == "int":
+            elif types[i].name == "int":
                 try:
-                    values[i] = int(values[i])
+                    values[i] = int(values[i].name)
                 except:
                     return []
-            if types[i].name == "bool":
-                if values[i] == "False":
+            elif types[i].name == "bool":
+                if values[i].name == "False":
                     values[i] = False
-                elif values[i] == "True":
+                elif values[i].name == "True":
                     values[i] = True
                 else:
                     return []
+            elif types[i].name == "str":
+                values[i] = values[i].name
+            else:
+                return []
         return values
 
     def create_table(self, name: str, fields: list = ()) -> Result:
         correct_fields = self.get_correct_fields(fields)
         if not(type(correct_fields) is dict):
-            return Result(True, "", exception.DuplicateFields, correct_fields)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().DuplicateFields(correct_fields))
         elif self.is_table_exists(name):
-            return Result(True, "", exception.TableAlreadyExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableAlreadyExists(name))
         else:
             self.db.create_table(name, correct_fields)
-            return Result(False)
+            return Result.Result(False)
 
     def show_create_table(self, name: str) -> Result:
         if not self.is_table_exists(name):
-            return Result(True, "", exception.TableNotExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         else:
             table_index = self.get_table_index(name)
-            return Result(False, self.db.tables[table_index].show_create())
+            return Result.Result(False, self.db.tables[table_index].show_create())
 
     def drop_table(self, name: str) -> Result:
         if not self.is_table_exists(name):
-            return Result(True, "", exception.TableNotExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         else:
-            return Result(False)
+            return Result.Result(False)
 
     def solve_tree_selects(self, root):
         el = root.getRootVal()
-        if type(root) is Result:
+        if type(root) is Result.Result:
             return root
         elif el.type == "union":
             return self.union(self.solve_tree_selects(root.getLeftChild()),
@@ -258,15 +248,6 @@ class Preprocessor:
             if el.form == "":
                 return self.join(self.solve_tree_selects(root.getLeftChild()),
                                  self.solve_tree_selects(root.getRightChild()))
-            elif el.form.upper() == "LEFT":
-                return self.left_join(self.solve_tree_selects(root.getLeftChild()),
-                                      self.solve_tree_selects(root.getRightChild()))
-            elif el.form.upper() == "RIGHT":
-                return self.right_join(self.solve_tree_selects(root.getLeftChild()),
-                                       self.solve_tree_selects(root.getRightChild()))
-            elif el.form.upper() == "OUTER":
-                return self.outer_join(self.solve_tree_selects(root.getLeftChild()),
-                                       self.solve_tree_selects(root.getRightChild()))
             elif el.form.upper() == "LEFT OUTER":
                 return self.left_outer_join(self.solve_tree_selects(root.getLeftChild()),
                                             self.solve_tree_selects(root.getRightChild()))
@@ -278,7 +259,7 @@ class Preprocessor:
 
     def tree_selects(self, tree):
         fields_and_rows = self.solve_tree_selects(tree)
-        if type(fields_and_rows) is Result:
+        if type(fields_and_rows) is Result.Result:
             return fields_and_rows
         result = "\n| "
         for field in fields_and_rows[0]:
@@ -289,19 +270,19 @@ class Preprocessor:
             for field in row.fields_values_dict:
                 result += str(row.fields_values_dict[field]) + " | "
             result += "\n"
-        return Result(False, result)
+        return Result.Result(False, result)
 
     def select(self, name: str, fields: list, is_star: bool, condition):
         if not self.is_table_exists(name):
-            return Result(True, "", exception.TableNotExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         elif type(self.is_fields_exist(name, fields)) is str:
-            return Result(True, "", exception.FieldNotExists, self.is_fields_exist(name, fields))
+            return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
             table_index = self.get_table_index(name)
             rows = []
             for block in self.db.tables[table_index].iter_blocks():
                 for row in block.iter_rows():
-                    if row.row_available == 1:
+                    if row.status == 1:
                         if self.solve_condition(condition, row):
                             rows.append(row)
             fields = self.build_fields(fields, is_star, table_index)
@@ -309,51 +290,55 @@ class Preprocessor:
             return fields, rows
 
     def insert(self, name: str, fields: list, values: list):
-        if not (self.is_table_exists(name)):
-            return Result(True, "", exception.TableNotExists, name)
+        if not self.is_table_exists(name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         elif type(self.is_fields_exist(name, fields)) is str:
-            return Result(True, "", exception.FieldNotExists, self.is_fields_exist(name, fields))
+            return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
             new_values = self.get_values(name, values, fields)
             if not len(new_values):
-                return Result(True, "", exception.InvalidDataType)
+                return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
             table_index = self.get_table_index(name)
             if len(fields) == 0:
                 for i in range(len(values)):
                     fields.append(self.db.tables[table_index].fields[i])
             if len(new_values) != 0:
                 self.db.tables[table_index].insert(fields, new_values)
-            return Result(False)
+            return Result.Result(False)
 
     def update(self, name: str, fields: list, values: list, condition):
         if not self.is_table_exists(name):
-            return Result(True, "", exception.TableNotExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         elif type(self.is_fields_exist(name, fields)) is str:
-            return Result(True, "", exception.FieldNotExists, self.is_fields_exist(name, fields))
+            return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
             table_index = self.get_table_index(name)
             rows = []
             new_values = []
             for block in self.db.tables[table_index].iter_blocks():
                 for row in block.iter_rows():
-                    if self.solve_condition(condition, row):
-                        temp = self.get_values_with_expression(name, values, row, fields)
-                        if len(temp) == 0:
-                            return Result(True, "", exception.InvalidDataType)
-                        new_values.append(temp)
-                        rows.append(row)
+                    if row.status == 1:
+                        if self.solve_condition(condition, row):
+                            temp = self.get_values_with_expression(name, values, row, fields)
+                            if len(temp) == 0:
+                                return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
+                            new_values.append(temp)
+                            rows.append(row)
+            for i in range(len(fields)):
+                fields[i] = fields[i].name
             self.db.tables[table_index].update(fields, new_values, rows)
-            return Result(False)
+            return Result.Result(False)
 
     def delete(self, name: str, condition):
         if not self.is_table_exists(name):
-            return Result(True, "", exception.TableNotExists, name)
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         else:
             table_index = self.get_table_index(name)
             rows_indices = []
             for block in self.db.tables[table_index].iter_blocks():
                 for row in block.iter_rows():
-                    if self.solve_condition(condition, row):
-                        rows_indices.append(row.index_in_file)
+                    if row.status == 1:
+                        if self.solve_condition(condition, row):
+                            rows_indices.append(row.index_in_file)
             self.db.tables[table_index].delete(rows_indices)
-            return Result(False)
+            return Result.Result(False)

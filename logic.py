@@ -1,5 +1,6 @@
 import SQL_parser.SQL_parser as pars
 import preprocessor as pre
+import Result
 
 
 class Logic:
@@ -9,6 +10,8 @@ class Logic:
 
     def query(self, sql_request):
         request = pars.build_tree(sql_request)
+        if type(request) is Result.Result:
+            return request
         try:
             if request.type.lower() == "create":
                 return self.pr.create_table(request.name, request.fields)
@@ -27,7 +30,7 @@ class Logic:
         except Exception as ex:
             print(ex)
 
-#temp = Logic()
+#temp = Logic("vadic13")
 #temp.query("CREATE TABLE VADICS (id int, name str);")
 #temp.query("SHOW CREATE TABLE VADICS;")
 #temp.query("SELECT * FROM VADICS;")
@@ -41,3 +44,4 @@ class Logic:
 #temp.query("SELECT * FROM VADICS;")
 #print(temp.query("DELETE FROM VADIC WHERE id = 1*2 + 3/4 - 5*(6+7);"))
 #print(pars.build_tree("DELETE FROM VADIC WHERE id = ((2 + 2) + 4 + (6 + (32 + 2882 + id)));").condition)
+#print(temp.query("select * from vadic where id > 1;").str_for_print)

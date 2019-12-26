@@ -3,6 +3,21 @@ import exception
 import ply.yacc as yacc
 from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
+import Result
+import exception_for_client
+
+
+class Struct:
+
+    def __getitem__(self, name):
+        return self.__dict__[name]
+
+    def __setitem__(self, name, value):
+        self.__dict__[name] = value
+
+    def __iter__(self):
+        for i in self.__dict__.keys():
+            yield i
 
 
 def build_tree_selects(elements):
@@ -120,22 +135,6 @@ def build_tree_expression(elements):
     return tree
 
 
-class Struct:
-
-    def __init__(self, **dictionary):
-        self.__dict__.update(dictionary)
-
-    def __getitem__(self, name):
-        return self.__dict__[name]
-
-    def __setitem__(self, name, value):
-        self.__dict__[name] = value
-
-    def __iter__(self):
-        for i in self.__dict__.keys():
-            yield i
-
-
 class PCreate(Struct):
 
     def __init__(self, name="", fields=()):
@@ -221,6 +220,22 @@ class PJoin(Struct):
         self.type = "join"
 
 
+class POn(Struct):
+
+    def __init__(self, name, condition):
+        self.type = "on"
+        self.name = name
+        self.condition = condition
+
+
+class PUsing(Struct):
+
+    def __init__(self, name, field):
+        self.type = "using"
+        self.name = name
+        self.field = field
+
+
 class PUnion(Struct):
 
     def __init__(self, is_all=False):
@@ -232,6 +247,21 @@ class PIntersect(Struct):
 
     def __init__(self):
         self.type = "intersect"
+
+
+class PField(Struct):
+
+    def __init__(self, name):
+        self.type = "field"
+        self.name = name
+
+
+class PFieldOfTable(Struct):
+
+    def __init__(self, name_table, name):
+        self.type = "field of table"
+        self.name_table = name_table
+        self.name = name
 
 
 def p_start(p):
@@ -282,6 +312,7 @@ def p_drop(p):
 
     p[0] = PDrop(p[3])
 
+
 def p_tree_selects(p):
     '''tree_selects : nested_selects'''
 
@@ -289,9 +320,9 @@ def p_tree_selects(p):
 
 
 def p_nested_selects(p):
-    '''nested_selects : select join nested_selects
-                    | select union nested_selects
-                    | select intersect nested_selects
+    '''nested_selects : select join join_right_table
+                    | nested_selects union nested_selects
+                    | nested_selects intersect nested_selects
                     | select'''
 
     p[0] = []
@@ -305,18 +336,22 @@ def p_nested_selects(p):
 
 def p_join(p):
     '''join : JOIN
-            | LEFT JOIN
-            | RIGHT JOIN
-            | OUTER JOIN
             | LEFT OUTER JOIN
             | RIGHT OUTER JOIN'''
 
     if len(p) == 2:
         p[0] = PJoin()
-    elif len(p) == 3:
-        p[0] = PJoin(p[1])
     else:
         p[0] = PJoin(p[1] + p[2])
+
+
+def p_join_right_table(p):
+    '''join_right_table : NAME ON tree_condition
+            | NAME USING LBRACKET field RBRACKET'''
+    if p[2] == "ON":
+        p[0] = POn(p[1], p[3])
+    elif p[2] == "USING":
+        p[0] = PUsing(p[1], p[4])
 
 
 def p_union(p):
@@ -327,6 +362,7 @@ def p_union(p):
         p[0] = PUnion()
     else:
         p[0] = PUnion(True)
+
 
 def p_intersect(p):
     '''intersect : INTERSECT'''
@@ -394,7 +430,7 @@ def p_expression(p):
                   | expression COMMA field EQUAL tree_expression'''
 
     if len(p) == 4:
-        p[0] = [[],[]]
+        p[0] = [[], []]
         p[0][0].append(p[1])
         p[0][1].append(build_tree_expression(p[3]))
     else:
@@ -413,8 +449,8 @@ def p_delete(p):
 
 
 def p_fields(p):
-    '''fields : NAME
-              | fields COMMA NAME'''
+    '''fields : field
+              | fields COMMA field'''
 
     if len(p) == 2:
         p[0] = []
@@ -425,9 +461,13 @@ def p_fields(p):
 
 
 def p_field(p):
-    '''field : NAME'''
+    '''field : NAME
+            | NAME DOT NAME'''
 
-    p[0] = p[1]
+    if len(p) == 2:
+        p[0] = PField(p[1])
+    elif len(p) == 4:
+        p[0] = PFieldOfTable(p[1], p[3])
 
 
 def p_condition(p):
@@ -444,6 +484,8 @@ def p_tree_condition(p):
         try:
             if type(p[i + 1]) is str:
                 p[0].append(p[i + 1])
+            elif type(p[i + 1]) in [PField, PFieldOfTable]:
+                p[0].append(p[i + 1])
             else:
                 for el in p[i + 1]:
                     p[0].append(el)
@@ -459,6 +501,7 @@ def p_tree_comparison(p):
     p[0].setRootVal(p[2])
     p[0].insertRight(build_tree_expression(p[3]))
 
+
 def p_tree_expression(p):
     '''tree_expression : field
             | field operator_expression tree_expression
@@ -469,6 +512,8 @@ def p_tree_expression(p):
     p[0] = []
     for i in range(len(p) - 1):
         if type(p[i+1]) is str:
+            p[0].append(p[i+1])
+        elif type(p[i+1]) in [PField, PFieldOfTable]:
             p[0].append(p[i+1])
         else:
             for el in p[i+1]:
@@ -513,14 +558,24 @@ def p_type(p):
 
 
 def p_error(p):
-    try:
-        raise exception.IncorrectSyntax(p.lexpos, p.value)
-    except Exception as ex:
-        print(ex)
+    if p == None:
+        pos = "Last symbol"
+        val = ""
+    else:
+        pos = p.lexpos
+        val = p.value
+    global result
+    result = Result.Result(True, exception_for_client.DBExceptionForClient().IncorrectSyntax(pos, val))
 
-
+result = None
 parser = yacc.yacc()
 
 
 def build_tree(code):
-    return parser.parse(code)
+
+    tree = parser.parse(code)
+    global result
+    if type(result) is Result.Result:
+        return result
+    else:
+        return tree
