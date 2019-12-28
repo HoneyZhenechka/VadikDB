@@ -114,11 +114,19 @@ def test_select_condition():
     result = log.query("SELECT * FROM VADIC WHERE id < 1 + 1;")
     assert excepted_result == result.str_for_print
 
+
 def test_update_condition():
-    excepted_result = "\n| id | name | \n| 2 | admin | \n"
-    log.query("UPDATE VADIC SET id = 2 ")
-    result = log.query("SELECT * FROM VADIC")
+    excepted_result = "\n| id | name | \n| 2 | notadmin | \n| 2 | admin | \n"
+    log.query("UPDATE VADIC SET id = 2 where id < 1 + 1;")
+    result = log.query("SELECT * FROM VADIC;")
     assert excepted_result == result.str_for_print
 
+
+def test_delete_condition():
+    excepted_result = "\n| id | name | \n| 2 | notadmin | \n| 2 | admin | \n"
+    log.query("INSERT INTO VADIC VALUES(1, admin);")
+    log.query("DELETE FROM VADIC where id < 1 + 1;")
+    result = log.query("SELECT * FROM VADIC;")
+    assert excepted_result == result.str_for_print
 
 

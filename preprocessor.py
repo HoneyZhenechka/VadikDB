@@ -326,6 +326,7 @@ class Preprocessor:
                             rows.append(row)
             for i in range(len(fields)):
                 fields[i] = fields[i].name
+            sorted(rows, key=lambda row: row.transaction_end)
             self.db.tables[table_index].update(fields, new_values, rows)
             return Result.Result(False)
 
