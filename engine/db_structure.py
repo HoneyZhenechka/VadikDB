@@ -934,31 +934,33 @@ class TransactionRegistry:
         self.registry_filename = f"transaction_{self.table.name}.rg"
         self.registry_file = bin_py.BinFile(self.registry_filename)
         self.row_size = 20
-        self.rows_length = 0
+        self.rows_count = 0
 
     def create_file(self) -> typing.NoReturn:
         self.registry_file.open("w+")
+        self.registry_file.write_fixed_integer(self.rows_count, 0)
 
     def open_file(self) -> typing.NoReturn:
         self.registry_file.open("r+")
+        self.rows_count = self.registry_file.read_fixed_integer(0)
 
     def insert_transaction_info(self, tr_id: int, tr_start: float, tr_end: float) -> typing.NoReturn:
-        position = self.rows_length * self.row_size
+        position = self.rows_count * self.row_size + 4
         self.registry_file.write_fixed_integer(tr_id, position)
         self.registry_file.write_float(tr_start, position + 4)
         self.registry_file.write_float(tr_end, position + 12)
-        self.rows_length += 1
+        self.rows_count += 1
 
     def get_transaction_info(self, row_num: int) -> typing.Dict:
-        position = row_num * self.row_size
+        position = row_num * self.row_size + 4
         transaction_dict = {"tr_id": self.registry_file.read_fixed_integer(position),
                             "tr_start": self.registry_file.read_float(position + 4),
                             "tr_end": self.registry_file.read_float(position + 12)}
         return transaction_dict
 
     def iter_rows(self) -> typing.Iterable:
-        row_counter = 0
-        while row_counter < self.rows_length:
-            result_transaction_info = self.get_transaction_info(row_counter)
-            row_counter += 1
+        counter = 0
+        while counter < self.rows_count:
+            result_transaction_info = self.get_transaction_info(counter)
+            counter += 1
             yield result_transaction_info
