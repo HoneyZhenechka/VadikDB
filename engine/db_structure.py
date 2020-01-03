@@ -94,6 +94,7 @@ class Database:
             table_obj = Table(self.file)
             table_obj.index_in_file = 16 + i * table_obj.size
             table_obj.read_file()
+            table_obj.open_transaction_registry()
             self.tables.append(table_obj)
 
     def connect_to_db(self, filename: str) -> typing.NoReturn:
@@ -120,6 +121,7 @@ class Database:
         new_table.index_in_file = 16 + self.tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
+        new_table.create_transaction_registry()
         new_table.write_file()
         self.tables.append(new_table)
         self.tables_count += 1
@@ -181,6 +183,7 @@ class Table:
         self.rollback_filenames = []
         self.indexes = []
         self.max_index_id = 0
+        self.transaction_registry = None
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -255,6 +258,14 @@ class Table:
 
     def rollback_transaction(self, transaction_id: int) -> typing.NoReturn:
         self.transactions[transaction_id].rollback()
+
+    def create_transaction_registry(self) -> typing.NoReturn:
+        self.transaction_registry = TransactionRegistry(self)
+        self.transaction_registry.create_file()
+
+    def open_transaction_registry(self) -> typing.NoReturn:
+        self.transaction_registry = TransactionRegistry(self)
+        self.transaction_registry.open_file()
 
     def create_block(self):
         self.file.seek(0, 2)
