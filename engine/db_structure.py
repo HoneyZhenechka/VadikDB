@@ -499,6 +499,9 @@ class Table:
                 self.__add_row_to_indexes(new_row)
                 self.__close_local_rollback_journal(rollback_obj)
                 new_row.transaction_end = get_current_timestamp()
+                self.max_transaction_id += 1
+                self.transaction_registry.insert_transaction_info(self.max_transaction_id, new_row.transaction_start,
+                                                                  new_row.transaction_end)
                 new_row.write_info()
 
     def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
