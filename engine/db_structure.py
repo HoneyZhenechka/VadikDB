@@ -253,8 +253,11 @@ class Table:
 
     def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
         self.transactions[transaction_id].commit(is_rollback)
-        self.transactions[transaction_id].transactions_end = get_current_timestamp()
-        self.___update_end_timestamp_in_rows(transaction_id, self.transactions[transaction_id].transactions_end)
+        self.transactions[transaction_id].transaction_end = get_current_timestamp()
+        self.transaction_registry.insert_transaction_info(transaction_id,
+                                                          self.transactions[transaction_id].transaction_start,
+                                                          self.transactions[transaction_id].transaction_end)
+        self.___update_end_timestamp_in_rows(transaction_id, self.transactions[transaction_id].transaction_end)
 
     def rollback_transaction(self, transaction_id: int) -> typing.NoReturn:
         self.transactions[transaction_id].rollback()
@@ -564,6 +567,10 @@ class Table:
         if transaction_id == 0:
             new_row.transaction_end = get_current_timestamp()
             new_row.write_info()
+            if not is_copy:
+                self.max_transaction_id += 1
+                self.transaction_registry.insert_transaction_info(self.max_transaction_id, new_row.transaction_start,
+                                                                  new_row.transaction_end)
             self.__close_local_rollback_journal(local_rollback_obj)
         return new_row
 
