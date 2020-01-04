@@ -745,8 +745,8 @@ class Row:
         self.previous_index = 0
         self.next_index = 0
         self.status = 0
-        self.transaction_start = 0
-        self.transaction_end = 0
+        self.transaction_start = -1
+        self.transaction_end = -1
         self.transaction_id = 0
         self.row_id = 0
         self.end_active = -1.0
@@ -756,8 +756,8 @@ class Row:
         self.table.file.write_integer(self.status, self.index_in_file, 1)
         self.table.file.write_integer(self.previous_index, row_size - 3, 3)
         self.table.file.write_integer(self.next_index, row_size - 6, 3)
-        self.table.file.write_integer(self.transaction_start, row_size - 14, 8)
-        self.table.file.write_integer(self.transaction_end, row_size - 22, 8)
+        self.table.file.write_long_long(self.transaction_start, row_size - 14)
+        self.table.file.write_long_long(self.transaction_end, row_size - 22)
         self.table.file.write_integer(self.transaction_id, row_size - 36, 14)
         self.table.file.write_integer(self.row_id, row_size - 40, 4)
         self.table.file.write_float(self.end_active, row_size - 48)
@@ -767,8 +767,8 @@ class Row:
         self.status = self.table.file.read_integer(self.index_in_file, 1)
         self.previous_index = self.table.file.read_integer(row_size - 3, 3)
         self.next_index = self.table.file.read_integer(row_size - 6, 3)
-        self.transaction_start = self.table.file.read_integer(row_size - 14, 8)
-        self.transaction_end = self.table.file.read_integer(row_size - 22, 8)
+        self.transaction_start = self.table.file.read_long_long(row_size - 14)
+        self.transaction_end = self.table.file.read_long_long(row_size - 22)
         self.transaction_id = self.table.file.read_integer(row_size - 36, 14)
         self.row_id = self.table.file.read_integer(row_size - 40, 4)
         self.end_active = self.table.file.read_float(row_size - 48)
