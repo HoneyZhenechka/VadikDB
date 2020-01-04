@@ -401,7 +401,6 @@ class Table:
             end_time = get_current_timestamp()
             self.transaction_registry.insert_transaction_info(self.max_transaction_id, start_time, end_time)
 
-
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         if not len(rows_indexes):
             for block in self.iter_blocks():
@@ -443,14 +442,10 @@ class Table:
                         selected_rows.append(row)
             return selected_rows
         if transaction_id > 0:
-            transaction_start_datetime = convert_timestamp_to_datetime(
-                self.transactions[transaction_id].transaction_start
-            )
             commited_rows = []
             for block in self.iter_blocks():
                 for row in block.rows:
-                    row_tr_end_datetime = convert_timestamp_to_datetime(row.transaction_end)
-                    if (row.status in [1, 3]) and (row_tr_end_datetime < transaction_start_datetime):
+                    if (row.status in [1, 3]) and (row.transaction_start < transaction_id):
                         row.select_row(fields)
                         commited_rows.append(row)
             selected_rows = self.__get_unique_rows(commited_rows)
