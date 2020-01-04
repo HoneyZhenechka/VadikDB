@@ -390,12 +390,17 @@ class Table:
     def __delete_row_and_add_block(self, row, transaction_id: int = 0) -> typing.NoReturn:
         if transaction_id > 0:
             self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(row))
-            self.__delete_row(row)
+            self.__delete_row(row, transaction_id)
         else:
+            start_time = get_current_timestamp()
             rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
             rollback_obj.add_block(self.get_block_index_for_row(row))
-            self.__delete_row(row)
+            self.max_transaction_id += 1
+            self.__delete_row(row, self.max_transaction_id)
             self.__close_local_rollback_journal(rollback_obj)
+            end_time = get_current_timestamp()
+            self.transaction_registry.insert_transaction_info(self.max_transaction_id, start_time, end_time)
+
 
     def delete(self, rows_indexes: typing.Tuple[int] = (), transaction_id: int = 0) -> typing.NoReturn:
         if not len(rows_indexes):
@@ -582,7 +587,7 @@ class Table:
                 index.data_dict[key_tuple].remove(row.index_in_file)
                 del index.data_dict[key_tuple]
 
-    def __delete_row(self, row) -> typing.NoReturn:
+    def __delete_row(self, row, transaction_id: int) -> typing.NoReturn:
         if row.index_in_file == self.first_row_index:
             self.first_row_index = row.next_index
         if row.index_in_file == self.last_row_index:
@@ -591,6 +596,7 @@ class Table:
         self.__delete_row_from_indexes(row)
         row.drop_row()
         row.end_active = get_current_timestamp()
+        row.transaction_end = transaction_id
         row.status = 2
         row.previous_index = 0
         row.next_index = 0
