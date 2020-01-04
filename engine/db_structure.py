@@ -244,20 +244,12 @@ class Table:
         self.transactions[transaction_obj.id].rollback_journal.create_file()
         return transaction_obj.id
 
-    def ___update_end_timestamp_in_rows(self, transaction_id: int, timestamp: int) -> typing.NoReturn:
-        for block in self.iter_blocks():
-            for row in block.rows:
-                if row.transaction_id == transaction_id:
-                    row.transaction_end = timestamp
-                    row.write_info()
-
     def end_transaction(self, transaction_id: int, is_rollback: bool = False) -> typing.NoReturn:
         self.transactions[transaction_id].commit(is_rollback)
         self.transactions[transaction_id].transaction_end = get_current_timestamp()
         self.transaction_registry.insert_transaction_info(transaction_id,
                                                           self.transactions[transaction_id].transaction_start,
                                                           self.transactions[transaction_id].transaction_end)
-        self.___update_end_timestamp_in_rows(transaction_id, self.transactions[transaction_id].transaction_end)
 
     def rollback_transaction(self, transaction_id: int) -> typing.NoReturn:
         self.transactions[transaction_id].rollback()
@@ -523,6 +515,7 @@ class Table:
     def __insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
                  transaction_id: int = 0, is_copy: bool = False):
         local_rollback_obj = None
+        start_time = get_current_timestamp()
         position = self.get_free_row()
         if not transaction_id:
             local_rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
@@ -552,9 +545,10 @@ class Table:
         if not is_copy:
             if transaction_id > 0:
                 new_row.transaction_id = self.transactions[transaction_id].id
-                new_row.transaction_start = self.transactions[transaction_id].transaction_start
+                new_row.transaction_start = transaction_id
             else:
-                new_row.transaction_start = get_current_timestamp()
+                self.max_transaction_id += 1
+                new_row.transaction_start = self.max_transaction_id
         new_row.status = 1
         new_row.next = saved_next_index
         new_row.previous_index = insert_index
@@ -567,13 +561,10 @@ class Table:
             self.write_meta_info()
         if not is_copy:
             self.row_count += 1
+        end_time = get_current_timestamp()
         if transaction_id == 0:
-            new_row.transaction_end = get_current_timestamp()
-            new_row.write_info()
             if not is_copy:
-                self.max_transaction_id += 1
-                self.transaction_registry.insert_transaction_info(self.max_transaction_id, new_row.transaction_start,
-                                                                  new_row.transaction_end)
+                self.transaction_registry.insert_transaction_info(self.max_transaction_id, start_time, end_time)
             self.__close_local_rollback_journal(local_rollback_obj)
         return new_row
 
