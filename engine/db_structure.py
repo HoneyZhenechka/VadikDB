@@ -455,9 +455,10 @@ class Table:
                 selected_rows.append(row)
         return selected_rows
 
-    def __copy_row(self, row_index: int):
+    def __copy_row(self, row_index: int, transaction_id: int):
         old_row = Row(self, row_index)
         old_row.read_row_from_file()
+        old_row.transaction_end = transaction_id
         old_row.end_active = get_current_timestamp()
         old_row.status = 3
         self.__delete_row_from_indexes(old_row)
@@ -477,23 +478,24 @@ class Table:
         for i in range(len(rows)):
             if transaction_id > 0:
                 self.transactions[transaction_id].rollback_journal.add_block(self.get_block_index_for_row(rows[i]))
-                new_row = self.__copy_row(rows[i].index_in_file)
+                new_row = self.__copy_row(rows[i].index_in_file, transaction_id)
                 new_row.transaction_id = self.transactions[transaction_id].id
-                new_row.transaction_start = self.transactions[transaction_id].transaction_start
+                new_row.transaction_start = transaction_id
                 new_row.update_row(fields, values[i])
                 self.__add_row_to_indexes(new_row)
             else:
+                start_time = get_current_timestamp()
                 rollback_obj = self.__create_local_rollback_journal(self.get_random_filename())
                 rollback_obj.add_block(self.get_block_index_for_row(rows[i]))
-                new_row = self.__copy_row(rows[i].index_in_file)
-                new_row.transaction_start = get_current_timestamp()
+                self.max_transaction_id += 1
+                new_row = self.__copy_row(rows[i].index_in_file, self.max_transaction_id)
+                new_row.transaction_start = self.max_transaction_id
                 new_row.update_row(fields, values[i])
                 self.__add_row_to_indexes(new_row)
                 self.__close_local_rollback_journal(rollback_obj)
-                new_row.transaction_end = get_current_timestamp()
+                end_time = get_current_timestamp()
                 self.max_transaction_id += 1
-                self.transaction_registry.insert_transaction_info(self.max_transaction_id, new_row.transaction_start,
-                                                                  new_row.transaction_end)
+                self.transaction_registry.insert_transaction_info(self.max_transaction_id, start_time, end_time)
                 new_row.write_info()
 
     def insert(self, fields: typing.Tuple = (), values: typing.Tuple = (), insert_index: int = -1,
