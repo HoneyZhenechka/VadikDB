@@ -25,5 +25,7 @@ def test_delete_get():
     time_list.append(datetime.now())
     time_list.append(datetime.now())
     empty_result = db.tables[0].select(db.tables[0].fields, [], start_time=time_list[2], end_time=time_list[3])
+    full_result = db.tables[0].select(db.tables[0].fields, [], start_time=time_list[1], end_time=time_list[2])
     assert len(empty_result) == 0
+    assert len(full_result) == 3
 

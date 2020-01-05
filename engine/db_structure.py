@@ -434,12 +434,18 @@ class Table:
                start_time: datetime = None, end_time: datetime = None) -> typing.List:
         selected_rows = []
         if self.is_versioning and (isinstance(start_time, datetime)) and (isinstance(end_time, datetime)):
-            for block in self.iter_blocks():
-                for row in block.rows:
-                    if ((convert_timestamp_to_datetime(row.transaction_start) < end_time) and
-                            (convert_timestamp_to_datetime(row.end_active) > start_time)):
-                        row.select_row(fields)
-                        selected_rows.append(row)
+            # Захардкодил джоин, т.к. он отсутвует в логике (уберу, когда появится)
+            for transaction_info in self.transaction_registry.iter_transactions():
+                tr_id = transaction_info["tr_id"]
+                tr_start_time = convert_timestamp_to_datetime(transaction_info["tr_start"])
+                tr_end_time = convert_timestamp_to_datetime(transaction_info["tr_end"])
+                for block in self.iter_blocks():
+                    for row in block.rows:
+                        if tr_id == row.transaction_start and tr_start_time < end_time:
+                            row.select_row(fields)
+                            selected_rows.append(row)
+                        if tr_id == row.transaction_end and tr_end_time <= start_time:
+                            selected_rows.remove(row)
             return selected_rows
         if transaction_id > 0:
             commited_rows = []
@@ -973,7 +979,7 @@ class TransactionRegistry:
                             "tr_end": self.registry_file.read_float(position + 12)}
         return transaction_dict
 
-    def iter_rows(self) -> typing.Iterable:
+    def iter_transactions(self) -> typing.Iterable:
         counter = 0
         while counter < self.rows_count:
             result_transaction_info = self.get_transaction_info(counter)
