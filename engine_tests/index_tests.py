@@ -13,24 +13,24 @@ def test_create_index():
     db.tables[0].insert(["zhenya1", "zhenya2"], [5000, "b"])
     db.tables[0].insert(["zhenya1", "zhenya2"], [929, "a"])
     db.tables[0].create_index(["zhenya1"])
-    ideal_dict = SortedDict({(929,): [735], (5000,): [422]})
+    ideal_dict = SortedDict({(929,): [727], (5000,): [422]})
     assert ideal_dict == db.tables[0].indexes[0].data_dict
 
 
 def test_update_index():
     db.tables[0].update(["zhenya1"], [[6000]], [db.tables[0].get_row_by_id(1)])
-    ideal_dict = SortedDict({(5000,): [422], (6000,): [1048]})
+    ideal_dict = SortedDict({(5000,): [422], (6000,): [1032]})
     assert ideal_dict == db.tables[0].indexes[0].data_dict
 
 
 def test_delete_index():
     db.tables[0].insert(["zhenya1", "zhenya2"], [1, "le"])
     db.tables[0].delete([db.tables[0].get_row_by_id(1).index_in_file])
-    ideal_dict = SortedDict({(1,): [1361], (5000,): [422]})
+    ideal_dict = SortedDict({(1,): [1337], (5000,): [422]})
     assert ideal_dict == db.tables[0].indexes[0].data_dict
 
 
 def test_composite_index():
     db.tables[0].create_index(["zhenya1", "zhenya2"])
-    ideal_dict = SortedDict({(1, 'le'): [1361], (5000, 'b'): [422]})
+    ideal_dict = SortedDict({(1, 'le'): [1337], (5000, 'b'): [422]})
     assert ideal_dict == db.tables[0].indexes[1].data_dict
