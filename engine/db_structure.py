@@ -441,11 +441,16 @@ class Table:
                 tr_end_time = convert_timestamp_to_datetime(transaction_info["tr_end"])
                 for block in self.iter_blocks():
                     for row in block.rows:
-                        if tr_id == row.transaction_start and tr_start_time < end_time:
-                            row.select_row(fields)
-                            selected_rows.append(row)
-                        if tr_id == row.transaction_end and tr_end_time <= start_time:
-                            selected_rows.remove(row)
+                        if tr_id == row.transaction_start:
+                            joined_pair = [(tr_id, tr_start_time, tr_end_time), row]
+                            if joined_pair[0][1] < end_time:
+                                joined_pair[1].select_row(fields)
+                                selected_rows.append(joined_pair[1])
+                        if tr_id == row.transaction_end:
+                            joined_pair = [(tr_id, tr_start_time, tr_end_time), row]
+                            if joined_pair[0][2] <= start_time:
+                                row.select_row(fields)
+                                selected_rows.remove(row)
             return selected_rows
         if transaction_id > 0:
             commited_rows = []
