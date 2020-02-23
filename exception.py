@@ -79,3 +79,9 @@ class TypeNotExists(DBException):
     def __init__(self, type_name):
         self.error_code = "12"
         print("Error code: " + self.error_code + " -- Type not exists: " + str(type_name))
+
+
+class DifferentNumberOfColumns(DBException):
+    def __init__(self):
+        self.error_code = "13"
+        print("Error code: " + self.error_code + " -- The used SELECT statements have a different number of columns")

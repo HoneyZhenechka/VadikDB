@@ -3,54 +3,97 @@ import exception
 import ply.yacc as yacc
 from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
+import Result
+import exception_for_client
 
 
-def build_tree_condition(list):
-    if len(list) == 1:
-        return list[0]
+class Struct:
+
+    def __getitem__(self, name):
+        return self.__dict__[name]
+
+    def __setitem__(self, name, value):
+        self.__dict__[name] = value
+
+    def __iter__(self):
+        for i in self.__dict__.keys():
+            yield i
+
+
+def build_tree_selects(elements):
+    stack = Stack()
     tree = BinaryTree('')
-    for i in range(len(list)):
-        if type(list[i]) is BinaryTree:
-            if tree.getRootVal() == '':
-                tree.insertLeft(list[i])
-            else:
-                tree.insertRight(list[i])
-        elif tree.getRootVal() in ['AND', 'OR', 'or', 'and']:
-            new_tree = BinaryTree('')
-            new_tree.setRootVal(list[i])
-            new_tree.insertLeft(tree)
-            tree = new_tree
+    if len(elements) == 1:
+        tree.setRootVal(elements[0])
+        return tree
+    for i in range(len(elements)):
+        if i == 0:
+            stack.push(tree)
+            tree.insertLeft('')
+            tree = tree.getLeftChild()
+        if type(elements[i]) is PSelect:
+            tree.setRootVal(elements[i])
+            tree = stack.pop()
         else:
-            tree.setRootVal(list[i])
+            if tree.getRootVal() != "":
+                stack.push(tree)
+                tree = tree.getRightChild()
+                tree.insertLeft(tree.getRootVal())
+            tree.setRootVal(elements[i])
+            tree.insertRight('')
+            stack.push(tree)
+            tree = tree.getRightChild()
+    for i in range(stack.size()):
+        tree = stack.pop()
     return tree
 
 
-def build_tree_expression(list):
+def build_tree_condition(elements):
+    if len(elements) == 1:
+        return elements[0]
+    tree = BinaryTree('')
+    for i in range(len(elements)):
+        if type(elements[i]) is BinaryTree:
+            if tree.getRootVal() == '':
+                tree.insertLeft(elements[i])
+            else:
+                tree.insertRight(elements[i])
+        elif tree.getRootVal() in ['AND', 'OR', 'or', 'and']:
+            new_tree = BinaryTree('')
+            new_tree.setRootVal(elements[i])
+            new_tree.insertLeft(tree)
+            tree = new_tree
+        else:
+            tree.setRootVal(elements[i])
+    return tree
+
+
+def build_tree_expression(elements):
     stack = Stack()
     tree = BinaryTree('')
-    if len(list) == 1:
-        tree.setRootVal(list[0])
+    if len(elements) == 1:
+        tree.setRootVal(elements[0])
         return tree
     stack.push(tree)
-    for i in range(len(list)):
-        if (list[i] == '(') or (i == 0):
+    for i in range(len(elements)):
+        if (elements[i] == '(') or (i == 0):
             tree.insertLeft('')
-            if list[i] == '(':
+            if elements[i] == '(':
                 stack.push("(")
             stack.push(tree)
             tree = tree.getLeftChild()
-            if list[i] != '(':
-                tree.setRootVal(list[i])
+            if elements[i] != '(':
+                tree.setRootVal(elements[i])
                 parent = stack.pop()
                 tree = parent
-        elif list[i] not in ['+', '-', '*', '/', ')']:
-            tree.setRootVal(list[i])
+        elif elements[i] not in ['+', '-', '*', '/', ')']:
+            tree.setRootVal(elements[i])
             parent = stack.pop()
             tree = parent
-        elif list[i] in ['+', '-', '*', '/']:
-            sign = list[i]
+        elif elements[i] in ['+', '-', '*', '/']:
+            sign = elements[i]
             if tree.getRootVal() in ['+', '-', '*', '/']:
-                if sign in ['+', '-'] or list[i - 1] == ')':
+                if sign in ['+', '-'] or elements[i - 1] == ')':
                     temp = BinaryTree('')
                     parent = stack.pop()
                     if stack.size() == 0:
@@ -74,38 +117,22 @@ def build_tree_expression(list):
                     rChild = tree.getRightChild()
                     rChild.insertLeft(rChild.getRootVal())
                     tree = rChild
-            tree.setRootVal(list[i])
+            tree.setRootVal(elements[i])
             tree.insertRight('')
             stack.push(tree)
             tree = tree.getRightChild()
-        elif list[i] == ')':
+        elif elements[i] == ')':
             parent = ""
             while parent != "(":
                 parent = stack.pop()
                 if parent == "(":
                     tree = stack.pop()
             stack.push(tree)
-        if i + 1 == len(list):
+        if i + 1 == len(elements):
             for j in range(stack.size()):
                 parent = stack.pop()
                 tree = parent
     return tree
-
-
-class Struct:
-
-    def __init__(self, **dictionary):
-        self.__dict__.update(dictionary)
-
-    def __getitem__(self, name):
-        return self.__dict__[name]
-
-    def __setitem__(self, name, value):
-        self.__dict__[name] = value
-
-    def __iter__(self):
-        for i in self.__dict__.keys():
-            yield i
 
 
 class PCreate(Struct):
@@ -121,6 +148,13 @@ class PShow(Struct):
     def __init__(self, name=""):
         self.name = name
         self.type = "show"
+
+
+class PTreeSelects(Struct):
+
+    def __init__(self, tree):
+        self.type = "tree selects"
+        self.tree = tree
 
 
 class PDrop(Struct):
@@ -179,21 +213,72 @@ class PDelete(Struct):
         self.condition = condition
 
 
+class PJoin(Struct):
+
+    def __init__(self, form=""):
+        self.form = form
+        self.type = "join"
+
+
+class POn(Struct):
+
+    def __init__(self, name, condition):
+        self.type = "on"
+        self.name = name
+        self.condition = condition
+
+
+class PUsing(Struct):
+
+    def __init__(self, name, field):
+        self.type = "using"
+        self.name = name
+        self.field = field
+
+
+class PUnion(Struct):
+
+    def __init__(self, is_all=False):
+        self.type = "union"
+        self.is_all = is_all
+
+
+class PIntersect(Struct):
+
+    def __init__(self):
+        self.type = "intersect"
+
+
+class PField(Struct):
+
+    def __init__(self, name):
+        self.type = "field"
+        self.name = name
+
+
+class PFieldOfTable(Struct):
+
+    def __init__(self, name_table, name):
+        self.type = "field of table"
+        self.name_table = name_table
+        self.name = name
+
+
 def p_start(p):
-    '''start : create
-             | show
-             | drop
-             | select
-             | insert
-             | update
-             | delete'''
+    '''start : create ENDREQUEST
+             | show ENDREQUEST
+             | drop ENDREQUEST
+             | tree_selects ENDREQUEST
+             | insert ENDREQUEST
+             | update ENDREQUEST
+             | delete ENDREQUEST'''
 
 
     p[0] = p[1]
 
 
 def p_create(p):
-    '''create : CREATE create_body ENDREQUEST'''
+    '''create : CREATE create_body'''
 
     p[0] = p[2]
 
@@ -217,21 +302,79 @@ def p_values(p):
 
 
 def p_show(p):
-    '''show : SHOW CREATE TABLE NAME ENDREQUEST'''
+    '''show : SHOW CREATE TABLE NAME'''
 
     p[0] = PShow(p[4])
 
 
 def p_drop(p):
-    '''drop : DROP TABLE NAME ENDREQUEST'''
+    '''drop : DROP TABLE NAME'''
 
     p[0] = PDrop(p[3])
 
 
+def p_tree_selects(p):
+    '''tree_selects : nested_selects'''
+
+    p[0] = PTreeSelects(build_tree_selects(p[1]))
+
+
+def p_nested_selects(p):
+    '''nested_selects : select join join_right_table
+                    | nested_selects union nested_selects
+                    | nested_selects intersect nested_selects
+                    | select'''
+
+    p[0] = []
+    for i in range(len(p) - 1):
+        if type(p[i + 1]) is list:
+            for el in p[i + 1]:
+                p[0].append(el)
+        else:
+            p[0].append(p[i + 1])
+
+
+def p_join(p):
+    '''join : JOIN
+            | LEFT OUTER JOIN
+            | RIGHT OUTER JOIN'''
+
+    if len(p) == 2:
+        p[0] = PJoin()
+    else:
+        p[0] = PJoin(p[1] + p[2])
+
+
+def p_join_right_table(p):
+    '''join_right_table : NAME ON tree_condition
+            | NAME USING LBRACKET field RBRACKET'''
+    if p[2] == "ON":
+        p[0] = POn(p[1], p[3])
+    elif p[2] == "USING":
+        p[0] = PUsing(p[1], p[4])
+
+
+def p_union(p):
+    '''union : UNION
+            | UNION ALL'''
+
+    if len(p) == 2:
+        p[0] = PUnion()
+    else:
+        p[0] = PUnion(True)
+
+
+def p_intersect(p):
+    '''intersect : INTERSECT'''
+
+    p[0] = PIntersect()
+
+
 def p_select(p):
-    '''select : SELECT select_body ENDREQUEST
-              | SELECT select_body condition ENDREQUEST'''
-    if (len(p) == 4):
+    '''select : SELECT select_body
+              | SELECT select_body condition'''
+
+    if len(p) == 3:
         p[0] = PSelect(p[2])
     else:
         p[0] = PSelect(p[2], p[3])
@@ -246,12 +389,12 @@ def p_select_body(p):
         p[0] = PSelectBody(p[3], p[1])
     elif (len(p) == 4) and (p[1] == '*'):
         p[0] = PSelectBody(p[3], [], True)
-    elif (len(p) == 6):
+    elif len(p) == 6:
         p[0] = PSelectBody(p[5], p[3], True)
 
 
 def p_insert(p):
-    '''insert : INSERT insert_body ENDREQUEST'''
+    '''insert : INSERT insert_body'''
 
     p[0] = PInsert(p[2])
 
@@ -267,7 +410,7 @@ def p_insert_body(p):
 
 
 def p_update(p):
-    '''update : UPDATE update_body ENDREQUEST'''
+    '''update : UPDATE update_body'''
 
     p[0] = p[2]
 
@@ -287,7 +430,7 @@ def p_expression(p):
                   | expression COMMA field EQUAL tree_expression'''
 
     if len(p) == 4:
-        p[0] = [[],[]]
+        p[0] = [[], []]
         p[0][0].append(p[1])
         p[0][1].append(build_tree_expression(p[3]))
     else:
@@ -297,17 +440,17 @@ def p_expression(p):
 
 
 def p_delete(p):
-    '''delete : DELETE FROM NAME ENDREQUEST
-              | DELETE FROM NAME condition ENDREQUEST'''
-    if len(p) == 5:
+    '''delete : DELETE FROM NAME
+              | DELETE FROM NAME condition'''
+    if len(p) == 4:
         p[0] = PDelete(p[3])
     else:
         p[0] = PDelete(p[3], p[4])
 
 
 def p_fields(p):
-    '''fields : NAME
-              | fields COMMA NAME'''
+    '''fields : field
+              | fields COMMA field'''
 
     if len(p) == 2:
         p[0] = []
@@ -318,9 +461,13 @@ def p_fields(p):
 
 
 def p_field(p):
-    '''field : NAME'''
+    '''field : NAME
+            | NAME DOT NAME'''
 
-    p[0] = p[1]
+    if len(p) == 2:
+        p[0] = PField(p[1])
+    elif len(p) == 4:
+        p[0] = PFieldOfTable(p[1], p[3])
 
 
 def p_condition(p):
@@ -331,12 +478,13 @@ def p_condition(p):
 
 def p_tree_condition(p):
     '''tree_condition : tree_comparison operator_condition tree_condition
-                        | tree_comparison
-                        | tree_comparison operator_condition tree_comparison'''
+                        | tree_comparison'''
     p[0] = []
     for i in range(len(p) - 1):
         try:
             if type(p[i + 1]) is str:
+                p[0].append(p[i + 1])
+            elif type(p[i + 1]) in [PField, PFieldOfTable]:
                 p[0].append(p[i + 1])
             else:
                 for el in p[i + 1]:
@@ -353,6 +501,7 @@ def p_tree_comparison(p):
     p[0].setRootVal(p[2])
     p[0].insertRight(build_tree_expression(p[3]))
 
+
 def p_tree_expression(p):
     '''tree_expression : field
             | field operator_expression tree_expression
@@ -363,6 +512,8 @@ def p_tree_expression(p):
     p[0] = []
     for i in range(len(p) - 1):
         if type(p[i+1]) is str:
+            p[0].append(p[i+1])
+        elif type(p[i+1]) in [PField, PFieldOfTable]:
             p[0].append(p[i+1])
         else:
             for el in p[i+1]:
@@ -407,17 +558,24 @@ def p_type(p):
 
 
 def p_error(p):
-    try:
-        raise exception.IncorrectSyntax(p.lexpos, p.value)
-    except Exception as ex:
-        print(ex)
+    if p == None:
+        pos = "Last symbol"
+        val = ""
+    else:
+        pos = p.lexpos
+        val = p.value
+    global result
+    result = Result.Result(True, exception_for_client.DBExceptionForClient().IncorrectSyntax(pos, val))
 
-
+result = None
 parser = yacc.yacc()
 
 
 def build_tree(code):
 
-    result = parser.parse(code)
-
-    return result
+    tree = parser.parse(code)
+    global result
+    if type(result) is Result.Result:
+        return result
+    else:
+        return tree

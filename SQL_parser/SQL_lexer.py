@@ -9,11 +9,13 @@ tokens = (
     'NAME', 'VALUES',
     'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
+    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
     'STAR', 'NOT_EQUAL', 'GREATER_THAN',
     'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
     'LESS_THAN_OR_EQUAL', 'OR',
-    'NOT', 'AND'
+    'NOT', 'AND',
+    'JOIN', 'LEFT', 'RIGHT', 'ON',
+    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -25,6 +27,16 @@ t_SELECT = r'SELECT'
 t_INSERT = r'INSERT'
 t_UPDATE = r'UPDATE'
 t_DELETE = r'DELETE'
+t_JOIN = r'JOIN'
+t_LEFT = r'LEFT'
+t_RIGHT = r'RIGHT'
+t_ON = r'ON'
+t_USING = r'USING'
+t_UNION = r'UNION'
+t_ALL = r'ALL'
+t_INTERSECT = r'INTERSECT'
+t_OUTER = r'OUTER'
+
 
 t_TABLE = r'TABLE'
 t_FROM = r'FROM'
@@ -37,6 +49,7 @@ t_VALUES = r'VALUES'
 t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
 t_COMMA = r','
+t_DOT = r'.'
 t_ENDREQUEST = r'\;'
 t_PLUS = r'\+'
 t_MINUS = r'\-'
@@ -56,91 +69,124 @@ t_AND = r'AND'
 
 @TOKEN(ident)
 def t_NAME(t):
-    if (t.value.upper() == 'CREATE'):
+    if t.value.upper() == 'CREATE':
         t.type = 'CREATE'
 
-    elif (t.value.upper() == 'SHOW'):
+    elif t.value.upper() == 'SHOW':
         t.type = 'SHOW'
 
-    elif (t.value.upper() == 'DROP'):
+    elif t.value.upper() == 'DROP':
         t.type = 'DROP'
 
-    elif (t.value.upper() == 'SELECT'):
+    elif t.value.upper() == 'SELECT':
         t.type = 'SELECT'
 
-    elif (t.value.upper() == 'INSERT'):
+    elif t.value.upper() == 'INSERT':
         t.type = 'INSERT'
 
-    elif (t.value.upper() == 'UPDATE'):
+    elif t.value.upper() == 'UPDATE':
         t.type = 'UPDATE'
 
-    elif (t.value.upper() == 'DELETE'):
+    elif t.value.upper() == 'DELETE':
         t.type = 'DELETE'
 
-    elif (t.value.upper() == 'TABLE'):
+    elif t.value == ',':
+        t.type = 'COMMA'
+
+    elif t.value == '.':
+        t.type = 'DOT'
+
+    elif t.value.upper() == 'JOIN':
+        t.type = 'JOIN'
+
+    elif t.value.upper() == 'LEFT':
+        t.type = 'LEFT'
+
+    elif t.value.upper() == 'RIGHT':
+        t.type = 'RIGHT'
+
+    elif t.value.upper() == 'ON':
+        t.type = 'ON'
+
+    elif t.value.upper() == 'USING':
+        t.type = 'USING'
+
+    elif t.value.upper() == 'UNION':
+        t.type = 'UNION'
+
+    elif t.value.upper() == 'ALL':
+        t.type = 'ALL'
+
+    elif t.value.upper() == 'INTERSECT':
+        t.type = 'INTERSECT'
+
+    elif t.value.upper() == 'OUTER':
+        t.type = 'OUTER'
+
+    elif t.value.upper() == 'TABLE':
         t.type = 'TABLE'
 
-    elif (t.value.upper() == 'FROM'):
+    elif t.value.upper() == 'FROM':
         t.type = 'FROM'
 
-    elif (t.value.upper() == 'INTO'):
+    elif t.value.upper() == 'INTO':
         t.type = 'INTO'
 
-    elif (t.value.upper() == 'WHERE'):
+    elif t.value.upper() == 'WHERE':
         t.type = 'WHERE'
 
-    elif (t.value.upper() == 'SET'):
+    elif t.value.upper() == 'SET':
         t.type = 'SET'
 
-    elif (t.value.upper() == 'VALUES'):
+    elif t.value.upper() == 'VALUES':
         t.type = 'VALUES'
 
-    elif (t.value == '+'):
+    elif t.value == '+':
         t.type = 'PLUS'
 
-    elif (t.value == '-'):
+    elif t.value == '-':
         t.type = 'MINUS'
 
-    elif (t.value == '*'):
+    elif t.value == '*':
         t.type = 'STAR'
 
-    elif (t.value == '/'):
+    elif t.value == '/':
         t.type = 'DIVISION'
 
-    elif (t.value.upper() == '='):
+    elif t.value.upper() == '=':
         t.type = 'EQUAL'
 
-    elif (t.value.upper() == '!='):
+    elif t.value.upper() == '!=':
         t.type = 'NOT_EQUAL'
 
-    elif (t.value.upper() == '>'):
+    elif t.value.upper() == '>':
         t.type = 'GREATER_THAN'
 
-    elif (t.value.upper() == '<'):
+    elif t.value.upper() == '<':
         t.type = 'LESS_THAN'
 
-    elif (t.value.upper() == '>='):
+    elif t.value.upper() == '>=':
         t.type = 'GREATER_THAN_OR_EQUAL'
 
-    elif (t.value.upper() == '<='):
+    elif t.value.upper() == '<=':
         t.type = 'LESS_THAN_OR_EQUAL'
 
-    elif (t.value.upper() == 'OR'):
+    elif t.value.upper() == 'OR':
         t.type = 'OR'
 
-    elif (t.value.upper() == 'NOT'):
+    elif t.value.upper() == 'NOT':
         t.type = 'NOT'
 
-    elif (t.value.upper() == 'AND'):
+    elif t.value.upper() == 'AND':
         t.type = 'AND'
 
-    elif (t.value == '('):
+    elif t.value == '(':
         t.type = 'LBRACKET'
 
-    elif (t.value == ')'):
+    elif t.value == ')':
         t.type = 'RBRACKET'
 
-    elif (t.value == ';'):
+    elif t.value == ';':
         t.type = 'ENDREQUEST'
 
     elif (
