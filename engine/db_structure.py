@@ -1,7 +1,6 @@
 import engine.bin_file as bin_py
 from datetime import datetime
 from sortedcontainers import SortedDict
-import cacheout
 import typing
 import random
 import string
@@ -23,7 +22,6 @@ class Database:
             self.file.open("w+")
             self.write_file()
             self.write_table_count(self.tables_count)
-            self.file.close()
         elif db_filename != "":
             self.meta_db_filename = db_filename
             if os.path.isfile(self.meta_db_filename):
@@ -33,7 +31,6 @@ class Database:
                 self.file.open("w+")
                 self.write_file()
                 self.write_table_count(self.tables_count)
-                self.file.close()
 
     def __get_files_by_mask(self, mask: str) -> typing.List[str]:
         filename_list = []
@@ -156,7 +153,6 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
         return datetime.fromtimestamp(timestamp)
 
 
-cache = cacheout.lfu.LFUCache(maxsize=16)
 
 
 class Table:
@@ -200,22 +196,12 @@ class Table:
     def __hash__(self):
         return hash(self.name) ^ hash(self.size) ^ hash(self.fields_count) ^ hash(self.row_length)
 
-    def get_block_by_index(self, index: int):
-        current_block = Block(index, self)
-        row_count_dict = current_block.count_rows()
-        cache_key = (index, row_count_dict["available"], row_count_dict["removed"], row_count_dict["updated"])
-        if cache.get(cache_key) is None:
-            current_block.read_file()
-            current_block.get_rows()
-            cache.set(cache_key, current_block)
-        else:
-            current_block = cache.get(cache_key)
-        return current_block
-
     def iter_blocks(self) -> typing.Iterable:
         current_index = self.first_block_index
         while current_index != 0:
-            current_block = self.get_block_by_index(current_index)
+            current_block = Block(current_index, self)
+            current_block.read_file()
+            current_block.get_rows()
             current_index = current_block.next_block
             yield current_block
 
@@ -235,7 +221,7 @@ class Table:
         return result
 
     def __create_local_rollback_journal(self, name: str):
-        rollback_obj = RollbackLog(self.file, self.row_length, name)
+        rollback_obj = RollbackLog(self.storage_file, self.row_length, name)
         rollback_obj.create_file()
         return rollback_obj
 
@@ -850,7 +836,7 @@ class Transaction:
         self.table = table
         self.transaction_start = 0
         self.transaction_end = 0
-        self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
+        self.rollback_journal = RollbackLog(self.table.storage_file, self.table.row_length, self.filename)
 
     def commit(self, is_rollback: bool) -> typing.NoReturn:
         self.rollback_journal.file.close()
@@ -861,8 +847,8 @@ class Transaction:
     def rollback(self) -> typing.NoReturn:
         self.rollback_journal.open_file()
         journal_file_size = self.rollback_journal.file.read_integer(0, 16)
-        if journal_file_size < os.stat(self.table.file.filename).st_size:
-            os.truncate(self.table.file.filename, journal_file_size)
+        if journal_file_size < os.stat(self.table.storage_file.filename).st_size:
+            os.truncate(self.table.storage_file.filename, journal_file_size)
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
         self.table.last_block_index = self.table.get_blocks_indexes()[-1]
