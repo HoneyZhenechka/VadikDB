@@ -25,7 +25,8 @@ def test_union_not_error():
     result = log.query("SELECT * FROM FIRST UNION SELECT * FROM SECOND;")
     assert excepted_result == result.str_for_print
 
-def test_join_ON_not_error():
+
+def test_join_on_not_error():
     excepted_result = ""
     result = log.query("SELECT * FROM FIRST JOIN SECOND ON FIRST.id = SECOND.id;")
     assert excepted_result == result.str_for_print

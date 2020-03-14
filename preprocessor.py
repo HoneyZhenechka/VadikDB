@@ -5,9 +5,17 @@ import Result
 import exception_for_client
 
 
+class Row:
+
+    def __init__(self, fields, values):
+        pass
+
+
 class Preprocessor:
 
     def __init__(self, db_filename: str):
+        self.first_table_name = ""
+        self.second_table_name = ""
         self.table_count = 0
         if db_filename == "":
             self.db = eng.Database()
@@ -143,15 +151,6 @@ class Preprocessor:
                     rows[1].append(first_row)
         return rows
 
-    def join(self, first_table, second_table):
-        pass
-
-    def left_outer_join(self, first_table, second_table):
-        pass
-
-    def right_outer_join(self, first_table, second_table):
-        pass
-
     def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list:
         types = self.get_types(name, values, fields)
         if len(types) == 0:
@@ -244,18 +243,8 @@ class Preprocessor:
         elif el.type == "intersect":
             return self.intersect(self.solve_tree_selects(root.getLeftChild()),
                                   self.solve_tree_selects(root.getRightChild()))
-        elif el.type == "join":
-            if el.form == "":
-                return self.join(self.solve_tree_selects(root.getLeftChild()),
-                                 self.solve_tree_selects(root.getRightChild()))
-            elif el.form.upper() == "LEFT OUTER":
-                return self.left_outer_join(self.solve_tree_selects(root.getLeftChild()),
-                                            self.solve_tree_selects(root.getRightChild()))
-            elif el.form.upper() == "RIGHT OUTER":
-                return self.right_outer_join(self.solve_tree_selects(root.getLeftChild()),
-                                             self.solve_tree_selects(root.getRightChild()))
         elif el.type == "select":
-            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
+            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition, el.join, el.right_table)
 
     def tree_selects(self, tree):
         fields_and_rows = self.solve_tree_selects(tree)
@@ -272,22 +261,37 @@ class Preprocessor:
             result += "\n"
         return Result.Result(False, result)
 
-    def select(self, name: str, fields: list, is_star: bool, condition):
+    def select(self, name: str, fields: list, is_star: bool, condition, join, second_table):
         if not self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
+        if join != False:
+            if not self.is_table_exists(second_table.name):
+                return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         elif type(self.is_fields_exist(name, fields)) is str:
             return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
-            table_index = self.get_table_index(name)
-            rows = []
-            for block in self.db.tables[table_index].iter_blocks():
-                for row in block.iter_rows():
-                    if row.status == 1:
-                        if self.solve_condition(condition, row):
-                            rows.append(row)
-            fields = self.build_fields(fields, is_star, table_index)
-            rows = self.db.tables[table_index].select(fields, rows)
-            return fields, rows
+            if join == False:
+                table_index = self.get_table_index(name)
+                rows = []
+                for block in self.db.tables[table_index].iter_blocks():
+                    for row in block.iter_rows():
+                        if row.status == 1:
+                            if self.solve_condition(condition, row):
+                                rows.append(row)
+                fields = self.build_fields(fields, is_star, table_index)
+                rows = self.db.tables[table_index].select(fields, rows)
+                return fields, rows
+            else:
+                first_table_index = self.get_table_index(name)
+                second_table_index = self.get_table_index(second_table.name)
+                rows = []
+                for first_block in self.db.tables[first_table_index].iter_blocks():
+                    for second_block in self.db.tables[second_table_index].iter_blocks():
+                        for first_row in first_block.iter_rows():
+                            for second_row in second_block.iter_rows():
+                                if join == "":
+                                        rows.append()
+                return rows
 
     def insert(self, name: str, fields: list, values: list):
         if not self.is_table_exists(name):

@@ -166,10 +166,12 @@ class PDrop(Struct):
 
 class PSelect(Struct):
 
-    def __init__(self, select_body, condition=True):
+    def __init__(self, select_body, condition=True, join=False, right_table=None):
         self.type = "select"
         self.select = select_body
         self.condition = condition
+        self.join = join
+        self.right_table = right_table
 
 
 class PSelectBody(Struct):
@@ -197,11 +199,11 @@ class PInsertBody(Struct):
 
 class PUpdate(Struct):
 
-    def __init__(self, name="", set=((),()), condition=True):
+    def __init__(self, name="", fields_values=((), ()), condition=True):
         self.name = name
         self.type = "update"
-        self.fields = set[0]
-        self.values = set[1]
+        self.fields = fields_values[0]
+        self.values = fields_values[1]
         self.condition = condition
 
 
@@ -222,10 +224,10 @@ class PJoin(Struct):
 
 class POn(Struct):
 
-    def __init__(self, name, condition):
+    def __init__(self, name, first_field, second_field):
         self.type = "on"
         self.name = name
-        self.condition = condition
+        self.first_field = second_field
 
 
 class PUsing(Struct):
@@ -273,7 +275,6 @@ def p_start(p):
              | update ENDREQUEST
              | delete ENDREQUEST'''
 
-
     p[0] = p[1]
 
 
@@ -313,27 +314,6 @@ def p_drop(p):
     p[0] = PDrop(p[3])
 
 
-def p_tree_selects(p):
-    '''tree_selects : nested_selects'''
-
-    p[0] = PTreeSelects(build_tree_selects(p[1]))
-
-
-def p_nested_selects(p):
-    '''nested_selects : select join join_right_table
-                    | nested_selects union nested_selects
-                    | nested_selects intersect nested_selects
-                    | select'''
-
-    p[0] = []
-    for i in range(len(p) - 1):
-        if type(p[i + 1]) is list:
-            for el in p[i + 1]:
-                p[0].append(el)
-        else:
-            p[0].append(p[i + 1])
-
-
 def p_join(p):
     '''join : JOIN
             | LEFT OUTER JOIN
@@ -346,10 +326,10 @@ def p_join(p):
 
 
 def p_join_right_table(p):
-    '''join_right_table : NAME ON tree_condition
+    '''join_right_table : NAME ON field EQUAL field
             | NAME USING LBRACKET field RBRACKET'''
     if p[2] == "ON":
-        p[0] = POn(p[1], p[3])
+        p[0] = POn(p[1], p[3], p[5])
     elif p[2] == "USING":
         p[0] = PUsing(p[1], p[4])
 
@@ -370,14 +350,40 @@ def p_intersect(p):
     p[0] = PIntersect()
 
 
+def p_tree_selects(p):
+    '''tree_selects : nested_selects'''
+
+    p[0] = PTreeSelects(build_tree_selects(p[1]))
+
+
+def p_nested_selects(p):
+    '''nested_selects : select
+                    | select union nested_selects
+                    | select intersect nested_selects'''
+
+    p[0] = []
+    for i in range(len(p) - 1):
+        if type(p[i + 1]) is list:
+            for el in p[i + 1]:
+                p[0].append(el)
+        else:
+            p[0].append(p[i + 1])
+
+
 def p_select(p):
-    '''select : SELECT select_body
+    '''select : SELECT select_body join join_right_table
+              | SELECT select_body join join_right_table condition
+              | SELECT select_body
               | SELECT select_body condition'''
 
     if len(p) == 3:
         p[0] = PSelect(p[2])
-    else:
+    elif len(p) == 4:
         p[0] = PSelect(p[2], p[3])
+    elif len(p) == 5:
+        p[0] = PSelect(p[2], True, p[3], p[4])
+    elif len(p) == 6:
+        p[0] = PSelect(p[2], p[5], p[3], p[4])
 
 
 def p_select_body(p):
