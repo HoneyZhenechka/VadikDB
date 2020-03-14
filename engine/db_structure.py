@@ -15,21 +15,21 @@ class Database:
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
-        self.filename = ""
+        self.meta_db_filename = ""
         self.file = None
         if create_default_file:
-            self.filename = "zhavoronkov.vdb"
-            self.file = bin_py.BinFile(self.filename)
+            self.meta_db_filename = "zhavoronkov.vdb"
+            self.file = bin_py.BinFile(self.meta_db_filename)
             self.file.open("w+")
             self.write_file()
             self.write_table_count(self.tables_count)
             self.file.close()
         elif db_filename != "":
-            self.filename = db_filename
-            if os.path.isfile(self.filename):
-                self.connect_to_db(self.filename)
+            self.meta_db_filename = db_filename
+            if os.path.isfile(self.meta_db_filename):
+                self.connect_to_db(self.meta_db_filename)
             else:
-                self.file = bin_py.BinFile(self.filename)
+                self.file = bin_py.BinFile(self.meta_db_filename)
                 self.file.open("w+")
                 self.write_file()
                 self.write_table_count(self.tables_count)
@@ -65,8 +65,8 @@ class Database:
             rollback_obj = RollbackLog(self.file, 0, filename)
             rollback_obj.open_file()
             journal_file_size = rollback_obj.file.read_integer(0, 16)
-            if journal_file_size < os.stat(self.filename).st_size:
-                os.truncate(self.filename, journal_file_size)
+            if journal_file_size < os.stat(self.meta_db_filename).st_size:
+                os.truncate(self.meta_db_filename, journal_file_size)
             rollback_obj.restore_blocks()
             rollback_obj.close_file()
             os.remove(filename)
@@ -91,7 +91,7 @@ class Database:
             raise exception.WrongFileFormat()
         self.tables_count = self.file.read_integer(14, 2)
         for i in range(self.tables_count):
-            table_obj = Table(self.file)
+            table_obj = Table()
             table_obj.index_in_file = 16 + i * table_obj.size
             table_obj.read_file()
             table_obj.open_transaction_registry()
@@ -112,16 +112,15 @@ class Database:
             self.wide_rollback()
 
     def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
-        self.file.open("r+")
-        self.file.seek(0, 2)
-        new_table = Table(self.file)
+        new_table = Table()
         new_table.name = table_name
         new_table.metafile_name = table_name + ".meta"
         new_table.metafile = bin_py.BinFile(new_table.metafile_name)
         new_table.metafile.open("w+")
+        new_table.storage_name = table_name + ".storage"
+        new_table.storage_file.open("w+")
         if is_versioning:
             new_table.is_versioning = True
-        new_table.index_in_file = 16 + self.tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
         new_table.create_transaction_registry()
@@ -160,16 +159,16 @@ cache = cacheout.lfu.LFUCache(maxsize=16)
 
 
 class Table:
-    def __init__(self, file: bin_py.BinFile):
+    def __init__(self):
         max_fields_count = 14
         self.size = 32 + 26 + max_fields_count * 24
         self.row_length = 0
-        self.index_in_file = 0
         self.meta_index = 0
         self.name = ""
         self.metafile_name = ""
         self.metafile = None
-        self.file = file
+        self.storage_name = ""
+        self.storage_file = None
         self.first_block_index = 0
         self.current_block_index = 0
         self.last_block_index = 0
