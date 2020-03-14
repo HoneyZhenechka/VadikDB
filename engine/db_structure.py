@@ -15,35 +15,33 @@ class Database:
         self.tables_count = 0
         self.signature = "#VDBSignature"
         self.tables = []
-        self.filename = ""
+        self.meta_db_filename = ""
         self.file = None
         if create_default_file:
-            self.filename = "zhavoronkov.vdb"
-            self.file = bin_py.BinFile(self.filename)
+            self.meta_db_filename = "zhavoronkov.vdb"
+            self.file = bin_py.BinFile(self.meta_db_filename)
             self.file.open("w+")
             self.write_file()
             self.write_table_count(self.tables_count)
-            self.file.close()
         elif db_filename != "":
-            self.filename = db_filename
-            if os.path.isfile(self.filename):
-                self.connect_to_db(self.filename)
+            self.meta_db_filename = db_filename
+            if os.path.isfile(self.meta_db_filename):
+                self.connect_to_db(self.meta_db_filename)
             else:
-                self.file = bin_py.BinFile(self.filename)
+                self.file = bin_py.BinFile(self.meta_db_filename)
                 self.file.open("w+")
                 self.write_file()
                 self.write_table_count(self.tables_count)
-                self.file.close()
 
-    def __get_journal_files(self) -> typing.List[str]:
+    def __get_files_by_mask(self, mask: str) -> typing.List[str]:
         filename_list = []
         for file in os.listdir('.'):
-            if fnmatch.fnmatch(file, 'rollback_journal*'):
+            if fnmatch.fnmatch(file, mask):
                 filename_list.append(file)
         return filename_list
 
     def __check_journal(self) -> bool:
-        filename_list = self.__get_journal_files()
+        filename_list = self.__get_files_by_mask('rollback_journal*')
         for filename in filename_list:
             if os.path.isfile(filename):
                 return True
@@ -60,13 +58,13 @@ class Database:
             return self.file.io_count
 
     def wide_rollback(self) -> typing.NoReturn:
-        filename_list = self.__get_journal_files()
+        filename_list = self.__get_files_by_mask('rollback_journal*')
         for filename in filename_list:
             rollback_obj = RollbackLog(self.file, 0, filename)
             rollback_obj.open_file()
             journal_file_size = rollback_obj.file.read_integer(0, 16)
-            if journal_file_size < os.stat(self.filename).st_size:
-                os.truncate(self.filename, journal_file_size)
+            if journal_file_size < os.stat(self.meta_db_filename).st_size:
+                os.truncate(self.meta_db_filename, journal_file_size)
             rollback_obj.restore_blocks()
             rollback_obj.close_file()
             os.remove(filename)
@@ -91,7 +89,7 @@ class Database:
             raise exception.WrongFileFormat()
         self.tables_count = self.file.read_integer(14, 2)
         for i in range(self.tables_count):
-            table_obj = Table(self.file)
+            table_obj = Table()
             table_obj.index_in_file = 16 + i * table_obj.size
             table_obj.read_file()
             table_obj.open_transaction_registry()
@@ -112,13 +110,16 @@ class Database:
             self.wide_rollback()
 
     def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
-        self.file.open("r+")
-        self.file.seek(0, 2)
-        new_table = Table(self.file)
+        new_table = Table()
         new_table.name = table_name
+        new_table.metafile_name = self.meta_db_filename + "_" + table_name + ".meta"
+        new_table.metafile = bin_py.BinFile(new_table.metafile_name)
+        new_table.metafile.open("w+")
+        new_table.storage_name = self.meta_db_filename + "_" + table_name + ".storage"
+        new_table.storage_file = bin_py.BinFile(new_table.storage_name)
+        new_table.storage_file.open("w+")
         if is_versioning:
             new_table.is_versioning = True
-        new_table.index_in_file = 16 + self.tables_count * new_table.size
         new_table.fill_table_fields(fields)
         new_table.calc_row_size()
         new_table.create_transaction_registry()
@@ -153,17 +154,17 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
         return datetime.fromtimestamp(timestamp)
 
 
-cache = cacheout.lfu.LFUCache(maxsize=16)
-
-
 class Table:
-    def __init__(self, file: bin_py.BinFile):
+    def __init__(self):
         max_fields_count = 14
         self.size = 32 + 26 + max_fields_count * 24
         self.row_length = 0
-        self.index_in_file = -1
+        self.meta_index = 0
         self.name = ""
-        self.file = file
+        self.metafile_name = ""
+        self.metafile = None
+        self.storage_name = ""
+        self.storage_file = None
         self.first_block_index = 0
         self.current_block_index = 0
         self.last_block_index = 0
@@ -184,6 +185,7 @@ class Table:
         self.indexes = []
         self.max_index_id = 0
         self.transaction_registry = None
+        self.cache = cacheout.lfu.LFUCache(maxsize=16)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -198,12 +200,12 @@ class Table:
         current_block = Block(index, self)
         row_count_dict = current_block.count_rows()
         cache_key = (index, row_count_dict["available"], row_count_dict["removed"], row_count_dict["updated"])
-        if cache.get(cache_key) is None:
+        if self.cache.get(cache_key) is None:
             current_block.read_file()
             current_block.get_rows()
-            cache.set(cache_key, current_block)
+            self.cache.set(cache_key, current_block)
         else:
-            current_block = cache.get(cache_key)
+            current_block = self.cache.get(cache_key)
         return current_block
 
     def iter_blocks(self) -> typing.Iterable:
@@ -229,7 +231,7 @@ class Table:
         return result
 
     def __create_local_rollback_journal(self, name: str):
-        rollback_obj = RollbackLog(self.file, self.row_length, name)
+        rollback_obj = RollbackLog(self.storage_file, self.row_length, name)
         rollback_obj.create_file()
         return rollback_obj
 
@@ -263,9 +265,9 @@ class Table:
         self.transaction_registry.open_file()
 
     def create_block(self):
-        self.file.seek(0, 2)
+        self.storage_file.seek(0, 2)
         previous_index = 0
-        block_index = self.file.tell()
+        block_index = self.storage_file.tell()
         if not self.last_block_index:
             self.first_block_index = block_index
             self.write_meta_info()
@@ -321,46 +323,43 @@ class Table:
                     return block.index_in_file
 
     def write_meta_info(self) -> typing.NoReturn:
-        self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
-        self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 3, 3)
-        self.file.write_integer(self.last_block_index, self.index_in_file + 32 + 6, 3)
-        self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
-        self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
-        self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
-        self.file.write_integer(self.max_transaction_id, self.index_in_file + 32 + 18, 3)
+        self.metafile.write_integer(self.row_count, self.meta_index + 32, 3)
+        self.metafile.write_integer(self.first_block_index, self.meta_index + 32 + 3, 3)
+        self.metafile.write_integer(self.last_block_index, self.meta_index + 32 + 6, 3)
+        self.metafile.write_integer(self.first_row_index, self.meta_index + 32 + 9, 3)
+        self.metafile.write_integer(self.last_row_index, self.meta_index + 32 + 12, 3)
+        self.metafile.write_integer(self.last_removed_index, self.meta_index + 32 + 15, 3)
+        self.metafile.write_integer(self.max_transaction_id, self.meta_index + 32 + 18, 3)
 
     def write_file(self) -> typing.NoReturn:
         # Table meta
-        self.file.write_str(self.name, self.index_in_file, 32)
+        self.metafile.write_str(self.name, self.meta_index, 32)
         self.write_meta_info()
-        self.file.write_integer(self.row_length, self.index_in_file + 32 + 21, 2)
-        self.file.write_integer(self.fields_count, self.index_in_file + 32 + 23, 2)
-        self.file.write_bool(self.is_versioning, self.index_in_file + 32 + 25)
-        current_position = self.index_in_file + 32 + 26
+        self.metafile.write_integer(self.row_length, self.meta_index + 32 + 21, 2)
+        self.metafile.write_integer(self.fields_count, self.meta_index + 32 + 23, 2)
+        self.metafile.write_bool(self.is_versioning, self.meta_index + 32 + 25)
+        current_position = self.meta_index + 32 + 26
         for index, field in enumerate(self.fields):
-            self.file.write_str(field + self.types[index].name[:3], current_position, 24)
+            self.metafile.write_str(field + self.types[index].name[:3], current_position, 24)
             current_position += 24
-        bytes_count = self.size - (current_position - self.index_in_file)
-        self.file.write_str("", current_position, bytes_count)
-        self.file.seek(current_position, 0)
 
     def read_file(self) -> typing.NoReturn:
-        self.name = self.file.read_str(self.index_in_file, 32)
-        self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
-        self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
-        self.last_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
-        self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
-        self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
-        self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
-        self.max_transaction_id = self.file.read_integer(self.index_in_file + 32 + 18, 3)
-        self.row_length = self.file.read_integer(self.index_in_file + 32 + 21, 2)
-        self.fields_count = self.file.read_integer(self.index_in_file + 32 + 23, 2)
-        self.is_versioning = self.file.read_bool(self.index_in_file + 32 + 25)
-        current_position = self.index_in_file + 32 + 26
+        self.name = self.metafile.read_str(self.meta_index, 32)
+        self.row_count = self.metafile.read_integer(self.meta_index + 32, 3)
+        self.first_block_index = self.metafile.read_integer(self.meta_index + 32 + 6, 3)
+        self.last_block_index = self.metafile.read_integer(self.meta_index + 32 + 6, 3)
+        self.first_row_index = self.metafile.read_integer(self.meta_index + 32 + 9, 3)
+        self.last_row_index = self.metafile.read_integer(self.meta_index + 32 + 12, 3)
+        self.last_removed_index = self.metafile.read_integer(self.meta_index + 32 + 15, 3)
+        self.max_transaction_id = self.metafile.read_integer(self.meta_index + 32 + 18, 3)
+        self.row_length = self.metafile.read_integer(self.meta_index + 32 + 21, 2)
+        self.fields_count = self.metafile.read_integer(self.meta_index + 32 + 23, 2)
+        self.is_versioning = self.metafile.read_bool(self.meta_index + 32 + 25)
+        current_position = self.meta_index + 32 + 26
         field_position = 4
         for i in range(self.fields_count):
-            field = self.file.read_str(current_position + i * 24, 21)
-            field_type = self.types_dict[self.file.read_str(current_position + i * 24 + 21, 3)]
+            field = self.metafile.read_str(current_position + i * 24, 21)
+            field_type = self.types_dict[self.metafile.read_str(current_position + i * 24 + 21, 3)]
             self.fields.append(field)
             self.types.append(field_type)
             self.positions[field] = field_position
@@ -698,20 +697,20 @@ class Block:
             return start_pos + new_pos
 
     def update_file(self) -> typing.NoReturn:
-        self.table.file.write_integer(self.table.index_in_file, self.index_in_file, 3)
-        self.table.file.write_integer(self.rows_count, self.index_in_file + 3, 3)
-        self.table.file.write_integer(self.previous_block, self.index_in_file + 6, 3)
-        self.table.file.write_integer(self.next_block, self.index_in_file + 9, 3)
+        self.table.storage_file.write_integer(0, self.index_in_file, 3)
+        self.table.storage_file.write_integer(self.rows_count, self.index_in_file + 3, 3)
+        self.table.storage_file.write_integer(self.previous_block, self.index_in_file + 6, 3)
+        self.table.storage_file.write_integer(self.next_block, self.index_in_file + 9, 3)
 
     def write_file(self) -> typing.NoReturn:
         self.update_file()
         current_block_size = 512 * self.table.row_length
-        self.table.file.write_integer(0, self.index_in_file, current_block_size)
+        self.table.storage_file.write_integer(0, self.index_in_file, current_block_size)
 
     def read_file(self) -> typing.NoReturn:
-        self.rows_count = self.table.file.read_integer(self.index_in_file + 3, 3)
-        self.previous_block = self.table.file.read_integer(self.index_in_file + 6, 3)
-        self.next_block = self.table.file.read_integer(self.index_in_file + 9, 3)
+        self.rows_count = self.table.storage_file.read_integer(self.index_in_file + 3, 3)
+        self.previous_block = self.table.storage_file.read_integer(self.index_in_file + 6, 3)
+        self.next_block = self.table.storage_file.read_integer(self.index_in_file + 9, 3)
 
     def iter_rows(self) -> typing.Iterable:
         current_index = self.first_row_index
@@ -755,23 +754,23 @@ class Row:
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.table.file.write_integer(self.status, self.index_in_file, 1)
-        self.table.file.write_integer(self.previous_index, row_size - 3, 3)
-        self.table.file.write_integer(self.next_index, row_size - 6, 3)
-        self.table.file.write_long_long(self.transaction_start, row_size - 14)
-        self.table.file.write_long_long(self.transaction_end, row_size - 22)
-        self.table.file.write_integer(self.transaction_id, row_size - 36, 14)
-        self.table.file.write_integer(self.row_id, row_size - 40, 4)
+        self.table.storage_file.write_integer(self.status, self.index_in_file, 1)
+        self.table.storage_file.write_integer(self.previous_index, row_size - 3, 3)
+        self.table.storage_file.write_integer(self.next_index, row_size - 6, 3)
+        self.table.storage_file.write_long_long(self.transaction_start, row_size - 14)
+        self.table.storage_file.write_long_long(self.transaction_end, row_size - 22)
+        self.table.storage_file.write_integer(self.transaction_id, row_size - 36, 14)
+        self.table.storage_file.write_integer(self.row_id, row_size - 40, 4)
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.status = self.table.file.read_integer(self.index_in_file, 1)
-        self.previous_index = self.table.file.read_integer(row_size - 3, 3)
-        self.next_index = self.table.file.read_integer(row_size - 6, 3)
-        self.transaction_start = self.table.file.read_long_long(row_size - 14)
-        self.transaction_end = self.table.file.read_long_long(row_size - 22)
-        self.transaction_id = self.table.file.read_integer(row_size - 36, 14)
-        self.row_id = self.table.file.read_integer(row_size - 40, 4)
+        self.status = self.table.storage_file.read_integer(self.index_in_file, 1)
+        self.previous_index = self.table.storage_file.read_integer(row_size - 3, 3)
+        self.next_index = self.table.storage_file.read_integer(row_size - 6, 3)
+        self.transaction_start = self.table.storage_file.read_long_long(row_size - 14)
+        self.transaction_end = self.table.storage_file.read_long_long(row_size - 22)
+        self.transaction_id = self.table.storage_file.read_integer(row_size - 36, 14)
+        self.row_id = self.table.storage_file.read_integer(row_size - 40, 4)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}
@@ -803,8 +802,8 @@ class Row:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
-                                          self.index_in_file + value_position, field_type.size)
+            self.table.storage_file.write_by_type(field_type.name, self.fields_values_dict[field],
+                                                  self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self) -> typing.NoReturn:
         fields = self.table.fields
@@ -814,8 +813,9 @@ class Row:
                 continue
             index = self.table.fields.index(field)
             field_type = self.table.types[index]
-            self.fields_values_dict[field] = self.table.file.read_by_type(field_type.name, self.index_in_file + pos,
-                                                                          field_type.size)
+            self.fields_values_dict[field] = self.table.storage_file.read_by_type(field_type.name,
+                                                                                  self.index_in_file + pos,
+                                                                                  field_type.size)
 
 
 class Type:
@@ -847,7 +847,7 @@ class Transaction:
         self.table = table
         self.transaction_start = 0
         self.transaction_end = 0
-        self.rollback_journal = RollbackLog(self.table.file, self.table.row_length, self.filename)
+        self.rollback_journal = RollbackLog(self.table.storage_file, self.table.row_length, self.filename)
 
     def commit(self, is_rollback: bool) -> typing.NoReturn:
         self.rollback_journal.file.close()
@@ -858,8 +858,8 @@ class Transaction:
     def rollback(self) -> typing.NoReturn:
         self.rollback_journal.open_file()
         journal_file_size = self.rollback_journal.file.read_integer(0, 16)
-        if journal_file_size < os.stat(self.table.file.filename).st_size:
-            os.truncate(self.table.file.filename, journal_file_size)
+        if journal_file_size < os.stat(self.table.storage_file.filename).st_size:
+            os.truncate(self.table.storage_file.filename, journal_file_size)
         self.rollback_journal.restore_blocks()
         self.rollback_journal.close_file()
         self.table.last_block_index = self.table.get_blocks_indexes()[-1]

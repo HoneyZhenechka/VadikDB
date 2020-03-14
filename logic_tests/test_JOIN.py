@@ -16,7 +16,7 @@ def test_intersect_not_error():
     log.query("CREATE TABLE SECOND (id int, name str);")
     log.query("INSERT INTO SECOND VALUES (1, admin);")
     log.query("INSERT INTO SECOND VALUES (3, vadic);")
-    result = log.query("SELECT * FROM FIRST INTERSECT SELECT * FROM FIRST;")
+    result = log.query("SELECT * FROM FIRST INTERSECT SELECT * FROM SECOND;")
     assert excepted_result == result.str_for_print
 
 
