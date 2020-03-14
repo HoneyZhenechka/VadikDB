@@ -116,6 +116,9 @@ class Database:
         self.file.seek(0, 2)
         new_table = Table(self.file)
         new_table.name = table_name
+        new_table.metafile_name = table_name + ".meta"
+        new_table.metafile = bin_py.BinFile(new_table.metafile_name)
+        new_table.metafile.open("w+")
         if is_versioning:
             new_table.is_versioning = True
         new_table.index_in_file = 16 + self.tables_count * new_table.size
@@ -163,6 +166,8 @@ class Table:
         self.row_length = 0
         self.index_in_file = -1
         self.name = ""
+        self.metafile_name = ""
+        self.metafile = None
         self.file = file
         self.first_block_index = 0
         self.current_block_index = 0
