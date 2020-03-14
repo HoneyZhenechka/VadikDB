@@ -35,15 +35,15 @@ class Database:
                 self.write_table_count(self.tables_count)
                 self.file.close()
 
-    def __get_journal_files(self) -> typing.List[str]:
+    def __get_files_by_mask(self, mask: str) -> typing.List[str]:
         filename_list = []
         for file in os.listdir('.'):
-            if fnmatch.fnmatch(file, 'rollback_journal*'):
+            if fnmatch.fnmatch(file, mask):
                 filename_list.append(file)
         return filename_list
 
     def __check_journal(self) -> bool:
-        filename_list = self.__get_journal_files()
+        filename_list = self.__get_files_by_mask('rollback_journal*')
         for filename in filename_list:
             if os.path.isfile(filename):
                 return True
@@ -60,7 +60,7 @@ class Database:
             return self.file.io_count
 
     def wide_rollback(self) -> typing.NoReturn:
-        filename_list = self.__get_journal_files()
+        filename_list = self.__get_files_by_mask('rollback_journal*')
         for filename in filename_list:
             rollback_obj = RollbackLog(self.file, 0, filename)
             rollback_obj.open_file()
