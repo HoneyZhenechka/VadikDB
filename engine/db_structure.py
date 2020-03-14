@@ -757,23 +757,23 @@ class Row:
 
     def write_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.table.file.write_integer(self.status, self.index_in_file, 1)
-        self.table.file.write_integer(self.previous_index, row_size - 3, 3)
-        self.table.file.write_integer(self.next_index, row_size - 6, 3)
-        self.table.file.write_long_long(self.transaction_start, row_size - 14)
-        self.table.file.write_long_long(self.transaction_end, row_size - 22)
-        self.table.file.write_integer(self.transaction_id, row_size - 36, 14)
-        self.table.file.write_integer(self.row_id, row_size - 40, 4)
+        self.table.storage_file.write_integer(self.status, self.index_in_file, 1)
+        self.table.storage_file.write_integer(self.previous_index, row_size - 3, 3)
+        self.table.storage_file.write_integer(self.next_index, row_size - 6, 3)
+        self.table.storage_file.write_long_long(self.transaction_start, row_size - 14)
+        self.table.storage_file.write_long_long(self.transaction_end, row_size - 22)
+        self.table.storage_file.write_integer(self.transaction_id, row_size - 36, 14)
+        self.table.storage_file.write_integer(self.row_id, row_size - 40, 4)
 
     def read_info(self) -> typing.NoReturn:
         row_size = self.index_in_file + self.table.row_length
-        self.status = self.table.file.read_integer(self.index_in_file, 1)
-        self.previous_index = self.table.file.read_integer(row_size - 3, 3)
-        self.next_index = self.table.file.read_integer(row_size - 6, 3)
-        self.transaction_start = self.table.file.read_long_long(row_size - 14)
-        self.transaction_end = self.table.file.read_long_long(row_size - 22)
-        self.transaction_id = self.table.file.read_integer(row_size - 36, 14)
-        self.row_id = self.table.file.read_integer(row_size - 40, 4)
+        self.status = self.table.storage_file.read_integer(self.index_in_file, 1)
+        self.previous_index = self.table.storage_file.read_integer(row_size - 3, 3)
+        self.next_index = self.table.storage_file.read_integer(row_size - 6, 3)
+        self.transaction_start = self.table.storage_file.read_long_long(row_size - 14)
+        self.transaction_end = self.table.storage_file.read_long_long(row_size - 22)
+        self.transaction_id = self.table.storage_file.read_integer(row_size - 36, 14)
+        self.row_id = self.table.storage_file.read_integer(row_size - 40, 4)
 
     def select_row(self, fields: typing.Tuple[str]) -> typing.NoReturn:
         result = {}
@@ -805,7 +805,7 @@ class Row:
             field_index = self.table.fields.index(field)
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
-            self.table.file.write_by_type(field_type.name, self.fields_values_dict[field],
+            self.table.storage_file.write_by_type(field_type.name, self.fields_values_dict[field],
                                           self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self) -> typing.NoReturn:
@@ -816,7 +816,7 @@ class Row:
                 continue
             index = self.table.fields.index(field)
             field_type = self.table.types[index]
-            self.fields_values_dict[field] = self.table.file.read_by_type(field_type.name, self.index_in_file + pos,
+            self.fields_values_dict[field] = self.table.storage_file.read_by_type(field_type.name, self.index_in_file + pos,
                                                                           field_type.size)
 
 
