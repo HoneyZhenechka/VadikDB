@@ -9,7 +9,7 @@ db = db_py.Database(False, filename)
 
 
 def test_create():
-    excepted_table = db_py.Table(db.file)
+    excepted_table = db_py.Table()
     excepted_table.name = "vadik_table"
     excepted_table.fields = ["zhenya1", "zhenya2"]
     excepted_table.fields_count = 2

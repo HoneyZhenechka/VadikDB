@@ -114,10 +114,11 @@ class Database:
     def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
         new_table = Table()
         new_table.name = table_name
-        new_table.metafile_name = table_name + ".meta"
+        new_table.metafile_name = self.meta_db_filename + "_" + table_name + ".meta"
         new_table.metafile = bin_py.BinFile(new_table.metafile_name)
         new_table.metafile.open("w+")
-        new_table.storage_name = table_name + ".storage"
+        new_table.storage_name = self.meta_db_filename + "_" + table_name + ".storage"
+        new_table.storage_file = bin_py.BinFile(new_table.storage_name)
         new_table.storage_file.open("w+")
         if is_versioning:
             new_table.is_versioning = True
