@@ -164,7 +164,8 @@ class Table:
         max_fields_count = 14
         self.size = 32 + 26 + max_fields_count * 24
         self.row_length = 0
-        self.index_in_file = -1
+        self.index_in_file = 0
+        self.meta_index = 0
         self.name = ""
         self.metafile_name = ""
         self.metafile = None
@@ -326,46 +327,43 @@ class Table:
                     return block.index_in_file
 
     def write_meta_info(self) -> typing.NoReturn:
-        self.file.write_integer(self.row_count, self.index_in_file + 32, 3)
-        self.file.write_integer(self.first_block_index, self.index_in_file + 32 + 3, 3)
-        self.file.write_integer(self.last_block_index, self.index_in_file + 32 + 6, 3)
-        self.file.write_integer(self.first_row_index, self.index_in_file + 32 + 9, 3)
-        self.file.write_integer(self.last_row_index, self.index_in_file + 32 + 12, 3)
-        self.file.write_integer(self.last_removed_index, self.index_in_file + 32 + 15, 3)
-        self.file.write_integer(self.max_transaction_id, self.index_in_file + 32 + 18, 3)
+        self.metafile.write_integer(self.row_count, self.meta_index + 32, 3)
+        self.metafile.write_integer(self.first_block_index, self.meta_index + 32 + 3, 3)
+        self.metafile.write_integer(self.last_block_index, self.meta_index + 32 + 6, 3)
+        self.metafile.write_integer(self.first_row_index, self.meta_index + 32 + 9, 3)
+        self.metafile.write_integer(self.last_row_index, self.meta_index + 32 + 12, 3)
+        self.metafile.write_integer(self.last_removed_index, self.meta_index + 32 + 15, 3)
+        self.metafile.write_integer(self.max_transaction_id, self.meta_index + 32 + 18, 3)
 
     def write_file(self) -> typing.NoReturn:
         # Table meta
-        self.file.write_str(self.name, self.index_in_file, 32)
+        self.metafile.write_str(self.name, self.meta_index, 32)
         self.write_meta_info()
-        self.file.write_integer(self.row_length, self.index_in_file + 32 + 21, 2)
-        self.file.write_integer(self.fields_count, self.index_in_file + 32 + 23, 2)
-        self.file.write_bool(self.is_versioning, self.index_in_file + 32 + 25)
-        current_position = self.index_in_file + 32 + 26
+        self.metafile.write_integer(self.row_length, self.meta_index + 32 + 21, 2)
+        self.metafile.write_integer(self.fields_count, self.meta_index + 32 + 23, 2)
+        self.metafile.write_bool(self.is_versioning, self.meta_index + 32 + 25)
+        current_position = self.meta_index + 32 + 26
         for index, field in enumerate(self.fields):
-            self.file.write_str(field + self.types[index].name[:3], current_position, 24)
+            self.metafile.write_str(field + self.types[index].name[:3], current_position, 24)
             current_position += 24
-        bytes_count = self.size - (current_position - self.index_in_file)
-        self.file.write_str("", current_position, bytes_count)
-        self.file.seek(current_position, 0)
 
     def read_file(self) -> typing.NoReturn:
-        self.name = self.file.read_str(self.index_in_file, 32)
-        self.row_count = self.file.read_integer(self.index_in_file + 32, 3)
-        self.first_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
-        self.last_block_index = self.file.read_integer(self.index_in_file + 32 + 6, 3)
-        self.first_row_index = self.file.read_integer(self.index_in_file + 32 + 9, 3)
-        self.last_row_index = self.file.read_integer(self.index_in_file + 32 + 12, 3)
-        self.last_removed_index = self.file.read_integer(self.index_in_file + 32 + 15, 3)
-        self.max_transaction_id = self.file.read_integer(self.index_in_file + 32 + 18, 3)
-        self.row_length = self.file.read_integer(self.index_in_file + 32 + 21, 2)
-        self.fields_count = self.file.read_integer(self.index_in_file + 32 + 23, 2)
-        self.is_versioning = self.file.read_bool(self.index_in_file + 32 + 25)
-        current_position = self.index_in_file + 32 + 26
+        self.name = self.metafile.read_str(self.meta_index, 32)
+        self.row_count = self.metafile.read_integer(self.meta_index + 32, 3)
+        self.first_block_index = self.metafile.read_integer(self.meta_index + 32 + 6, 3)
+        self.last_block_index = self.metafile.read_integer(self.meta_index + 32 + 6, 3)
+        self.first_row_index = self.metafile.read_integer(self.meta_index + 32 + 9, 3)
+        self.last_row_index = self.metafile.read_integer(self.meta_index + 32 + 12, 3)
+        self.last_removed_index = self.metafile.read_integer(self.meta_index + 32 + 15, 3)
+        self.max_transaction_id = self.metafile.read_integer(self.meta_index + 32 + 18, 3)
+        self.row_length = self.metafile.read_integer(self.meta_index + 32 + 21, 2)
+        self.fields_count = self.metafile.read_integer(self.meta_index + 32 + 23, 2)
+        self.is_versioning = self.metafile.read_bool(self.meta_index + 32 + 25)
+        current_position = self.meta_index + 32 + 26
         field_position = 4
         for i in range(self.fields_count):
-            field = self.file.read_str(current_position + i * 24, 21)
-            field_type = self.types_dict[self.file.read_str(current_position + i * 24 + 21, 3)]
+            field = self.metafile.read_str(current_position + i * 24, 21)
+            field_type = self.types_dict[self.metafile.read_str(current_position + i * 24 + 21, 3)]
             self.fields.append(field)
             self.types.append(field_type)
             self.positions[field] = field_position
