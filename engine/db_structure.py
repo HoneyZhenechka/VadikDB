@@ -268,9 +268,9 @@ class Table:
         self.transaction_registry.open_file()
 
     def create_block(self):
-        self.file.seek(0, 2)
+        self.storage_file.seek(0, 2)
         previous_index = 0
-        block_index = self.file.tell()
+        block_index = self.storage_file.tell()
         if not self.last_block_index:
             self.first_block_index = block_index
             self.write_meta_info()
@@ -700,20 +700,20 @@ class Block:
             return start_pos + new_pos
 
     def update_file(self) -> typing.NoReturn:
-        self.table.file.write_integer(self.table.index_in_file, self.index_in_file, 3)
-        self.table.file.write_integer(self.rows_count, self.index_in_file + 3, 3)
-        self.table.file.write_integer(self.previous_block, self.index_in_file + 6, 3)
-        self.table.file.write_integer(self.next_block, self.index_in_file + 9, 3)
+        self.table.storage_file.write_integer(0, self.index_in_file, 3)
+        self.table.storage_file.write_integer(self.rows_count, self.index_in_file + 3, 3)
+        self.table.storage_file.write_integer(self.previous_block, self.index_in_file + 6, 3)
+        self.table.storage_file.write_integer(self.next_block, self.index_in_file + 9, 3)
 
     def write_file(self) -> typing.NoReturn:
         self.update_file()
         current_block_size = 512 * self.table.row_length
-        self.table.file.write_integer(0, self.index_in_file, current_block_size)
+        self.table.storage_file.write_integer(0, self.index_in_file, current_block_size)
 
     def read_file(self) -> typing.NoReturn:
-        self.rows_count = self.table.file.read_integer(self.index_in_file + 3, 3)
-        self.previous_block = self.table.file.read_integer(self.index_in_file + 6, 3)
-        self.next_block = self.table.file.read_integer(self.index_in_file + 9, 3)
+        self.rows_count = self.table.storage_file.read_integer(self.index_in_file + 3, 3)
+        self.previous_block = self.table.storage_file.read_integer(self.index_in_file + 6, 3)
+        self.next_block = self.table.storage_file.read_integer(self.index_in_file + 9, 3)
 
     def iter_rows(self) -> typing.Iterable:
         current_index = self.first_row_index
