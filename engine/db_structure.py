@@ -1,6 +1,7 @@
 import engine.bin_file as bin_py
 from datetime import datetime
 from sortedcontainers import SortedDict
+import cacheout
 import typing
 import random
 import string
@@ -153,8 +154,6 @@ def convert_timestamp_to_datetime(timestamp: float) -> datetime:
         return datetime.fromtimestamp(timestamp)
 
 
-
-
 class Table:
     def __init__(self):
         max_fields_count = 14
@@ -186,6 +185,7 @@ class Table:
         self.indexes = []
         self.max_index_id = 0
         self.transaction_registry = None
+        self.cache = cacheout.lfu.LFUCache(maxsize=16)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):
@@ -196,12 +196,22 @@ class Table:
     def __hash__(self):
         return hash(self.name) ^ hash(self.size) ^ hash(self.fields_count) ^ hash(self.row_length)
 
+    def get_block_by_index(self, index: int):
+        current_block = Block(index, self)
+        row_count_dict = current_block.count_rows()
+        cache_key = (index, row_count_dict["available"], row_count_dict["removed"], row_count_dict["updated"])
+        if self.cache.get(cache_key) is None:
+            current_block.read_file()
+            current_block.get_rows()
+            self.cache.set(cache_key, current_block)
+        else:
+            current_block = self.cache.get(cache_key)
+        return current_block
+
     def iter_blocks(self) -> typing.Iterable:
         current_index = self.first_block_index
         while current_index != 0:
-            current_block = Block(current_index, self)
-            current_block.read_file()
-            current_block.get_rows()
+            current_block = self.get_block_by_index(current_index)
             current_index = current_block.next_block
             yield current_block
 
@@ -793,7 +803,7 @@ class Row:
             field_type = self.table.types[field_index]
             value_position = self.table.positions[field]
             self.table.storage_file.write_by_type(field_type.name, self.fields_values_dict[field],
-                                          self.index_in_file + value_position, field_type.size)
+                                                  self.index_in_file + value_position, field_type.size)
 
     def read_row_from_file(self) -> typing.NoReturn:
         fields = self.table.fields
@@ -803,8 +813,9 @@ class Row:
                 continue
             index = self.table.fields.index(field)
             field_type = self.table.types[index]
-            self.fields_values_dict[field] = self.table.storage_file.read_by_type(field_type.name, self.index_in_file + pos,
-                                                                          field_type.size)
+            self.fields_values_dict[field] = self.table.storage_file.read_by_type(field_type.name,
+                                                                                  self.index_in_file + pos,
+                                                                                  field_type.size)
 
 
 class Type:
