@@ -18,7 +18,7 @@ class Database:
         self.meta_db_filename = ""
         self.file = None
         if create_default_file:
-            self.meta_db_filename = "zhavoronkov.vdb"
+            self.meta_db_filename = "zhavoronkov.vdb.db_meta"
             self.file = bin_py.BinFile(self.meta_db_filename)
             self.file.open("w+")
             self.write_file()
@@ -26,9 +26,9 @@ class Database:
         elif db_filename != "":
             self.meta_db_filename = db_filename
             if os.path.isfile(self.meta_db_filename):
-                self.connect_to_db(self.meta_db_filename)
+                self.connect_to_db(self.meta_db_filename + ".db_meta")
             else:
-                self.file = bin_py.BinFile(self.meta_db_filename)
+                self.file = bin_py.BinFile(self.meta_db_filename + ".db_meta")
                 self.file.open("w+")
                 self.write_file()
                 self.write_table_count(self.tables_count)
@@ -112,7 +112,7 @@ class Database:
     def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
         new_table = Table()
         new_table.name = table_name
-        new_table.metafile_name = self.meta_db_filename + "_" + table_name + ".meta"
+        new_table.metafile_name = self.meta_db_filename + "_" + table_name + ".table_meta"
         new_table.metafile = bin_py.BinFile(new_table.metafile_name)
         new_table.metafile.open("w+")
         new_table.storage_name = self.meta_db_filename + "_" + table_name + ".storage"

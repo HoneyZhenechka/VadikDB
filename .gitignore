@@ -117,4 +117,5 @@ TestResults
 *.log
 *.rg
 *.storage
-*.meta
+*.db_meta
+*.table_meta
