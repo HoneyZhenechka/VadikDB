@@ -21,7 +21,7 @@ def test_intersect_not_error():
 
 
 def test_union_not_error():
-    excepted_result = "\n| id | name | \n| 1 | admin | \n| 2 | notadmin | \n| 1 | admin | \n| 3 | vadic | \n"
+    excepted_result = "\n| id | name | \n| 1 | admin | \n| 2 | notadmin | \n| 3 | vadic | \n"
     result = log.query("SELECT * FROM FIRST UNION SELECT * FROM SECOND;")
     assert excepted_result == result.str_for_print
 

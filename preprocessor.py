@@ -132,14 +132,25 @@ class Preprocessor:
         if len(first_table[0]) != len(second_table[0]):
             return Result.Result(True, exception_for_client.DBExceptionForClient().DifferentNumberOfColumns())
         rows = [first_table[0], []]
-        for first_row in first_table[1]:
+        if is_all:
+            for row in first_table[1]:
+                rows[1].append(row)
+            for row in second_table[1]:
+                rows[1].append(row)
+        else:
+            for first_row in first_table[1]:
+                is_unique = True
+                for row in rows[1]:
+                    if self.are_rows_equal([rows[0], first_row], [rows[0], row]):
+                        is_unique = False
+                if is_unique:
+                    rows[1].append(first_row)
             for second_row in second_table[1]:
-                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
-                    rows[1].append(first_row)
-                    if is_all:
-                        rows[1].append(second_row)
-                else:
-                    rows[1].append(first_row)
+                is_unique = True
+                for row in rows[1]:
+                    if self.are_rows_equal([rows[0], second_row], [rows[0], row]):
+                        is_unique = False
+                if is_unique:
                     rows[1].append(second_row)
         return rows
 
