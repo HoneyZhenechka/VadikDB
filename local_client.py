@@ -14,7 +14,7 @@ def call_exception(func, fields=()):
         pass
 
 
-print("Enter file name:")
+print("Enter db name:")
 filename = input()
 request = ""
 db_logic = logic.Logic(filename)
