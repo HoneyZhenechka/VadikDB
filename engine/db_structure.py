@@ -25,7 +25,7 @@ class Database:
             self.write_table_count(self.tables_count)
         elif db_filename != "":
             self.meta_db_filename = db_filename
-            if os.path.isfile(self.meta_db_filename):
+            if os.path.isfile(self.meta_db_filename + ".db_meta"):
                 self.connect_to_db(self.meta_db_filename + ".db_meta")
             else:
                 self.file = bin_py.BinFile(self.meta_db_filename + ".db_meta")
@@ -88,9 +88,15 @@ class Database:
         if self.signature != signature_result:
             raise exception.WrongFileFormat()
         self.tables_count = self.file.read_integer(14, 2)
-        for i in range(self.tables_count):
+        metafiles_list = self.__get_files_by_mask("*.table_meta")
+        for metafile in metafiles_list:
             table_obj = Table()
-            table_obj.index_in_file = 16 + i * table_obj.size
+            table_obj.metafile_name = metafile
+            table_obj.metafile = bin_py.BinFile(table_obj.metafile_name)
+            table_obj.metafile.open("r+")
+            table_obj.storage_name = table_obj.metafile_name.replace(".table_meta", ".storage")
+            table_obj.storage_file = bin_py.BinFile(table_obj.storage_name)
+            table_obj.storage_file.open("r+")
             table_obj.read_file()
             table_obj.open_transaction_registry()
             self.tables.append(table_obj)
@@ -112,7 +118,7 @@ class Database:
     def create_table(self, table_name: str, fields: typing.Dict, is_versioning: bool = False) -> typing.List:
         new_table = Table()
         new_table.name = table_name
-        new_table.metafile_name = self.meta_db_filename + "_" + table_name + ".table_meta"
+        new_table.metafile_name = self.meta_db_filename + "_"+ new_table.name + ".table_meta"
         new_table.metafile = bin_py.BinFile(new_table.metafile_name)
         new_table.metafile.open("w+")
         new_table.storage_name = self.meta_db_filename + "_" + table_name + ".storage"
