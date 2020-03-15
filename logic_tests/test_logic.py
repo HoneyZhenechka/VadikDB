@@ -2,10 +2,11 @@ import logic
 import exception
 import os
 
-filename = "Testing.vdb"
-if os.path.isfile(filename):
-    os.remove(filename)
-log = logic.Logic(filename)
+fileList = [f for f in os.listdir() if f.endswith(".db_meta")]
+for f in fileList:
+    os.remove(f)
+
+log = logic.Logic("Testing.vdb")
 
 
 def test_create_not_error():
@@ -58,20 +59,20 @@ def test_select_error_field_not_exists():
 
 def test_insert_not_error():
     excepted_result = "\n| id | name | \n| 1 | admin | \n"
-    temp = log.query("INSERT INTO VADIC VALUES(1, admin);")
+    temp = log.query('INSERT INTO VADIC VALUES(1, "admin");')
     result = log.query("SELECT * FROM VADIC;")
     assert excepted_result == result.str_for_print
 
 
 def test_insert_error_table_not_exists():
     excepted_result = "Error code: " + "04" + " -- Table " + "NOTEXISTS" + " not exists!"
-    result = log.query("INSERT INTO NOTEXISTS VALUES(1, admin);")
+    result = log.query('INSERT INTO NOTEXISTS VALUES(1, "admin");')
     assert excepted_result == result.str_for_print
 
 
 def test_insert_error_field_not_exists():
     excepted_result = "Error code: " + "05" + " -- Field " + "NOTEXISTS" + " not exists!"
-    result = log.query("INSERT INTO VADIC (NOTEXISTS) VALUES(1);")
+    result = log.query('INSERT INTO VADIC (NOTEXISTS) VALUES(1);')
     assert excepted_result == result.str_for_print
 
 
@@ -109,8 +110,8 @@ def test_delete_error_table_not_exists():
 
 def test_select_condition():
     excepted_result = "\n| id | name | \n| 1 | admin | \n"
-    log.query("INSERT INTO VADIC VALUES(1, admin);")
-    log.query("INSERT INTO VADIC VALUES(2, notadmin);")
+    log.query('INSERT INTO VADIC VALUES(1, "admin");')
+    log.query('INSERT INTO VADIC VALUES(2, "notadmin");')
     result = log.query("SELECT * FROM VADIC WHERE id < 1 + 1;")
     assert excepted_result == result.str_for_print
 
@@ -124,7 +125,7 @@ def test_update_condition():
 
 def test_delete_condition():
     excepted_result = "\n| id | name | \n| 2 | notadmin | \n| 2 | admin | \n"
-    log.query("INSERT INTO VADIC VALUES(1, admin);")
+    log.query('INSERT INTO VADIC VALUES(1, "admin");')
     log.query("DELETE FROM VADIC where id < 1 + 1;")
     result = log.query("SELECT * FROM VADIC;")
     assert excepted_result == result.str_for_print

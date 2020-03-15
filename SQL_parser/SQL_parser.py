@@ -253,9 +253,10 @@ class PIntersect(Struct):
 
 class PField(Struct):
 
-    def __init__(self, name):
+    def __init__(self, name, is_str=False):
         self.type = "field"
         self.name = name
+        self.is_str = is_str
 
 
 class PFieldOfTable(Struct):
@@ -285,14 +286,14 @@ def p_create(p):
 
 
 def p_create_body(p):
-    '''create_body : TABLE NAME LBRACKET values RBRACKET'''
+    '''create_body : TABLE NAME LBRACKET variables RBRACKET'''
 
     p[0] = PCreate(p[2], p[4])
 
 
-def p_values(p):
-    '''values : NAME type
-              | values COMMA NAME type'''
+def p_variables(p):
+    '''variables : NAME type
+              | variables COMMA NAME type'''
 
     if len(p) == 3:
         p[0] = []
@@ -406,8 +407,8 @@ def p_insert(p):
 
 
 def p_insert_body(p):
-    '''insert_body : INTO NAME VALUES LBRACKET fields RBRACKET
-                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET'''
+    '''insert_body : INTO NAME VALUES LBRACKET values RBRACKET
+                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET'''
 
     if len(p) == 7:
         p[0] = PInsertBody(p[2], [], p[5])
@@ -452,6 +453,28 @@ def p_delete(p):
         p[0] = PDelete(p[3])
     else:
         p[0] = PDelete(p[3], p[4])
+
+
+def p_values(p):
+    '''values : value
+              | values COMMA value'''
+
+    if len(p) == 2:
+        p[0] = []
+        p[0].append(p[1])
+    else:
+        p[0] = p[1]
+        p[0].append(p[3])
+
+
+def p_value(p):
+    '''value : NAME
+             | QUOTE NAME QUOTE'''
+
+    if len(p) == 2:
+        p[0] = PField(p[1])
+    else:
+        p[0] = PField(p[2], True)
 
 
 def p_fields(p):
@@ -509,8 +532,8 @@ def p_tree_comparison(p):
 
 
 def p_tree_expression(p):
-    '''tree_expression : field
-            | field operator_expression tree_expression
+    '''tree_expression : value
+            | value operator_expression tree_expression
             | operator_expression tree_expression
             | LBRACKET tree_expression RBRACKET
             | tree_expression operator_expression tree_expression'''

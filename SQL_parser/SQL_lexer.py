@@ -9,7 +9,7 @@ tokens = (
     'NAME', 'VALUES',
     'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
+    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION', 'QUOTE',
     'STAR', 'NOT_EQUAL', 'GREATER_THAN',
     'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
     'LESS_THAN_OR_EQUAL', 'OR',
@@ -55,6 +55,7 @@ t_PLUS = r'\+'
 t_MINUS = r'\-'
 t_STAR = r'\*'
 t_DIVISION = r'\/'
+t_QUOTE = r'\'|\"'
 
 t_EQUAL = r'\='
 t_NOT_EQUAL = r'!='
@@ -153,6 +154,9 @@ def t_NAME(t):
     elif t.value == '/':
         t.type = 'DIVISION'
 
+    elif t.value == r'\'|\"':
+        t.type = "QUOTE"
+
     elif t.value.upper() == '=':
         t.type = 'EQUAL'
 
@@ -219,6 +223,6 @@ def t_error(t):
     t.lexer.skip(1)
 
 
-t_ignore = ''' ' " '''
+t_ignore = '''  '''
 
 lexer = lex.lex(reflags=re.UNICODE | re.DOTALL)

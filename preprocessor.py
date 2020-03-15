@@ -49,7 +49,7 @@ class Preprocessor:
             if name == self.db.tables[i].name:
                 return i
 
-    def solve_expression(self, root, row) -> int:
+    def solve_expression(self, root, row) -> int or Result.Result:
         if root.getRootVal() == '+':
             value = self.solve_expression(root.getLeftChild(), row) + self.solve_expression(root.getRightChild(), row)
         elif root.getRootVal() == '-':
@@ -62,14 +62,19 @@ class Preprocessor:
             try:
                 value = float(root.getRootVal().name)
             except:
-                if not (root.getRootVal().name in row.fields_values_dict):
-                    value = root.getRootVal().name
-                else:
+                if root.getRootVal().is_str:
                     value = row.fields_values_dict[root.getRootVal().name]
+                else:
+                    if root.getRootVal().name in row.fields_values_dict:
+                        value = row.fields_values_dict[root.getRootVal().name]
+                    else:
+                        return Result.Result(True, exception_for_client.DBExceptionForClient.FieldNotExists(root.getRootVal().name))
         return value
 
-    def solve_comparison(self, root, row) -> bool:
-        if root.getRootVal() == '>':
+    def solve_comparison(self, root, row) -> bool or Result.Result:
+        if type(root) == Result.Result:
+            return root
+        elif root.getRootVal() == '>':
             return self.solve_expression(root.getLeftChild(), row) > self.solve_expression(root.getRightChild(), row)
         elif root.getRootVal() == '<':
             return self.solve_expression(root.getLeftChild(), row) < self.solve_expression(root.getRightChild(), row)
@@ -82,9 +87,11 @@ class Preprocessor:
         elif root.getRootVal() == '=':
             return self.solve_expression(root.getLeftChild(), row) == self.solve_expression(root.getRightChild(), row)
 
-    def solve_condition(self, root, row) -> bool:
+    def solve_condition(self, root, row) -> bool or Result.Result:
         if root == True:
             return True
+        if type(root) == Result.Result:
+            return root
         elif root.getRootVal().upper() == 'AND':
             return self.solve_comparison(root.getLeftChild(), row) and self.solve_comparison(root.getRightChild(), row)
         elif root.getRootVal().upper() == 'OR':
@@ -162,7 +169,7 @@ class Preprocessor:
                     rows[1].append(first_row)
         return rows
 
-    def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list:
+    def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list or Result.Result:
         types = self.get_types(name, values, fields)
         if len(types) == 0:
             return []
@@ -187,12 +194,19 @@ class Preprocessor:
                 else:
                     return []
             elif types[i].name == "str":
-                new_values.append(values[i].name)
+                if values[i].type == "field":
+                    if values[i].is_str:
+                        new_values.append(values[i].name)
+                    else:
+                        return Result.Result(True,
+                                             exception_for_client.DBExceptionForClient().WrongFieldType(values[i].name))
+                else:
+                    new_values.append(values[i].name)
             else:
                 return []
         return new_values
 
-    def get_values(self, name: str, values: list, fields=()) -> list:
+    def get_values(self, name: str, values: list, fields=()) -> list or Result.Result:
         types = self.get_types(name, values, fields)
         if len(types) == 0:
             return []
@@ -216,7 +230,10 @@ class Preprocessor:
                 else:
                     return []
             elif types[i].name == "str":
-                values[i] = values[i].name
+                if values[i].is_str:
+                    values[i] = values[i].name
+                else:
+                    return Result.Result(True, exception_for_client.DBExceptionForClient().WrongFieldType(values[i].name))
             else:
                 return []
         return values
@@ -301,7 +318,7 @@ class Preprocessor:
                         for first_row in first_block.iter_rows():
                             for second_row in second_block.iter_rows():
                                 if join == "":
-                                        rows.append()
+                                    pass #TODO WORK WITH ROWS
                 return rows
 
     def insert(self, name: str, fields: list, values: list):
@@ -311,6 +328,8 @@ class Preprocessor:
             return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
             new_values = self.get_values(name, values, fields)
+            if type(new_values) is Result.Result:
+                return new_values
             if not len(new_values):
                 return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
             table_index = self.get_table_index(name)
@@ -335,6 +354,8 @@ class Preprocessor:
                     if row.status == 1:
                         if self.solve_condition(condition, row):
                             temp = self.get_values_with_expression(name, values, row, fields)
+                            if type(temp) == Result.Result:
+                                return temp
                             if len(temp) == 0:
                                 return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
                             new_values.append(temp)
