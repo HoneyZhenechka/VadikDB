@@ -36,3 +36,15 @@ def test_join_not_error():
     excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n| 1 | admin | 3 | vadic | \n| 2 | notadmin | 1 | admin | \n| 2 | notadmin | 3 | vadic | \n"
     result = log.query("SELECT * FROM FIRST JOIN SECOND;")
     assert excepted_result == result.str_for_print
+
+
+def test_join_error_table_not_exist():
+    excepted_result = "Error code: " + "04" + " -- Table " + "NOTEXIST" + " not exists!"
+    result = log.query("SELECT * FROM FIRST JOIN NOTEXIST;")
+    assert excepted_result == result.str_for_print
+
+
+def test_join_error_field_not_exist():
+    excepted_result = "Error code: " + "05" + " -- Field " + "NOTEXIST" + " not exists!"
+    result = log.query("SELECT FIRST.NOTEXIST FROM FIRST JOIN SECOND ON FIRST.id = SECOND.id;")
+    assert excepted_result == result.str_for_print
