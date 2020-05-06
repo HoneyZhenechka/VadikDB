@@ -274,6 +274,12 @@ class PFieldOfTable(Struct):
         self.name = name
 
 
+class PTransaction(Struct):
+
+    def __init__(self, name):
+        self.type = name
+
+
 def p_start(p):
     '''start : create ENDREQUEST
              | show ENDREQUEST
@@ -281,9 +287,23 @@ def p_start(p):
              | tree_selects ENDREQUEST
              | insert ENDREQUEST
              | update ENDREQUEST
-             | delete ENDREQUEST'''
+             | delete ENDREQUEST
+             | transaction ENDREQUEST'''
 
     p[0] = p[1]
+
+
+def p_transaction(p):
+    '''transaction : BEGIN TRANSACTION
+                   | END TRANSACTION
+                   | ROLLBACK'''
+
+    if p[1] == "START":
+        p[0] = PTransaction("begin")
+    elif p[1] == "END":
+        p[0] = PTransaction("end")
+    else:
+        p[0] = PTransaction("rollback")
 
 
 def p_create(p):

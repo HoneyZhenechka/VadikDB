@@ -192,6 +192,7 @@ class Table:
         self.max_index_id = 0
         self.transaction_registry = None
         self.cache = cacheout.lfu.LFUCache(maxsize=16)
+        self.is_locked = False
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Table):

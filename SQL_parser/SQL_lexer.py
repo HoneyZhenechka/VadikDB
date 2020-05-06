@@ -15,7 +15,8 @@ tokens = (
     'LESS_THAN_OR_EQUAL', 'OR',
     'NOT', 'AND',
     'JOIN', 'LEFT', 'RIGHT', 'ON',
-    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER'
+    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER',
+    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -36,6 +37,10 @@ t_UNION = r'UNION'
 t_ALL = r'ALL'
 t_INTERSECT = r'INTERSECT'
 t_OUTER = r'OUTER'
+t_BEGIN = r'BEGIN'
+t_END = r'END'
+t_TRANSACTION = r'TRANSACTION'
+t_ROLLBACK = r'ROLLBACK'
 
 
 t_TABLE = r'TABLE'
@@ -123,6 +128,18 @@ def t_NAME(t):
 
     elif t.value.upper() == 'OUTER':
         t.type = 'OUTER'
+
+    elif t.value.upper() == 'BEGIN':
+        t.type = 'BEGIN'
+
+    elif t.value.upper() == 'END':
+        t.type = 'END'
+
+    elif t.value.upper() == 'TRANSACTION':
+        t.type = 'TRANSACTION'
+
+    elif t.value.upper() == 'ROLLBACK':
+        t.type = 'ROLLBACK'
 
     elif t.value.upper() == 'TABLE':
         t.type = 'TABLE'
