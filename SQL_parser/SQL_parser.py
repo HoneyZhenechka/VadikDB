@@ -225,7 +225,7 @@ class PJoin(Struct):
 class PRightTable(Struct):
 
     def __init__(self, name):
-        self.type = ""
+        self.type = "rightTable"
         self.name = name
 
 class POn(Struct):

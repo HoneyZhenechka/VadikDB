@@ -38,6 +38,12 @@ def test_join_not_error():
     assert excepted_result == result.str_for_print
 
 
+def test_join_one_column_not_error():
+    excepted_result = "\n| name | \n| admin | \n| admin | \n| notadmin | \n| notadmin | \n"
+    result = log.query("SELECT FIRST.name FROM FIRST JOIN SECOND;")
+    assert excepted_result == result.str_for_print
+
+
 def test_join_error_table_not_exist():
     excepted_result = "Error code: " + "04" + " -- Table " + "NOTEXIST" + " not exists!"
     result = log.query("SELECT * FROM FIRST JOIN NOTEXIST;")

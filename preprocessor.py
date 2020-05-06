@@ -302,9 +302,9 @@ class Preprocessor:
         fields_values = []
         for field in fields:
             if field[0] == first_table_index:
-              fields_values.append([field[1], first_dict[field[1]]])
+                fields_values.append([field[1], first_dict[field[1]]])
             if field[0] == second_table_index:
-              fields_values.append([field[1], second_dict[field[1]]])
+                fields_values.append([field[1], second_dict[field[1]]])
         new_row = Row(fields_values)
         return new_row
 
@@ -330,7 +330,7 @@ class Preprocessor:
                         if second_table.field.name != field.name:
                             result.append([table_index, field])
                     else:
-                        result.append([table_index, field])
+                        result.append([table_index, field.name])
             else:
                 return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(field.name))
         return result
@@ -369,7 +369,7 @@ class Preprocessor:
                         for first_row in first_block.iter_rows():
                             for second_row in second_block.iter_rows():
                                 if join.form == "":
-                                    if (second_table.type == ""):
+                                    if second_table.type == "rightTable":
                                         rows.append(self.join_rows(fields, first_row.fields_values_dict,
                                                                    second_row.fields_values_dict,
                                                                    first_table_index, second_table_index))
