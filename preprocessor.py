@@ -167,6 +167,7 @@ class Preprocessor:
             for second_row in second_table[1]:
                 if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
                     rows[1].append(first_row)
+                    break
         return rows
 
     def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list or Result.Result:
