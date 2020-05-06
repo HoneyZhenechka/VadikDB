@@ -227,7 +227,8 @@ class POn(Struct):
     def __init__(self, name, first_field, second_field):
         self.type = "on"
         self.name = name
-        self.first_field = second_field
+        self.first_field = first_field
+        self.second_field = second_field
 
 
 class PUsing(Struct):
