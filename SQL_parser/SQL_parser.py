@@ -239,10 +239,10 @@ class POn(Struct):
 
 class PUsing(Struct):
 
-    def __init__(self, name, field):
+    def __init__(self, name, fields):
         self.type = "using"
         self.name = name
-        self.field = field
+        self.fields = fields
 
 
 class PUnion(Struct):
@@ -335,7 +335,7 @@ def p_join(p):
 
 def p_join_right_table(p):
     '''join_right_table : NAME ON field EQUAL field
-            | NAME USING LBRACKET field RBRACKET
+            | NAME USING LBRACKET fields RBRACKET
             | NAME'''
     if len(p) == 2:
         p[0] = PRightTable(p[1])

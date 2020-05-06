@@ -32,6 +32,18 @@ def test_join_on_not_error():
     assert excepted_result == result.str_for_print
 
 
+def test_join_using_fields_not_error():
+    excepted_result = "\n| id | name | \n| 1 | admin | \n"
+    result = log.query("SELECT * FROM FIRST JOIN SECOND USING(id, name);")
+    assert excepted_result == result.str_for_print
+
+
+def test_join_using_field_not_error():
+    excepted_result = "\n| id | name | name | \n| 1 | admin | admin | \n"
+    result = log.query("SELECT * FROM FIRST JOIN SECOND USING(id);")
+    assert excepted_result == result.str_for_print
+
+
 def test_join_not_error():
     excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n| 1 | admin | 3 | vadic | \n| 2 | notadmin | 1 | admin | \n| 2 | notadmin | 3 | vadic | \n"
     result = log.query("SELECT * FROM FIRST JOIN SECOND;")

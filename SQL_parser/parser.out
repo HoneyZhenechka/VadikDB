@@ -24,7 +24,7 @@ Rule 14    join -> JOIN
 Rule 15    join -> LEFT OUTER JOIN
 Rule 16    join -> RIGHT OUTER JOIN
 Rule 17    join_right_table -> NAME ON field EQUAL field
-Rule 18    join_right_table -> NAME USING LBRACKET field RBRACKET
+Rule 18    join_right_table -> NAME USING LBRACKET fields RBRACKET
 Rule 19    join_right_table -> NAME
 Rule 20    union -> UNION
 Rule 21    union -> UNION ALL
@@ -144,8 +144,8 @@ create_body          : 8
 delete               : 7
 drop                 : 3
 expression           : 38 39 41
-field                : 17 17 18 40 41 48 49
-fields               : 31 32 36 49
+field                : 17 17 40 41 48 49
+fields               : 18 31 32 36 49
 insert               : 5
 insert_body          : 34
 intersect            : 26
@@ -677,7 +677,7 @@ state 52
     (27) select -> SELECT select_body join . join_right_table
     (28) select -> SELECT select_body join . join_right_table condition
     (17) join_right_table -> . NAME ON field EQUAL field
-    (18) join_right_table -> . NAME USING LBRACKET field RBRACKET
+    (18) join_right_table -> . NAME USING LBRACKET fields RBRACKET
     (19) join_right_table -> . NAME
 
     NAME            shift and go to state 71
@@ -870,7 +870,7 @@ state 70
 state 71
 
     (17) join_right_table -> NAME . ON field EQUAL field
-    (18) join_right_table -> NAME . USING LBRACKET field RBRACKET
+    (18) join_right_table -> NAME . USING LBRACKET fields RBRACKET
     (19) join_right_table -> NAME .
 
     ON              shift and go to state 99
@@ -1296,7 +1296,7 @@ state 99
 
 state 100
 
-    (18) join_right_table -> NAME USING . LBRACKET field RBRACKET
+    (18) join_right_table -> NAME USING . LBRACKET fields RBRACKET
 
     LBRACKET        shift and go to state 133
 
@@ -1723,13 +1723,16 @@ state 132
 
 state 133
 
-    (18) join_right_table -> NAME USING LBRACKET . field RBRACKET
+    (18) join_right_table -> NAME USING LBRACKET . fields RBRACKET
+    (48) fields -> . field
+    (49) fields -> . fields COMMA field
     (50) field -> . NAME
     (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
-    field                          shift and go to state 147
+    fields                         shift and go to state 147
+    field                          shift and go to state 42
 
 state 134
 
@@ -1981,9 +1984,11 @@ state 146
 
 state 147
 
-    (18) join_right_table -> NAME USING LBRACKET field . RBRACKET
+    (18) join_right_table -> NAME USING LBRACKET fields . RBRACKET
+    (49) fields -> fields . COMMA field
 
     RBRACKET        shift and go to state 153
+    COMMA           shift and go to state 59
 
 
 state 148
@@ -2047,12 +2052,12 @@ state 152
 
 state 153
 
-    (18) join_right_table -> NAME USING LBRACKET field RBRACKET .
+    (18) join_right_table -> NAME USING LBRACKET fields RBRACKET .
 
-    WHERE           reduce using rule 18 (join_right_table -> NAME USING LBRACKET field RBRACKET .)
-    UNION           reduce using rule 18 (join_right_table -> NAME USING LBRACKET field RBRACKET .)
-    INTERSECT       reduce using rule 18 (join_right_table -> NAME USING LBRACKET field RBRACKET .)
-    ENDREQUEST      reduce using rule 18 (join_right_table -> NAME USING LBRACKET field RBRACKET .)
+    WHERE           reduce using rule 18 (join_right_table -> NAME USING LBRACKET fields RBRACKET .)
+    UNION           reduce using rule 18 (join_right_table -> NAME USING LBRACKET fields RBRACKET .)
+    INTERSECT       reduce using rule 18 (join_right_table -> NAME USING LBRACKET fields RBRACKET .)
+    ENDREQUEST      reduce using rule 18 (join_right_table -> NAME USING LBRACKET fields RBRACKET .)
 
 
 state 154
