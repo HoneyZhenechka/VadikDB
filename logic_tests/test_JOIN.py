@@ -30,3 +30,9 @@ def test_join_on_not_error():
     excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n"
     result = log.query("SELECT * FROM FIRST JOIN SECOND ON FIRST.id = SECOND.id;")
     assert excepted_result == result.str_for_print
+
+
+def test_join_not_error():
+    excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n| 1 | admin | 3 | vadic | \n| 2 | notadmin | 1 | admin | \n| 2 | notadmin | 3 | vadic | \n"
+    result = log.query("SELECT * FROM FIRST JOIN SECOND;")
+    assert excepted_result == result.str_for_print

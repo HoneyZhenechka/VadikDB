@@ -222,6 +222,12 @@ class PJoin(Struct):
         self.type = "join"
 
 
+class PRightTable(Struct):
+
+    def __init__(self, name):
+        self.type = ""
+        self.name = name
+
 class POn(Struct):
 
     def __init__(self, name, first_field, second_field):
@@ -329,8 +335,11 @@ def p_join(p):
 
 def p_join_right_table(p):
     '''join_right_table : NAME ON field EQUAL field
-            | NAME USING LBRACKET field RBRACKET'''
-    if p[2] == "ON":
+            | NAME USING LBRACKET field RBRACKET
+            | NAME'''
+    if len(p) == 2:
+        p[0] = PRightTable(p[1])
+    elif p[2] == "ON":
         p[0] = POn(p[1], p[3], p[5])
     elif p[2] == "USING":
         p[0] = PUsing(p[1], p[4])

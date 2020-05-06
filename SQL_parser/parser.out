@@ -25,149 +25,150 @@ Rule 15    join -> LEFT OUTER JOIN
 Rule 16    join -> RIGHT OUTER JOIN
 Rule 17    join_right_table -> NAME ON field EQUAL field
 Rule 18    join_right_table -> NAME USING LBRACKET field RBRACKET
-Rule 19    union -> UNION
-Rule 20    union -> UNION ALL
-Rule 21    intersect -> INTERSECT
-Rule 22    tree_selects -> nested_selects
-Rule 23    nested_selects -> select
-Rule 24    nested_selects -> select union nested_selects
-Rule 25    nested_selects -> select intersect nested_selects
-Rule 26    select -> SELECT select_body join join_right_table
-Rule 27    select -> SELECT select_body join join_right_table condition
-Rule 28    select -> SELECT select_body
-Rule 29    select -> SELECT select_body condition
-Rule 30    select_body -> fields FROM NAME
-Rule 31    select_body -> STAR COMMA fields FROM NAME
-Rule 32    select_body -> STAR FROM NAME
-Rule 33    insert -> INSERT insert_body
-Rule 34    insert_body -> INTO NAME VALUES LBRACKET values RBRACKET
-Rule 35    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
-Rule 36    update -> UPDATE update_body
-Rule 37    update_body -> NAME SET expression
-Rule 38    update_body -> NAME SET expression condition
-Rule 39    expression -> field EQUAL tree_expression
-Rule 40    expression -> expression COMMA field EQUAL tree_expression
-Rule 41    delete -> DELETE FROM NAME
-Rule 42    delete -> DELETE FROM NAME condition
-Rule 43    values -> value
-Rule 44    values -> values COMMA value
-Rule 45    value -> NAME
-Rule 46    value -> QUOTE NAME QUOTE
-Rule 47    fields -> field
-Rule 48    fields -> fields COMMA field
-Rule 49    field -> NAME
-Rule 50    field -> NAME DOT NAME
-Rule 51    condition -> WHERE tree_condition
-Rule 52    tree_condition -> tree_comparison operator_condition tree_condition
-Rule 53    tree_condition -> tree_comparison
-Rule 54    tree_comparison -> tree_expression operator_comparison tree_expression
-Rule 55    tree_expression -> value
-Rule 56    tree_expression -> value operator_expression tree_expression
-Rule 57    tree_expression -> operator_expression tree_expression
-Rule 58    tree_expression -> LBRACKET tree_expression RBRACKET
-Rule 59    tree_expression -> tree_expression operator_expression tree_expression
-Rule 60    operator_condition -> AND
-Rule 61    operator_condition -> OR
-Rule 62    operator_comparison -> EQUAL
-Rule 63    operator_comparison -> NOT_EQUAL
-Rule 64    operator_comparison -> GREATER_THAN
-Rule 65    operator_comparison -> LESS_THAN
-Rule 66    operator_comparison -> GREATER_THAN_OR_EQUAL
-Rule 67    operator_comparison -> LESS_THAN_OR_EQUAL
-Rule 68    operator_expression -> PLUS
-Rule 69    operator_expression -> MINUS
-Rule 70    operator_expression -> STAR
-Rule 71    operator_expression -> DIVISION
-Rule 72    type -> int
-Rule 73    type -> str
-Rule 74    type -> bol
-Rule 75    type -> bool
-Rule 76    type -> float
+Rule 19    join_right_table -> NAME
+Rule 20    union -> UNION
+Rule 21    union -> UNION ALL
+Rule 22    intersect -> INTERSECT
+Rule 23    tree_selects -> nested_selects
+Rule 24    nested_selects -> select
+Rule 25    nested_selects -> select union nested_selects
+Rule 26    nested_selects -> select intersect nested_selects
+Rule 27    select -> SELECT select_body join join_right_table
+Rule 28    select -> SELECT select_body join join_right_table condition
+Rule 29    select -> SELECT select_body
+Rule 30    select -> SELECT select_body condition
+Rule 31    select_body -> fields FROM NAME
+Rule 32    select_body -> STAR COMMA fields FROM NAME
+Rule 33    select_body -> STAR FROM NAME
+Rule 34    insert -> INSERT insert_body
+Rule 35    insert_body -> INTO NAME VALUES LBRACKET values RBRACKET
+Rule 36    insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
+Rule 37    update -> UPDATE update_body
+Rule 38    update_body -> NAME SET expression
+Rule 39    update_body -> NAME SET expression condition
+Rule 40    expression -> field EQUAL tree_expression
+Rule 41    expression -> expression COMMA field EQUAL tree_expression
+Rule 42    delete -> DELETE FROM NAME
+Rule 43    delete -> DELETE FROM NAME condition
+Rule 44    values -> value
+Rule 45    values -> values COMMA value
+Rule 46    value -> NAME
+Rule 47    value -> QUOTE NAME QUOTE
+Rule 48    fields -> field
+Rule 49    fields -> fields COMMA field
+Rule 50    field -> NAME
+Rule 51    field -> NAME DOT NAME
+Rule 52    condition -> WHERE tree_condition
+Rule 53    tree_condition -> tree_comparison operator_condition tree_condition
+Rule 54    tree_condition -> tree_comparison
+Rule 55    tree_comparison -> tree_expression operator_comparison tree_expression
+Rule 56    tree_expression -> value
+Rule 57    tree_expression -> value operator_expression tree_expression
+Rule 58    tree_expression -> operator_expression tree_expression
+Rule 59    tree_expression -> LBRACKET tree_expression RBRACKET
+Rule 60    tree_expression -> tree_expression operator_expression tree_expression
+Rule 61    operator_condition -> AND
+Rule 62    operator_condition -> OR
+Rule 63    operator_comparison -> EQUAL
+Rule 64    operator_comparison -> NOT_EQUAL
+Rule 65    operator_comparison -> GREATER_THAN
+Rule 66    operator_comparison -> LESS_THAN
+Rule 67    operator_comparison -> GREATER_THAN_OR_EQUAL
+Rule 68    operator_comparison -> LESS_THAN_OR_EQUAL
+Rule 69    operator_expression -> PLUS
+Rule 70    operator_expression -> MINUS
+Rule 71    operator_expression -> STAR
+Rule 72    operator_expression -> DIVISION
+Rule 73    type -> int
+Rule 74    type -> str
+Rule 75    type -> bol
+Rule 76    type -> bool
+Rule 77    type -> float
 
 Terminals, with rules where they appear
 
-ALL                  : 20
-AND                  : 60
-COMMA                : 11 31 40 44 48
+ALL                  : 21
+AND                  : 61
+COMMA                : 11 32 41 45 49
 CREATE               : 8 12
-DELETE               : 41 42
-DIVISION             : 71
-DOT                  : 50
+DELETE               : 42 43
+DIVISION             : 72
+DOT                  : 51
 DROP                 : 13
 ENDREQUEST           : 1 2 3 4 5 6 7
-EQUAL                : 17 39 40 62
-FROM                 : 30 31 32 41 42
-GREATER_THAN         : 64
-GREATER_THAN_OR_EQUAL : 66
-INSERT               : 33
-INTERSECT            : 21
-INTO                 : 34 35
+EQUAL                : 17 40 41 63
+FROM                 : 31 32 33 42 43
+GREATER_THAN         : 65
+GREATER_THAN_OR_EQUAL : 67
+INSERT               : 34
+INTERSECT            : 22
+INTO                 : 35 36
 JOIN                 : 14 15 16
-LBRACKET             : 9 18 34 35 35 58
+LBRACKET             : 9 18 35 36 36 59
 LEFT                 : 15
-LESS_THAN            : 65
-LESS_THAN_OR_EQUAL   : 67
-MINUS                : 69
-NAME                 : 9 10 11 12 13 17 18 30 31 32 34 35 37 38 41 42 45 46 49 50 50
+LESS_THAN            : 66
+LESS_THAN_OR_EQUAL   : 68
+MINUS                : 70
+NAME                 : 9 10 11 12 13 17 18 19 31 32 33 35 36 38 39 42 43 46 47 50 51 51
 NOT                  : 
-NOT_EQUAL            : 63
+NOT_EQUAL            : 64
 ON                   : 17
-OR                   : 61
+OR                   : 62
 OUTER                : 15 16
-PLUS                 : 68
-QUOTE                : 46 46
-RBRACKET             : 9 18 34 35 35 58
+PLUS                 : 69
+QUOTE                : 47 47
+RBRACKET             : 9 18 35 36 36 59
 RIGHT                : 16
-SELECT               : 26 27 28 29
-SET                  : 37 38
+SELECT               : 27 28 29 30
+SET                  : 38 39
 SHOW                 : 12
-STAR                 : 31 32 70
+STAR                 : 32 33 71
 TABLE                : 9 12 13
-UNION                : 19 20
-UPDATE               : 36
+UNION                : 20 21
+UPDATE               : 37
 USING                : 18
-VALUES               : 34 35
-WHERE                : 51
-bol                  : 74
-bool                 : 75
+VALUES               : 35 36
+WHERE                : 52
+bol                  : 75
+bool                 : 76
 error                : 
-float                : 76
-int                  : 72
-str                  : 73
+float                : 77
+int                  : 73
+str                  : 74
 
 Nonterminals, with rules where they appear
 
-condition            : 27 29 38 42
+condition            : 28 30 39 43
 create               : 1
 create_body          : 8
 delete               : 7
 drop                 : 3
-expression           : 37 38 40
-field                : 17 17 18 39 40 47 48
-fields               : 30 31 35 48
+expression           : 38 39 41
+field                : 17 17 18 40 41 48 49
+fields               : 31 32 36 49
 insert               : 5
-insert_body          : 33
-intersect            : 25
-join                 : 26 27
-join_right_table     : 26 27
-nested_selects       : 22 24 25
-operator_comparison  : 54
-operator_condition   : 52
-operator_expression  : 56 57 59
-select               : 23 24 25
-select_body          : 26 27 28 29
+insert_body          : 34
+intersect            : 26
+join                 : 27 28
+join_right_table     : 27 28
+nested_selects       : 23 25 26
+operator_comparison  : 55
+operator_condition   : 53
+operator_expression  : 57 58 60
+select               : 24 25 26
+select_body          : 27 28 29 30
 show                 : 2
 start                : 0
-tree_comparison      : 52 53
-tree_condition       : 51 52
-tree_expression      : 39 40 54 54 56 57 58 59 59
+tree_comparison      : 53 54
+tree_condition       : 52 53
+tree_expression      : 40 41 55 55 57 58 59 60 60
 tree_selects         : 4
 type                 : 10 11
-union                : 24
+union                : 25
 update               : 6
-update_body          : 36
-value                : 43 44 55 56
-values               : 34 35 44
+update_body          : 37
+value                : 44 45 56 57
+values               : 35 36 45
 variables            : 9 11
 
 Parsing method: LALR
@@ -185,18 +186,18 @@ state 0
     (8) create -> . CREATE create_body
     (12) show -> . SHOW CREATE TABLE NAME
     (13) drop -> . DROP TABLE NAME
-    (22) tree_selects -> . nested_selects
-    (33) insert -> . INSERT insert_body
-    (36) update -> . UPDATE update_body
-    (41) delete -> . DELETE FROM NAME
-    (42) delete -> . DELETE FROM NAME condition
-    (23) nested_selects -> . select
-    (24) nested_selects -> . select union nested_selects
-    (25) nested_selects -> . select intersect nested_selects
-    (26) select -> . SELECT select_body join join_right_table
-    (27) select -> . SELECT select_body join join_right_table condition
-    (28) select -> . SELECT select_body
-    (29) select -> . SELECT select_body condition
+    (23) tree_selects -> . nested_selects
+    (34) insert -> . INSERT insert_body
+    (37) update -> . UPDATE update_body
+    (42) delete -> . DELETE FROM NAME
+    (43) delete -> . DELETE FROM NAME condition
+    (24) nested_selects -> . select
+    (25) nested_selects -> . select union nested_selects
+    (26) nested_selects -> . select intersect nested_selects
+    (27) select -> . SELECT select_body join join_right_table
+    (28) select -> . SELECT select_body join join_right_table condition
+    (29) select -> . SELECT select_body
+    (30) select -> . SELECT select_body condition
 
     CREATE          shift and go to state 9
     SHOW            shift and go to state 10
@@ -297,16 +298,16 @@ state 11
 
 state 12
 
-    (22) tree_selects -> nested_selects .
+    (23) tree_selects -> nested_selects .
 
-    ENDREQUEST      reduce using rule 22 (tree_selects -> nested_selects .)
+    ENDREQUEST      reduce using rule 23 (tree_selects -> nested_selects .)
 
 
 state 13
 
-    (33) insert -> INSERT . insert_body
-    (34) insert_body -> . INTO NAME VALUES LBRACKET values RBRACKET
-    (35) insert_body -> . INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
+    (34) insert -> INSERT . insert_body
+    (35) insert_body -> . INTO NAME VALUES LBRACKET values RBRACKET
+    (36) insert_body -> . INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
 
     INTO            shift and go to state 30
 
@@ -314,9 +315,9 @@ state 13
 
 state 14
 
-    (36) update -> UPDATE . update_body
-    (37) update_body -> . NAME SET expression
-    (38) update_body -> . NAME SET expression condition
+    (37) update -> UPDATE . update_body
+    (38) update_body -> . NAME SET expression
+    (39) update_body -> . NAME SET expression condition
 
     NAME            shift and go to state 32
 
@@ -324,22 +325,22 @@ state 14
 
 state 15
 
-    (41) delete -> DELETE . FROM NAME
-    (42) delete -> DELETE . FROM NAME condition
+    (42) delete -> DELETE . FROM NAME
+    (43) delete -> DELETE . FROM NAME condition
 
     FROM            shift and go to state 33
 
 
 state 16
 
-    (23) nested_selects -> select .
-    (24) nested_selects -> select . union nested_selects
-    (25) nested_selects -> select . intersect nested_selects
-    (19) union -> . UNION
-    (20) union -> . UNION ALL
-    (21) intersect -> . INTERSECT
+    (24) nested_selects -> select .
+    (25) nested_selects -> select . union nested_selects
+    (26) nested_selects -> select . intersect nested_selects
+    (20) union -> . UNION
+    (21) union -> . UNION ALL
+    (22) intersect -> . INTERSECT
 
-    ENDREQUEST      reduce using rule 23 (nested_selects -> select .)
+    ENDREQUEST      reduce using rule 24 (nested_selects -> select .)
     UNION           shift and go to state 36
     INTERSECT       shift and go to state 37
 
@@ -348,17 +349,17 @@ state 16
 
 state 17
 
-    (26) select -> SELECT . select_body join join_right_table
-    (27) select -> SELECT . select_body join join_right_table condition
-    (28) select -> SELECT . select_body
-    (29) select -> SELECT . select_body condition
-    (30) select_body -> . fields FROM NAME
-    (31) select_body -> . STAR COMMA fields FROM NAME
-    (32) select_body -> . STAR FROM NAME
-    (47) fields -> . field
-    (48) fields -> . fields COMMA field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (27) select -> SELECT . select_body join join_right_table
+    (28) select -> SELECT . select_body join join_right_table condition
+    (29) select -> SELECT . select_body
+    (30) select -> SELECT . select_body condition
+    (31) select_body -> . fields FROM NAME
+    (32) select_body -> . STAR COMMA fields FROM NAME
+    (33) select_body -> . STAR FROM NAME
+    (48) fields -> . field
+    (49) fields -> . fields COMMA field
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     STAR            shift and go to state 41
     NAME            shift and go to state 40
@@ -446,52 +447,52 @@ state 28
 
 state 29
 
-    (33) insert -> INSERT insert_body .
+    (34) insert -> INSERT insert_body .
 
-    ENDREQUEST      reduce using rule 33 (insert -> INSERT insert_body .)
+    ENDREQUEST      reduce using rule 34 (insert -> INSERT insert_body .)
 
 
 state 30
 
-    (34) insert_body -> INTO . NAME VALUES LBRACKET values RBRACKET
-    (35) insert_body -> INTO . NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
+    (35) insert_body -> INTO . NAME VALUES LBRACKET values RBRACKET
+    (36) insert_body -> INTO . NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
 
     NAME            shift and go to state 46
 
 
 state 31
 
-    (36) update -> UPDATE update_body .
+    (37) update -> UPDATE update_body .
 
-    ENDREQUEST      reduce using rule 36 (update -> UPDATE update_body .)
+    ENDREQUEST      reduce using rule 37 (update -> UPDATE update_body .)
 
 
 state 32
 
-    (37) update_body -> NAME . SET expression
-    (38) update_body -> NAME . SET expression condition
+    (38) update_body -> NAME . SET expression
+    (39) update_body -> NAME . SET expression condition
 
     SET             shift and go to state 47
 
 
 state 33
 
-    (41) delete -> DELETE FROM . NAME
-    (42) delete -> DELETE FROM . NAME condition
+    (42) delete -> DELETE FROM . NAME
+    (43) delete -> DELETE FROM . NAME condition
 
     NAME            shift and go to state 48
 
 
 state 34
 
-    (24) nested_selects -> select union . nested_selects
-    (23) nested_selects -> . select
-    (24) nested_selects -> . select union nested_selects
-    (25) nested_selects -> . select intersect nested_selects
-    (26) select -> . SELECT select_body join join_right_table
-    (27) select -> . SELECT select_body join join_right_table condition
-    (28) select -> . SELECT select_body
-    (29) select -> . SELECT select_body condition
+    (25) nested_selects -> select union . nested_selects
+    (24) nested_selects -> . select
+    (25) nested_selects -> . select union nested_selects
+    (26) nested_selects -> . select intersect nested_selects
+    (27) select -> . SELECT select_body join join_right_table
+    (28) select -> . SELECT select_body join join_right_table condition
+    (29) select -> . SELECT select_body
+    (30) select -> . SELECT select_body condition
 
     SELECT          shift and go to state 17
 
@@ -500,14 +501,14 @@ state 34
 
 state 35
 
-    (25) nested_selects -> select intersect . nested_selects
-    (23) nested_selects -> . select
-    (24) nested_selects -> . select union nested_selects
-    (25) nested_selects -> . select intersect nested_selects
-    (26) select -> . SELECT select_body join join_right_table
-    (27) select -> . SELECT select_body join join_right_table condition
-    (28) select -> . SELECT select_body
-    (29) select -> . SELECT select_body condition
+    (26) nested_selects -> select intersect . nested_selects
+    (24) nested_selects -> . select
+    (25) nested_selects -> . select union nested_selects
+    (26) nested_selects -> . select intersect nested_selects
+    (27) select -> . SELECT select_body join join_right_table
+    (28) select -> . SELECT select_body join join_right_table condition
+    (29) select -> . SELECT select_body
+    (30) select -> . SELECT select_body condition
 
     SELECT          shift and go to state 17
 
@@ -516,34 +517,34 @@ state 35
 
 state 36
 
-    (19) union -> UNION .
-    (20) union -> UNION . ALL
+    (20) union -> UNION .
+    (21) union -> UNION . ALL
 
-    SELECT          reduce using rule 19 (union -> UNION .)
+    SELECT          reduce using rule 20 (union -> UNION .)
     ALL             shift and go to state 51
 
 
 state 37
 
-    (21) intersect -> INTERSECT .
+    (22) intersect -> INTERSECT .
 
-    SELECT          reduce using rule 21 (intersect -> INTERSECT .)
+    SELECT          reduce using rule 22 (intersect -> INTERSECT .)
 
 
 state 38
 
-    (26) select -> SELECT select_body . join join_right_table
-    (27) select -> SELECT select_body . join join_right_table condition
-    (28) select -> SELECT select_body .
-    (29) select -> SELECT select_body . condition
+    (27) select -> SELECT select_body . join join_right_table
+    (28) select -> SELECT select_body . join join_right_table condition
+    (29) select -> SELECT select_body .
+    (30) select -> SELECT select_body . condition
     (14) join -> . JOIN
     (15) join -> . LEFT OUTER JOIN
     (16) join -> . RIGHT OUTER JOIN
-    (51) condition -> . WHERE tree_condition
+    (52) condition -> . WHERE tree_condition
 
-    UNION           reduce using rule 28 (select -> SELECT select_body .)
-    INTERSECT       reduce using rule 28 (select -> SELECT select_body .)
-    ENDREQUEST      reduce using rule 28 (select -> SELECT select_body .)
+    UNION           reduce using rule 29 (select -> SELECT select_body .)
+    INTERSECT       reduce using rule 29 (select -> SELECT select_body .)
+    ENDREQUEST      reduce using rule 29 (select -> SELECT select_body .)
     JOIN            shift and go to state 54
     LEFT            shift and go to state 55
     RIGHT           shift and go to state 56
@@ -554,8 +555,8 @@ state 38
 
 state 39
 
-    (30) select_body -> fields . FROM NAME
-    (48) fields -> fields . COMMA field
+    (31) select_body -> fields . FROM NAME
+    (49) fields -> fields . COMMA field
 
     FROM            shift and go to state 58
     COMMA           shift and go to state 59
@@ -563,24 +564,24 @@ state 39
 
 state 40
 
-    (49) field -> NAME .
-    (50) field -> NAME . DOT NAME
+    (50) field -> NAME .
+    (51) field -> NAME . DOT NAME
 
-    FROM            reduce using rule 49 (field -> NAME .)
-    COMMA           reduce using rule 49 (field -> NAME .)
-    EQUAL           reduce using rule 49 (field -> NAME .)
-    RBRACKET        reduce using rule 49 (field -> NAME .)
-    WHERE           reduce using rule 49 (field -> NAME .)
-    UNION           reduce using rule 49 (field -> NAME .)
-    INTERSECT       reduce using rule 49 (field -> NAME .)
-    ENDREQUEST      reduce using rule 49 (field -> NAME .)
+    FROM            reduce using rule 50 (field -> NAME .)
+    COMMA           reduce using rule 50 (field -> NAME .)
+    EQUAL           reduce using rule 50 (field -> NAME .)
+    RBRACKET        reduce using rule 50 (field -> NAME .)
+    WHERE           reduce using rule 50 (field -> NAME .)
+    UNION           reduce using rule 50 (field -> NAME .)
+    INTERSECT       reduce using rule 50 (field -> NAME .)
+    ENDREQUEST      reduce using rule 50 (field -> NAME .)
     DOT             shift and go to state 60
 
 
 state 41
 
-    (31) select_body -> STAR . COMMA fields FROM NAME
-    (32) select_body -> STAR . FROM NAME
+    (32) select_body -> STAR . COMMA fields FROM NAME
+    (33) select_body -> STAR . FROM NAME
 
     COMMA           shift and go to state 61
     FROM            shift and go to state 62
@@ -588,11 +589,11 @@ state 41
 
 state 42
 
-    (47) fields -> field .
+    (48) fields -> field .
 
-    FROM            reduce using rule 47 (fields -> field .)
-    COMMA           reduce using rule 47 (fields -> field .)
-    RBRACKET        reduce using rule 47 (fields -> field .)
+    FROM            reduce using rule 48 (fields -> field .)
+    COMMA           reduce using rule 48 (fields -> field .)
+    RBRACKET        reduce using rule 48 (fields -> field .)
 
 
 state 43
@@ -618,8 +619,8 @@ state 45
 
 state 46
 
-    (34) insert_body -> INTO NAME . VALUES LBRACKET values RBRACKET
-    (35) insert_body -> INTO NAME . LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
+    (35) insert_body -> INTO NAME . VALUES LBRACKET values RBRACKET
+    (36) insert_body -> INTO NAME . LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET
 
     VALUES          shift and go to state 65
     LBRACKET        shift and go to state 66
@@ -627,12 +628,12 @@ state 46
 
 state 47
 
-    (37) update_body -> NAME SET . expression
-    (38) update_body -> NAME SET . expression condition
-    (39) expression -> . field EQUAL tree_expression
-    (40) expression -> . expression COMMA field EQUAL tree_expression
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (38) update_body -> NAME SET . expression
+    (39) update_body -> NAME SET . expression condition
+    (40) expression -> . field EQUAL tree_expression
+    (41) expression -> . expression COMMA field EQUAL tree_expression
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -641,42 +642,43 @@ state 47
 
 state 48
 
-    (41) delete -> DELETE FROM NAME .
-    (42) delete -> DELETE FROM NAME . condition
-    (51) condition -> . WHERE tree_condition
+    (42) delete -> DELETE FROM NAME .
+    (43) delete -> DELETE FROM NAME . condition
+    (52) condition -> . WHERE tree_condition
 
-    ENDREQUEST      reduce using rule 41 (delete -> DELETE FROM NAME .)
+    ENDREQUEST      reduce using rule 42 (delete -> DELETE FROM NAME .)
     WHERE           shift and go to state 57
 
     condition                      shift and go to state 69
 
 state 49
 
-    (24) nested_selects -> select union nested_selects .
+    (25) nested_selects -> select union nested_selects .
 
-    ENDREQUEST      reduce using rule 24 (nested_selects -> select union nested_selects .)
+    ENDREQUEST      reduce using rule 25 (nested_selects -> select union nested_selects .)
 
 
 state 50
 
-    (25) nested_selects -> select intersect nested_selects .
+    (26) nested_selects -> select intersect nested_selects .
 
-    ENDREQUEST      reduce using rule 25 (nested_selects -> select intersect nested_selects .)
+    ENDREQUEST      reduce using rule 26 (nested_selects -> select intersect nested_selects .)
 
 
 state 51
 
-    (20) union -> UNION ALL .
+    (21) union -> UNION ALL .
 
-    SELECT          reduce using rule 20 (union -> UNION ALL .)
+    SELECT          reduce using rule 21 (union -> UNION ALL .)
 
 
 state 52
 
-    (26) select -> SELECT select_body join . join_right_table
-    (27) select -> SELECT select_body join . join_right_table condition
+    (27) select -> SELECT select_body join . join_right_table
+    (28) select -> SELECT select_body join . join_right_table condition
     (17) join_right_table -> . NAME ON field EQUAL field
     (18) join_right_table -> . NAME USING LBRACKET field RBRACKET
+    (19) join_right_table -> . NAME
 
     NAME            shift and go to state 71
 
@@ -684,11 +686,11 @@ state 52
 
 state 53
 
-    (29) select -> SELECT select_body condition .
+    (30) select -> SELECT select_body condition .
 
-    UNION           reduce using rule 29 (select -> SELECT select_body condition .)
-    INTERSECT       reduce using rule 29 (select -> SELECT select_body condition .)
-    ENDREQUEST      reduce using rule 29 (select -> SELECT select_body condition .)
+    UNION           reduce using rule 30 (select -> SELECT select_body condition .)
+    INTERSECT       reduce using rule 30 (select -> SELECT select_body condition .)
+    ENDREQUEST      reduce using rule 30 (select -> SELECT select_body condition .)
 
 
 state 54
@@ -714,21 +716,21 @@ state 56
 
 state 57
 
-    (51) condition -> WHERE . tree_condition
-    (52) tree_condition -> . tree_comparison operator_condition tree_condition
-    (53) tree_condition -> . tree_comparison
-    (54) tree_comparison -> . tree_expression operator_comparison tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (52) condition -> WHERE . tree_condition
+    (53) tree_condition -> . tree_comparison operator_condition tree_condition
+    (54) tree_condition -> . tree_comparison
+    (55) tree_comparison -> . tree_expression operator_comparison tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -746,16 +748,16 @@ state 57
 
 state 58
 
-    (30) select_body -> fields FROM . NAME
+    (31) select_body -> fields FROM . NAME
 
     NAME            shift and go to state 86
 
 
 state 59
 
-    (48) fields -> fields COMMA . field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (49) fields -> fields COMMA . field
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -763,18 +765,18 @@ state 59
 
 state 60
 
-    (50) field -> NAME DOT . NAME
+    (51) field -> NAME DOT . NAME
 
     NAME            shift and go to state 88
 
 
 state 61
 
-    (31) select_body -> STAR COMMA . fields FROM NAME
-    (47) fields -> . field
-    (48) fields -> . fields COMMA field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (32) select_body -> STAR COMMA . fields FROM NAME
+    (48) fields -> . field
+    (49) fields -> . fields COMMA field
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -783,7 +785,7 @@ state 61
 
 state 62
 
-    (32) select_body -> STAR FROM . NAME
+    (33) select_body -> STAR FROM . NAME
 
     NAME            shift and go to state 90
 
@@ -807,18 +809,18 @@ state 64
 
 state 65
 
-    (34) insert_body -> INTO NAME VALUES . LBRACKET values RBRACKET
+    (35) insert_body -> INTO NAME VALUES . LBRACKET values RBRACKET
 
     LBRACKET        shift and go to state 93
 
 
 state 66
 
-    (35) insert_body -> INTO NAME LBRACKET . fields RBRACKET VALUES LBRACKET values RBRACKET
-    (47) fields -> . field
-    (48) fields -> . fields COMMA field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (36) insert_body -> INTO NAME LBRACKET . fields RBRACKET VALUES LBRACKET values RBRACKET
+    (48) fields -> . field
+    (49) fields -> . fields COMMA field
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -827,12 +829,12 @@ state 66
 
 state 67
 
-    (37) update_body -> NAME SET expression .
-    (38) update_body -> NAME SET expression . condition
-    (40) expression -> expression . COMMA field EQUAL tree_expression
-    (51) condition -> . WHERE tree_condition
+    (38) update_body -> NAME SET expression .
+    (39) update_body -> NAME SET expression . condition
+    (41) expression -> expression . COMMA field EQUAL tree_expression
+    (52) condition -> . WHERE tree_condition
 
-    ENDREQUEST      reduce using rule 37 (update_body -> NAME SET expression .)
+    ENDREQUEST      reduce using rule 38 (update_body -> NAME SET expression .)
     COMMA           shift and go to state 96
     WHERE           shift and go to state 57
 
@@ -840,27 +842,27 @@ state 67
 
 state 68
 
-    (39) expression -> field . EQUAL tree_expression
+    (40) expression -> field . EQUAL tree_expression
 
     EQUAL           shift and go to state 97
 
 
 state 69
 
-    (42) delete -> DELETE FROM NAME condition .
+    (43) delete -> DELETE FROM NAME condition .
 
-    ENDREQUEST      reduce using rule 42 (delete -> DELETE FROM NAME condition .)
+    ENDREQUEST      reduce using rule 43 (delete -> DELETE FROM NAME condition .)
 
 
 state 70
 
-    (26) select -> SELECT select_body join join_right_table .
-    (27) select -> SELECT select_body join join_right_table . condition
-    (51) condition -> . WHERE tree_condition
+    (27) select -> SELECT select_body join join_right_table .
+    (28) select -> SELECT select_body join join_right_table . condition
+    (52) condition -> . WHERE tree_condition
 
-    UNION           reduce using rule 26 (select -> SELECT select_body join join_right_table .)
-    INTERSECT       reduce using rule 26 (select -> SELECT select_body join join_right_table .)
-    ENDREQUEST      reduce using rule 26 (select -> SELECT select_body join join_right_table .)
+    UNION           reduce using rule 27 (select -> SELECT select_body join join_right_table .)
+    INTERSECT       reduce using rule 27 (select -> SELECT select_body join join_right_table .)
+    ENDREQUEST      reduce using rule 27 (select -> SELECT select_body join join_right_table .)
     WHERE           shift and go to state 57
 
     condition                      shift and go to state 98
@@ -869,9 +871,14 @@ state 71
 
     (17) join_right_table -> NAME . ON field EQUAL field
     (18) join_right_table -> NAME . USING LBRACKET field RBRACKET
+    (19) join_right_table -> NAME .
 
     ON              shift and go to state 99
     USING           shift and go to state 100
+    WHERE           reduce using rule 19 (join_right_table -> NAME .)
+    UNION           reduce using rule 19 (join_right_table -> NAME .)
+    INTERSECT       reduce using rule 19 (join_right_table -> NAME .)
+    ENDREQUEST      reduce using rule 19 (join_right_table -> NAME .)
 
 
 state 72
@@ -890,23 +897,23 @@ state 73
 
 state 74
 
-    (51) condition -> WHERE tree_condition .
+    (52) condition -> WHERE tree_condition .
 
-    UNION           reduce using rule 51 (condition -> WHERE tree_condition .)
-    INTERSECT       reduce using rule 51 (condition -> WHERE tree_condition .)
-    ENDREQUEST      reduce using rule 51 (condition -> WHERE tree_condition .)
+    UNION           reduce using rule 52 (condition -> WHERE tree_condition .)
+    INTERSECT       reduce using rule 52 (condition -> WHERE tree_condition .)
+    ENDREQUEST      reduce using rule 52 (condition -> WHERE tree_condition .)
 
 
 state 75
 
-    (52) tree_condition -> tree_comparison . operator_condition tree_condition
-    (53) tree_condition -> tree_comparison .
-    (60) operator_condition -> . AND
-    (61) operator_condition -> . OR
+    (53) tree_condition -> tree_comparison . operator_condition tree_condition
+    (54) tree_condition -> tree_comparison .
+    (61) operator_condition -> . AND
+    (62) operator_condition -> . OR
 
-    UNION           reduce using rule 53 (tree_condition -> tree_comparison .)
-    INTERSECT       reduce using rule 53 (tree_condition -> tree_comparison .)
-    ENDREQUEST      reduce using rule 53 (tree_condition -> tree_comparison .)
+    UNION           reduce using rule 54 (tree_condition -> tree_comparison .)
+    INTERSECT       reduce using rule 54 (tree_condition -> tree_comparison .)
+    ENDREQUEST      reduce using rule 54 (tree_condition -> tree_comparison .)
     AND             shift and go to state 104
     OR              shift and go to state 105
 
@@ -914,18 +921,18 @@ state 75
 
 state 76
 
-    (54) tree_comparison -> tree_expression . operator_comparison tree_expression
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (62) operator_comparison -> . EQUAL
-    (63) operator_comparison -> . NOT_EQUAL
-    (64) operator_comparison -> . GREATER_THAN
-    (65) operator_comparison -> . LESS_THAN
-    (66) operator_comparison -> . GREATER_THAN_OR_EQUAL
-    (67) operator_comparison -> . LESS_THAN_OR_EQUAL
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (55) tree_comparison -> tree_expression . operator_comparison tree_expression
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (63) operator_comparison -> . EQUAL
+    (64) operator_comparison -> . NOT_EQUAL
+    (65) operator_comparison -> . GREATER_THAN
+    (66) operator_comparison -> . LESS_THAN
+    (67) operator_comparison -> . GREATER_THAN_OR_EQUAL
+    (68) operator_comparison -> . LESS_THAN_OR_EQUAL
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     EQUAL           shift and go to state 108
     NOT_EQUAL       shift and go to state 109
@@ -943,57 +950,57 @@ state 76
 
 state 77
 
-    (55) tree_expression -> value .
-    (56) tree_expression -> value . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (56) tree_expression -> value .
+    (57) tree_expression -> value . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 55 (tree_expression -> value .)
-    NOT_EQUAL       reduce using rule 55 (tree_expression -> value .)
-    GREATER_THAN    reduce using rule 55 (tree_expression -> value .)
-    LESS_THAN       reduce using rule 55 (tree_expression -> value .)
-    GREATER_THAN_OR_EQUAL reduce using rule 55 (tree_expression -> value .)
-    LESS_THAN_OR_EQUAL reduce using rule 55 (tree_expression -> value .)
-    RBRACKET        reduce using rule 55 (tree_expression -> value .)
-    COMMA           reduce using rule 55 (tree_expression -> value .)
-    WHERE           reduce using rule 55 (tree_expression -> value .)
-    ENDREQUEST      reduce using rule 55 (tree_expression -> value .)
-    AND             reduce using rule 55 (tree_expression -> value .)
-    OR              reduce using rule 55 (tree_expression -> value .)
-    UNION           reduce using rule 55 (tree_expression -> value .)
-    INTERSECT       reduce using rule 55 (tree_expression -> value .)
+    EQUAL           reduce using rule 56 (tree_expression -> value .)
+    NOT_EQUAL       reduce using rule 56 (tree_expression -> value .)
+    GREATER_THAN    reduce using rule 56 (tree_expression -> value .)
+    LESS_THAN       reduce using rule 56 (tree_expression -> value .)
+    GREATER_THAN_OR_EQUAL reduce using rule 56 (tree_expression -> value .)
+    LESS_THAN_OR_EQUAL reduce using rule 56 (tree_expression -> value .)
+    RBRACKET        reduce using rule 56 (tree_expression -> value .)
+    COMMA           reduce using rule 56 (tree_expression -> value .)
+    WHERE           reduce using rule 56 (tree_expression -> value .)
+    ENDREQUEST      reduce using rule 56 (tree_expression -> value .)
+    AND             reduce using rule 56 (tree_expression -> value .)
+    OR              reduce using rule 56 (tree_expression -> value .)
+    UNION           reduce using rule 56 (tree_expression -> value .)
+    INTERSECT       reduce using rule 56 (tree_expression -> value .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
     DIVISION        shift and go to state 85
 
-  ! PLUS            [ reduce using rule 55 (tree_expression -> value .) ]
-  ! MINUS           [ reduce using rule 55 (tree_expression -> value .) ]
-  ! STAR            [ reduce using rule 55 (tree_expression -> value .) ]
-  ! DIVISION        [ reduce using rule 55 (tree_expression -> value .) ]
+  ! PLUS            [ reduce using rule 56 (tree_expression -> value .) ]
+  ! MINUS           [ reduce using rule 56 (tree_expression -> value .) ]
+  ! STAR            [ reduce using rule 56 (tree_expression -> value .) ]
+  ! DIVISION        [ reduce using rule 56 (tree_expression -> value .) ]
 
     operator_expression            shift and go to state 114
 
 state 78
 
-    (57) tree_expression -> operator_expression . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (58) tree_expression -> operator_expression . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1009,18 +1016,18 @@ state 78
 
 state 79
 
-    (58) tree_expression -> LBRACKET . tree_expression RBRACKET
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (59) tree_expression -> LBRACKET . tree_expression RBRACKET
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1036,127 +1043,127 @@ state 79
 
 state 80
 
-    (45) value -> NAME .
+    (46) value -> NAME .
 
-    PLUS            reduce using rule 45 (value -> NAME .)
-    MINUS           reduce using rule 45 (value -> NAME .)
-    STAR            reduce using rule 45 (value -> NAME .)
-    DIVISION        reduce using rule 45 (value -> NAME .)
-    EQUAL           reduce using rule 45 (value -> NAME .)
-    NOT_EQUAL       reduce using rule 45 (value -> NAME .)
-    GREATER_THAN    reduce using rule 45 (value -> NAME .)
-    LESS_THAN       reduce using rule 45 (value -> NAME .)
-    GREATER_THAN_OR_EQUAL reduce using rule 45 (value -> NAME .)
-    LESS_THAN_OR_EQUAL reduce using rule 45 (value -> NAME .)
-    RBRACKET        reduce using rule 45 (value -> NAME .)
-    COMMA           reduce using rule 45 (value -> NAME .)
-    WHERE           reduce using rule 45 (value -> NAME .)
-    ENDREQUEST      reduce using rule 45 (value -> NAME .)
-    AND             reduce using rule 45 (value -> NAME .)
-    OR              reduce using rule 45 (value -> NAME .)
-    UNION           reduce using rule 45 (value -> NAME .)
-    INTERSECT       reduce using rule 45 (value -> NAME .)
+    PLUS            reduce using rule 46 (value -> NAME .)
+    MINUS           reduce using rule 46 (value -> NAME .)
+    STAR            reduce using rule 46 (value -> NAME .)
+    DIVISION        reduce using rule 46 (value -> NAME .)
+    EQUAL           reduce using rule 46 (value -> NAME .)
+    NOT_EQUAL       reduce using rule 46 (value -> NAME .)
+    GREATER_THAN    reduce using rule 46 (value -> NAME .)
+    LESS_THAN       reduce using rule 46 (value -> NAME .)
+    GREATER_THAN_OR_EQUAL reduce using rule 46 (value -> NAME .)
+    LESS_THAN_OR_EQUAL reduce using rule 46 (value -> NAME .)
+    RBRACKET        reduce using rule 46 (value -> NAME .)
+    COMMA           reduce using rule 46 (value -> NAME .)
+    WHERE           reduce using rule 46 (value -> NAME .)
+    ENDREQUEST      reduce using rule 46 (value -> NAME .)
+    AND             reduce using rule 46 (value -> NAME .)
+    OR              reduce using rule 46 (value -> NAME .)
+    UNION           reduce using rule 46 (value -> NAME .)
+    INTERSECT       reduce using rule 46 (value -> NAME .)
 
 
 state 81
 
-    (46) value -> QUOTE . NAME QUOTE
+    (47) value -> QUOTE . NAME QUOTE
 
     NAME            shift and go to state 117
 
 
 state 82
 
-    (68) operator_expression -> PLUS .
+    (69) operator_expression -> PLUS .
 
-    LBRACKET        reduce using rule 68 (operator_expression -> PLUS .)
-    NAME            reduce using rule 68 (operator_expression -> PLUS .)
-    QUOTE           reduce using rule 68 (operator_expression -> PLUS .)
-    PLUS            reduce using rule 68 (operator_expression -> PLUS .)
-    MINUS           reduce using rule 68 (operator_expression -> PLUS .)
-    STAR            reduce using rule 68 (operator_expression -> PLUS .)
-    DIVISION        reduce using rule 68 (operator_expression -> PLUS .)
+    LBRACKET        reduce using rule 69 (operator_expression -> PLUS .)
+    NAME            reduce using rule 69 (operator_expression -> PLUS .)
+    QUOTE           reduce using rule 69 (operator_expression -> PLUS .)
+    PLUS            reduce using rule 69 (operator_expression -> PLUS .)
+    MINUS           reduce using rule 69 (operator_expression -> PLUS .)
+    STAR            reduce using rule 69 (operator_expression -> PLUS .)
+    DIVISION        reduce using rule 69 (operator_expression -> PLUS .)
 
 
 state 83
 
-    (69) operator_expression -> MINUS .
+    (70) operator_expression -> MINUS .
 
-    LBRACKET        reduce using rule 69 (operator_expression -> MINUS .)
-    NAME            reduce using rule 69 (operator_expression -> MINUS .)
-    QUOTE           reduce using rule 69 (operator_expression -> MINUS .)
-    PLUS            reduce using rule 69 (operator_expression -> MINUS .)
-    MINUS           reduce using rule 69 (operator_expression -> MINUS .)
-    STAR            reduce using rule 69 (operator_expression -> MINUS .)
-    DIVISION        reduce using rule 69 (operator_expression -> MINUS .)
+    LBRACKET        reduce using rule 70 (operator_expression -> MINUS .)
+    NAME            reduce using rule 70 (operator_expression -> MINUS .)
+    QUOTE           reduce using rule 70 (operator_expression -> MINUS .)
+    PLUS            reduce using rule 70 (operator_expression -> MINUS .)
+    MINUS           reduce using rule 70 (operator_expression -> MINUS .)
+    STAR            reduce using rule 70 (operator_expression -> MINUS .)
+    DIVISION        reduce using rule 70 (operator_expression -> MINUS .)
 
 
 state 84
 
-    (70) operator_expression -> STAR .
+    (71) operator_expression -> STAR .
 
-    LBRACKET        reduce using rule 70 (operator_expression -> STAR .)
-    NAME            reduce using rule 70 (operator_expression -> STAR .)
-    QUOTE           reduce using rule 70 (operator_expression -> STAR .)
-    PLUS            reduce using rule 70 (operator_expression -> STAR .)
-    MINUS           reduce using rule 70 (operator_expression -> STAR .)
-    STAR            reduce using rule 70 (operator_expression -> STAR .)
-    DIVISION        reduce using rule 70 (operator_expression -> STAR .)
+    LBRACKET        reduce using rule 71 (operator_expression -> STAR .)
+    NAME            reduce using rule 71 (operator_expression -> STAR .)
+    QUOTE           reduce using rule 71 (operator_expression -> STAR .)
+    PLUS            reduce using rule 71 (operator_expression -> STAR .)
+    MINUS           reduce using rule 71 (operator_expression -> STAR .)
+    STAR            reduce using rule 71 (operator_expression -> STAR .)
+    DIVISION        reduce using rule 71 (operator_expression -> STAR .)
 
 
 state 85
 
-    (71) operator_expression -> DIVISION .
+    (72) operator_expression -> DIVISION .
 
-    LBRACKET        reduce using rule 71 (operator_expression -> DIVISION .)
-    NAME            reduce using rule 71 (operator_expression -> DIVISION .)
-    QUOTE           reduce using rule 71 (operator_expression -> DIVISION .)
-    PLUS            reduce using rule 71 (operator_expression -> DIVISION .)
-    MINUS           reduce using rule 71 (operator_expression -> DIVISION .)
-    STAR            reduce using rule 71 (operator_expression -> DIVISION .)
-    DIVISION        reduce using rule 71 (operator_expression -> DIVISION .)
+    LBRACKET        reduce using rule 72 (operator_expression -> DIVISION .)
+    NAME            reduce using rule 72 (operator_expression -> DIVISION .)
+    QUOTE           reduce using rule 72 (operator_expression -> DIVISION .)
+    PLUS            reduce using rule 72 (operator_expression -> DIVISION .)
+    MINUS           reduce using rule 72 (operator_expression -> DIVISION .)
+    STAR            reduce using rule 72 (operator_expression -> DIVISION .)
+    DIVISION        reduce using rule 72 (operator_expression -> DIVISION .)
 
 
 state 86
 
-    (30) select_body -> fields FROM NAME .
+    (31) select_body -> fields FROM NAME .
 
-    JOIN            reduce using rule 30 (select_body -> fields FROM NAME .)
-    LEFT            reduce using rule 30 (select_body -> fields FROM NAME .)
-    RIGHT           reduce using rule 30 (select_body -> fields FROM NAME .)
-    WHERE           reduce using rule 30 (select_body -> fields FROM NAME .)
-    UNION           reduce using rule 30 (select_body -> fields FROM NAME .)
-    INTERSECT       reduce using rule 30 (select_body -> fields FROM NAME .)
-    ENDREQUEST      reduce using rule 30 (select_body -> fields FROM NAME .)
+    JOIN            reduce using rule 31 (select_body -> fields FROM NAME .)
+    LEFT            reduce using rule 31 (select_body -> fields FROM NAME .)
+    RIGHT           reduce using rule 31 (select_body -> fields FROM NAME .)
+    WHERE           reduce using rule 31 (select_body -> fields FROM NAME .)
+    UNION           reduce using rule 31 (select_body -> fields FROM NAME .)
+    INTERSECT       reduce using rule 31 (select_body -> fields FROM NAME .)
+    ENDREQUEST      reduce using rule 31 (select_body -> fields FROM NAME .)
 
 
 state 87
 
-    (48) fields -> fields COMMA field .
+    (49) fields -> fields COMMA field .
 
-    FROM            reduce using rule 48 (fields -> fields COMMA field .)
-    COMMA           reduce using rule 48 (fields -> fields COMMA field .)
-    RBRACKET        reduce using rule 48 (fields -> fields COMMA field .)
+    FROM            reduce using rule 49 (fields -> fields COMMA field .)
+    COMMA           reduce using rule 49 (fields -> fields COMMA field .)
+    RBRACKET        reduce using rule 49 (fields -> fields COMMA field .)
 
 
 state 88
 
-    (50) field -> NAME DOT NAME .
+    (51) field -> NAME DOT NAME .
 
-    FROM            reduce using rule 50 (field -> NAME DOT NAME .)
-    COMMA           reduce using rule 50 (field -> NAME DOT NAME .)
-    EQUAL           reduce using rule 50 (field -> NAME DOT NAME .)
-    RBRACKET        reduce using rule 50 (field -> NAME DOT NAME .)
-    WHERE           reduce using rule 50 (field -> NAME DOT NAME .)
-    UNION           reduce using rule 50 (field -> NAME DOT NAME .)
-    INTERSECT       reduce using rule 50 (field -> NAME DOT NAME .)
-    ENDREQUEST      reduce using rule 50 (field -> NAME DOT NAME .)
+    FROM            reduce using rule 51 (field -> NAME DOT NAME .)
+    COMMA           reduce using rule 51 (field -> NAME DOT NAME .)
+    EQUAL           reduce using rule 51 (field -> NAME DOT NAME .)
+    RBRACKET        reduce using rule 51 (field -> NAME DOT NAME .)
+    WHERE           reduce using rule 51 (field -> NAME DOT NAME .)
+    UNION           reduce using rule 51 (field -> NAME DOT NAME .)
+    INTERSECT       reduce using rule 51 (field -> NAME DOT NAME .)
+    ENDREQUEST      reduce using rule 51 (field -> NAME DOT NAME .)
 
 
 state 89
 
-    (31) select_body -> STAR COMMA fields . FROM NAME
-    (48) fields -> fields . COMMA field
+    (32) select_body -> STAR COMMA fields . FROM NAME
+    (49) fields -> fields . COMMA field
 
     FROM            shift and go to state 118
     COMMA           shift and go to state 59
@@ -1164,25 +1171,25 @@ state 89
 
 state 90
 
-    (32) select_body -> STAR FROM NAME .
+    (33) select_body -> STAR FROM NAME .
 
-    JOIN            reduce using rule 32 (select_body -> STAR FROM NAME .)
-    LEFT            reduce using rule 32 (select_body -> STAR FROM NAME .)
-    RIGHT           reduce using rule 32 (select_body -> STAR FROM NAME .)
-    WHERE           reduce using rule 32 (select_body -> STAR FROM NAME .)
-    UNION           reduce using rule 32 (select_body -> STAR FROM NAME .)
-    INTERSECT       reduce using rule 32 (select_body -> STAR FROM NAME .)
-    ENDREQUEST      reduce using rule 32 (select_body -> STAR FROM NAME .)
+    JOIN            reduce using rule 33 (select_body -> STAR FROM NAME .)
+    LEFT            reduce using rule 33 (select_body -> STAR FROM NAME .)
+    RIGHT           reduce using rule 33 (select_body -> STAR FROM NAME .)
+    WHERE           reduce using rule 33 (select_body -> STAR FROM NAME .)
+    UNION           reduce using rule 33 (select_body -> STAR FROM NAME .)
+    INTERSECT       reduce using rule 33 (select_body -> STAR FROM NAME .)
+    ENDREQUEST      reduce using rule 33 (select_body -> STAR FROM NAME .)
 
 
 state 91
 
     (10) variables -> NAME . type
-    (72) type -> . int
-    (73) type -> . str
-    (74) type -> . bol
-    (75) type -> . bool
-    (76) type -> . float
+    (73) type -> . int
+    (74) type -> . str
+    (75) type -> . bol
+    (76) type -> . bool
+    (77) type -> . float
 
     int             shift and go to state 120
     str             shift and go to state 121
@@ -1203,11 +1210,11 @@ state 92
 
 state 93
 
-    (34) insert_body -> INTO NAME VALUES LBRACKET . values RBRACKET
-    (43) values -> . value
-    (44) values -> . values COMMA value
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
+    (35) insert_body -> INTO NAME VALUES LBRACKET . values RBRACKET
+    (44) values -> . value
+    (45) values -> . values COMMA value
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
 
     NAME            shift and go to state 80
     QUOTE           shift and go to state 81
@@ -1217,8 +1224,8 @@ state 93
 
 state 94
 
-    (35) insert_body -> INTO NAME LBRACKET fields . RBRACKET VALUES LBRACKET values RBRACKET
-    (48) fields -> fields . COMMA field
+    (36) insert_body -> INTO NAME LBRACKET fields . RBRACKET VALUES LBRACKET values RBRACKET
+    (49) fields -> fields . COMMA field
 
     RBRACKET        shift and go to state 129
     COMMA           shift and go to state 59
@@ -1226,16 +1233,16 @@ state 94
 
 state 95
 
-    (38) update_body -> NAME SET expression condition .
+    (39) update_body -> NAME SET expression condition .
 
-    ENDREQUEST      reduce using rule 38 (update_body -> NAME SET expression condition .)
+    ENDREQUEST      reduce using rule 39 (update_body -> NAME SET expression condition .)
 
 
 state 96
 
-    (40) expression -> expression COMMA . field EQUAL tree_expression
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (41) expression -> expression COMMA . field EQUAL tree_expression
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -1243,18 +1250,18 @@ state 96
 
 state 97
 
-    (39) expression -> field EQUAL . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (40) expression -> field EQUAL . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1270,18 +1277,18 @@ state 97
 
 state 98
 
-    (27) select -> SELECT select_body join join_right_table condition .
+    (28) select -> SELECT select_body join join_right_table condition .
 
-    UNION           reduce using rule 27 (select -> SELECT select_body join join_right_table condition .)
-    INTERSECT       reduce using rule 27 (select -> SELECT select_body join join_right_table condition .)
-    ENDREQUEST      reduce using rule 27 (select -> SELECT select_body join join_right_table condition .)
+    UNION           reduce using rule 28 (select -> SELECT select_body join join_right_table condition .)
+    INTERSECT       reduce using rule 28 (select -> SELECT select_body join join_right_table condition .)
+    ENDREQUEST      reduce using rule 28 (select -> SELECT select_body join join_right_table condition .)
 
 
 state 99
 
     (17) join_right_table -> NAME ON . field EQUAL field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -1310,21 +1317,21 @@ state 102
 
 state 103
 
-    (52) tree_condition -> tree_comparison operator_condition . tree_condition
-    (52) tree_condition -> . tree_comparison operator_condition tree_condition
-    (53) tree_condition -> . tree_comparison
-    (54) tree_comparison -> . tree_expression operator_comparison tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (53) tree_condition -> tree_comparison operator_condition . tree_condition
+    (53) tree_condition -> . tree_comparison operator_condition tree_condition
+    (54) tree_condition -> . tree_comparison
+    (55) tree_comparison -> . tree_expression operator_comparison tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1342,44 +1349,44 @@ state 103
 
 state 104
 
-    (60) operator_condition -> AND .
+    (61) operator_condition -> AND .
 
-    LBRACKET        reduce using rule 60 (operator_condition -> AND .)
-    NAME            reduce using rule 60 (operator_condition -> AND .)
-    QUOTE           reduce using rule 60 (operator_condition -> AND .)
-    PLUS            reduce using rule 60 (operator_condition -> AND .)
-    MINUS           reduce using rule 60 (operator_condition -> AND .)
-    STAR            reduce using rule 60 (operator_condition -> AND .)
-    DIVISION        reduce using rule 60 (operator_condition -> AND .)
+    LBRACKET        reduce using rule 61 (operator_condition -> AND .)
+    NAME            reduce using rule 61 (operator_condition -> AND .)
+    QUOTE           reduce using rule 61 (operator_condition -> AND .)
+    PLUS            reduce using rule 61 (operator_condition -> AND .)
+    MINUS           reduce using rule 61 (operator_condition -> AND .)
+    STAR            reduce using rule 61 (operator_condition -> AND .)
+    DIVISION        reduce using rule 61 (operator_condition -> AND .)
 
 
 state 105
 
-    (61) operator_condition -> OR .
+    (62) operator_condition -> OR .
 
-    LBRACKET        reduce using rule 61 (operator_condition -> OR .)
-    NAME            reduce using rule 61 (operator_condition -> OR .)
-    QUOTE           reduce using rule 61 (operator_condition -> OR .)
-    PLUS            reduce using rule 61 (operator_condition -> OR .)
-    MINUS           reduce using rule 61 (operator_condition -> OR .)
-    STAR            reduce using rule 61 (operator_condition -> OR .)
-    DIVISION        reduce using rule 61 (operator_condition -> OR .)
+    LBRACKET        reduce using rule 62 (operator_condition -> OR .)
+    NAME            reduce using rule 62 (operator_condition -> OR .)
+    QUOTE           reduce using rule 62 (operator_condition -> OR .)
+    PLUS            reduce using rule 62 (operator_condition -> OR .)
+    MINUS           reduce using rule 62 (operator_condition -> OR .)
+    STAR            reduce using rule 62 (operator_condition -> OR .)
+    DIVISION        reduce using rule 62 (operator_condition -> OR .)
 
 
 state 106
 
-    (54) tree_comparison -> tree_expression operator_comparison . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (55) tree_comparison -> tree_expression operator_comparison . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1395,18 +1402,18 @@ state 106
 
 state 107
 
-    (59) tree_expression -> tree_expression operator_expression . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (60) tree_expression -> tree_expression operator_expression . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1422,96 +1429,96 @@ state 107
 
 state 108
 
-    (62) operator_comparison -> EQUAL .
+    (63) operator_comparison -> EQUAL .
 
-    LBRACKET        reduce using rule 62 (operator_comparison -> EQUAL .)
-    NAME            reduce using rule 62 (operator_comparison -> EQUAL .)
-    QUOTE           reduce using rule 62 (operator_comparison -> EQUAL .)
-    PLUS            reduce using rule 62 (operator_comparison -> EQUAL .)
-    MINUS           reduce using rule 62 (operator_comparison -> EQUAL .)
-    STAR            reduce using rule 62 (operator_comparison -> EQUAL .)
-    DIVISION        reduce using rule 62 (operator_comparison -> EQUAL .)
+    LBRACKET        reduce using rule 63 (operator_comparison -> EQUAL .)
+    NAME            reduce using rule 63 (operator_comparison -> EQUAL .)
+    QUOTE           reduce using rule 63 (operator_comparison -> EQUAL .)
+    PLUS            reduce using rule 63 (operator_comparison -> EQUAL .)
+    MINUS           reduce using rule 63 (operator_comparison -> EQUAL .)
+    STAR            reduce using rule 63 (operator_comparison -> EQUAL .)
+    DIVISION        reduce using rule 63 (operator_comparison -> EQUAL .)
 
 
 state 109
 
-    (63) operator_comparison -> NOT_EQUAL .
+    (64) operator_comparison -> NOT_EQUAL .
 
-    LBRACKET        reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    NAME            reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    QUOTE           reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    PLUS            reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    MINUS           reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    STAR            reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
-    DIVISION        reduce using rule 63 (operator_comparison -> NOT_EQUAL .)
+    LBRACKET        reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    NAME            reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    QUOTE           reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    PLUS            reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    MINUS           reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    STAR            reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
+    DIVISION        reduce using rule 64 (operator_comparison -> NOT_EQUAL .)
 
 
 state 110
 
-    (64) operator_comparison -> GREATER_THAN .
+    (65) operator_comparison -> GREATER_THAN .
 
-    LBRACKET        reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    NAME            reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    QUOTE           reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    PLUS            reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    MINUS           reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    STAR            reduce using rule 64 (operator_comparison -> GREATER_THAN .)
-    DIVISION        reduce using rule 64 (operator_comparison -> GREATER_THAN .)
+    LBRACKET        reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    NAME            reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    QUOTE           reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    PLUS            reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    MINUS           reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    STAR            reduce using rule 65 (operator_comparison -> GREATER_THAN .)
+    DIVISION        reduce using rule 65 (operator_comparison -> GREATER_THAN .)
 
 
 state 111
 
-    (65) operator_comparison -> LESS_THAN .
+    (66) operator_comparison -> LESS_THAN .
 
-    LBRACKET        reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    NAME            reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    QUOTE           reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    PLUS            reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    MINUS           reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    STAR            reduce using rule 65 (operator_comparison -> LESS_THAN .)
-    DIVISION        reduce using rule 65 (operator_comparison -> LESS_THAN .)
+    LBRACKET        reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    NAME            reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    QUOTE           reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    PLUS            reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    MINUS           reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    STAR            reduce using rule 66 (operator_comparison -> LESS_THAN .)
+    DIVISION        reduce using rule 66 (operator_comparison -> LESS_THAN .)
 
 
 state 112
 
-    (66) operator_comparison -> GREATER_THAN_OR_EQUAL .
+    (67) operator_comparison -> GREATER_THAN_OR_EQUAL .
 
-    LBRACKET        reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    NAME            reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    QUOTE           reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    PLUS            reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    MINUS           reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    STAR            reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    DIVISION        reduce using rule 66 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    LBRACKET        reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    NAME            reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    QUOTE           reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    PLUS            reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    MINUS           reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    STAR            reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    DIVISION        reduce using rule 67 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
 
 
 state 113
 
-    (67) operator_comparison -> LESS_THAN_OR_EQUAL .
+    (68) operator_comparison -> LESS_THAN_OR_EQUAL .
 
-    LBRACKET        reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    NAME            reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    QUOTE           reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    PLUS            reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    MINUS           reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    STAR            reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    DIVISION        reduce using rule 67 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    LBRACKET        reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    NAME            reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    QUOTE           reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    PLUS            reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    MINUS           reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    STAR            reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    DIVISION        reduce using rule 68 (operator_comparison -> LESS_THAN_OR_EQUAL .)
 
 
 state 114
 
-    (56) tree_expression -> value operator_expression . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (57) tree_expression -> value operator_expression . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1527,51 +1534,51 @@ state 114
 
 state 115
 
-    (57) tree_expression -> operator_expression tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (58) tree_expression -> operator_expression tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    GREATER_THAN_OR_EQUAL reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    LESS_THAN_OR_EQUAL reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    RBRACKET        reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    COMMA           reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    WHERE           reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    ENDREQUEST      reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    AND             reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    OR              reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    UNION           reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
-    INTERSECT       reduce using rule 57 (tree_expression -> operator_expression tree_expression .)
+    EQUAL           reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    GREATER_THAN_OR_EQUAL reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    LESS_THAN_OR_EQUAL reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    RBRACKET        reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    COMMA           reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    WHERE           reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    ENDREQUEST      reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    AND             reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    OR              reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    UNION           reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
+    INTERSECT       reduce using rule 58 (tree_expression -> operator_expression tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
     DIVISION        shift and go to state 85
 
-  ! PLUS            [ reduce using rule 57 (tree_expression -> operator_expression tree_expression .) ]
-  ! MINUS           [ reduce using rule 57 (tree_expression -> operator_expression tree_expression .) ]
-  ! STAR            [ reduce using rule 57 (tree_expression -> operator_expression tree_expression .) ]
-  ! DIVISION        [ reduce using rule 57 (tree_expression -> operator_expression tree_expression .) ]
+  ! PLUS            [ reduce using rule 58 (tree_expression -> operator_expression tree_expression .) ]
+  ! MINUS           [ reduce using rule 58 (tree_expression -> operator_expression tree_expression .) ]
+  ! STAR            [ reduce using rule 58 (tree_expression -> operator_expression tree_expression .) ]
+  ! DIVISION        [ reduce using rule 58 (tree_expression -> operator_expression tree_expression .) ]
 
     operator_expression            shift and go to state 107
 
 state 116
 
-    (58) tree_expression -> LBRACKET tree_expression . RBRACKET
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (59) tree_expression -> LBRACKET tree_expression . RBRACKET
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     RBRACKET        shift and go to state 138
     PLUS            shift and go to state 82
@@ -1583,14 +1590,14 @@ state 116
 
 state 117
 
-    (46) value -> QUOTE NAME . QUOTE
+    (47) value -> QUOTE NAME . QUOTE
 
     QUOTE           shift and go to state 139
 
 
 state 118
 
-    (31) select_body -> STAR COMMA fields FROM . NAME
+    (32) select_body -> STAR COMMA fields FROM . NAME
 
     NAME            shift and go to state 140
 
@@ -1605,42 +1612,42 @@ state 119
 
 state 120
 
-    (72) type -> int .
+    (73) type -> int .
 
-    RBRACKET        reduce using rule 72 (type -> int .)
-    COMMA           reduce using rule 72 (type -> int .)
+    RBRACKET        reduce using rule 73 (type -> int .)
+    COMMA           reduce using rule 73 (type -> int .)
 
 
 state 121
 
-    (73) type -> str .
+    (74) type -> str .
 
-    RBRACKET        reduce using rule 73 (type -> str .)
-    COMMA           reduce using rule 73 (type -> str .)
+    RBRACKET        reduce using rule 74 (type -> str .)
+    COMMA           reduce using rule 74 (type -> str .)
 
 
 state 122
 
-    (74) type -> bol .
+    (75) type -> bol .
 
-    RBRACKET        reduce using rule 74 (type -> bol .)
-    COMMA           reduce using rule 74 (type -> bol .)
+    RBRACKET        reduce using rule 75 (type -> bol .)
+    COMMA           reduce using rule 75 (type -> bol .)
 
 
 state 123
 
-    (75) type -> bool .
+    (76) type -> bool .
 
-    RBRACKET        reduce using rule 75 (type -> bool .)
-    COMMA           reduce using rule 75 (type -> bool .)
+    RBRACKET        reduce using rule 76 (type -> bool .)
+    COMMA           reduce using rule 76 (type -> bool .)
 
 
 state 124
 
-    (76) type -> float .
+    (77) type -> float .
 
-    RBRACKET        reduce using rule 76 (type -> float .)
-    COMMA           reduce using rule 76 (type -> float .)
+    RBRACKET        reduce using rule 77 (type -> float .)
+    COMMA           reduce using rule 77 (type -> float .)
 
 
 state 125
@@ -1659,8 +1666,8 @@ state 126
 
 state 127
 
-    (34) insert_body -> INTO NAME VALUES LBRACKET values . RBRACKET
-    (44) values -> values . COMMA value
+    (35) insert_body -> INTO NAME VALUES LBRACKET values . RBRACKET
+    (45) values -> values . COMMA value
 
     RBRACKET        shift and go to state 142
     COMMA           shift and go to state 143
@@ -1668,38 +1675,38 @@ state 127
 
 state 128
 
-    (43) values -> value .
+    (44) values -> value .
 
-    RBRACKET        reduce using rule 43 (values -> value .)
-    COMMA           reduce using rule 43 (values -> value .)
+    RBRACKET        reduce using rule 44 (values -> value .)
+    COMMA           reduce using rule 44 (values -> value .)
 
 
 state 129
 
-    (35) insert_body -> INTO NAME LBRACKET fields RBRACKET . VALUES LBRACKET values RBRACKET
+    (36) insert_body -> INTO NAME LBRACKET fields RBRACKET . VALUES LBRACKET values RBRACKET
 
     VALUES          shift and go to state 144
 
 
 state 130
 
-    (40) expression -> expression COMMA field . EQUAL tree_expression
+    (41) expression -> expression COMMA field . EQUAL tree_expression
 
     EQUAL           shift and go to state 145
 
 
 state 131
 
-    (39) expression -> field EQUAL tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (40) expression -> field EQUAL tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
-    COMMA           reduce using rule 39 (expression -> field EQUAL tree_expression .)
-    WHERE           reduce using rule 39 (expression -> field EQUAL tree_expression .)
-    ENDREQUEST      reduce using rule 39 (expression -> field EQUAL tree_expression .)
+    COMMA           reduce using rule 40 (expression -> field EQUAL tree_expression .)
+    WHERE           reduce using rule 40 (expression -> field EQUAL tree_expression .)
+    ENDREQUEST      reduce using rule 40 (expression -> field EQUAL tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
@@ -1717,8 +1724,8 @@ state 132
 state 133
 
     (18) join_right_table -> NAME USING LBRACKET . field RBRACKET
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -1726,27 +1733,27 @@ state 133
 
 state 134
 
-    (52) tree_condition -> tree_comparison operator_condition tree_condition .
+    (53) tree_condition -> tree_comparison operator_condition tree_condition .
 
-    UNION           reduce using rule 52 (tree_condition -> tree_comparison operator_condition tree_condition .)
-    INTERSECT       reduce using rule 52 (tree_condition -> tree_comparison operator_condition tree_condition .)
-    ENDREQUEST      reduce using rule 52 (tree_condition -> tree_comparison operator_condition tree_condition .)
+    UNION           reduce using rule 53 (tree_condition -> tree_comparison operator_condition tree_condition .)
+    INTERSECT       reduce using rule 53 (tree_condition -> tree_comparison operator_condition tree_condition .)
+    ENDREQUEST      reduce using rule 53 (tree_condition -> tree_comparison operator_condition tree_condition .)
 
 
 state 135
 
-    (54) tree_comparison -> tree_expression operator_comparison tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (55) tree_comparison -> tree_expression operator_comparison tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
-    AND             reduce using rule 54 (tree_comparison -> tree_expression operator_comparison tree_expression .)
-    OR              reduce using rule 54 (tree_comparison -> tree_expression operator_comparison tree_expression .)
-    UNION           reduce using rule 54 (tree_comparison -> tree_expression operator_comparison tree_expression .)
-    INTERSECT       reduce using rule 54 (tree_comparison -> tree_expression operator_comparison tree_expression .)
-    ENDREQUEST      reduce using rule 54 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+    AND             reduce using rule 55 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+    OR              reduce using rule 55 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+    UNION           reduce using rule 55 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+    INTERSECT       reduce using rule 55 (tree_comparison -> tree_expression operator_comparison tree_expression .)
+    ENDREQUEST      reduce using rule 55 (tree_comparison -> tree_expression operator_comparison tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
@@ -1756,151 +1763,151 @@ state 135
 
 state 136
 
-    (59) tree_expression -> tree_expression operator_expression tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (60) tree_expression -> tree_expression operator_expression tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    GREATER_THAN_OR_EQUAL reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    LESS_THAN_OR_EQUAL reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    RBRACKET        reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    COMMA           reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    WHERE           reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    ENDREQUEST      reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    AND             reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    OR              reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    UNION           reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
-    INTERSECT       reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .)
+    EQUAL           reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    GREATER_THAN_OR_EQUAL reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    LESS_THAN_OR_EQUAL reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    RBRACKET        reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    COMMA           reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    WHERE           reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    ENDREQUEST      reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    AND             reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    OR              reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    UNION           reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
+    INTERSECT       reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
     DIVISION        shift and go to state 85
 
-  ! PLUS            [ reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .) ]
-  ! MINUS           [ reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .) ]
-  ! STAR            [ reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .) ]
-  ! DIVISION        [ reduce using rule 59 (tree_expression -> tree_expression operator_expression tree_expression .) ]
+  ! PLUS            [ reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .) ]
+  ! MINUS           [ reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .) ]
+  ! STAR            [ reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .) ]
+  ! DIVISION        [ reduce using rule 60 (tree_expression -> tree_expression operator_expression tree_expression .) ]
 
     operator_expression            shift and go to state 107
 
 state 137
 
-    (56) tree_expression -> value operator_expression tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (57) tree_expression -> value operator_expression tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
   ! shift/reduce conflict for PLUS resolved as shift
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    GREATER_THAN_OR_EQUAL reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    LESS_THAN_OR_EQUAL reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    RBRACKET        reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    COMMA           reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    WHERE           reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    ENDREQUEST      reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    AND             reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    OR              reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    UNION           reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
-    INTERSECT       reduce using rule 56 (tree_expression -> value operator_expression tree_expression .)
+    EQUAL           reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    GREATER_THAN_OR_EQUAL reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    LESS_THAN_OR_EQUAL reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    RBRACKET        reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    COMMA           reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    WHERE           reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    ENDREQUEST      reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    AND             reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    OR              reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    UNION           reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
+    INTERSECT       reduce using rule 57 (tree_expression -> value operator_expression tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
     DIVISION        shift and go to state 85
 
-  ! PLUS            [ reduce using rule 56 (tree_expression -> value operator_expression tree_expression .) ]
-  ! MINUS           [ reduce using rule 56 (tree_expression -> value operator_expression tree_expression .) ]
-  ! STAR            [ reduce using rule 56 (tree_expression -> value operator_expression tree_expression .) ]
-  ! DIVISION        [ reduce using rule 56 (tree_expression -> value operator_expression tree_expression .) ]
+  ! PLUS            [ reduce using rule 57 (tree_expression -> value operator_expression tree_expression .) ]
+  ! MINUS           [ reduce using rule 57 (tree_expression -> value operator_expression tree_expression .) ]
+  ! STAR            [ reduce using rule 57 (tree_expression -> value operator_expression tree_expression .) ]
+  ! DIVISION        [ reduce using rule 57 (tree_expression -> value operator_expression tree_expression .) ]
 
     operator_expression            shift and go to state 107
 
 state 138
 
-    (58) tree_expression -> LBRACKET tree_expression RBRACKET .
+    (59) tree_expression -> LBRACKET tree_expression RBRACKET .
 
-    EQUAL           reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    NOT_EQUAL       reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    GREATER_THAN    reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    LESS_THAN       reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    GREATER_THAN_OR_EQUAL reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    LESS_THAN_OR_EQUAL reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    PLUS            reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    MINUS           reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    STAR            reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    DIVISION        reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    RBRACKET        reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    COMMA           reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    WHERE           reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    ENDREQUEST      reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    AND             reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    OR              reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    UNION           reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    INTERSECT       reduce using rule 58 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    EQUAL           reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    NOT_EQUAL       reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    GREATER_THAN    reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    LESS_THAN       reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    GREATER_THAN_OR_EQUAL reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    LESS_THAN_OR_EQUAL reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    PLUS            reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    MINUS           reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    STAR            reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    DIVISION        reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    RBRACKET        reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    COMMA           reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    WHERE           reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    ENDREQUEST      reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    AND             reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    OR              reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    UNION           reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    INTERSECT       reduce using rule 59 (tree_expression -> LBRACKET tree_expression RBRACKET .)
 
 
 state 139
 
-    (46) value -> QUOTE NAME QUOTE .
+    (47) value -> QUOTE NAME QUOTE .
 
-    PLUS            reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    MINUS           reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    STAR            reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    DIVISION        reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    EQUAL           reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    NOT_EQUAL       reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    GREATER_THAN    reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    LESS_THAN       reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    GREATER_THAN_OR_EQUAL reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    LESS_THAN_OR_EQUAL reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    RBRACKET        reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    COMMA           reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    WHERE           reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    ENDREQUEST      reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    AND             reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    OR              reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    UNION           reduce using rule 46 (value -> QUOTE NAME QUOTE .)
-    INTERSECT       reduce using rule 46 (value -> QUOTE NAME QUOTE .)
+    PLUS            reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    MINUS           reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    STAR            reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    DIVISION        reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    EQUAL           reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    NOT_EQUAL       reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    GREATER_THAN    reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    LESS_THAN       reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    GREATER_THAN_OR_EQUAL reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    LESS_THAN_OR_EQUAL reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    RBRACKET        reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    COMMA           reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    WHERE           reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    ENDREQUEST      reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    AND             reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    OR              reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    UNION           reduce using rule 47 (value -> QUOTE NAME QUOTE .)
+    INTERSECT       reduce using rule 47 (value -> QUOTE NAME QUOTE .)
 
 
 state 140
 
-    (31) select_body -> STAR COMMA fields FROM NAME .
+    (32) select_body -> STAR COMMA fields FROM NAME .
 
-    JOIN            reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    LEFT            reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    RIGHT           reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    WHERE           reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    UNION           reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    INTERSECT       reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
-    ENDREQUEST      reduce using rule 31 (select_body -> STAR COMMA fields FROM NAME .)
+    JOIN            reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    LEFT            reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    RIGHT           reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    WHERE           reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    UNION           reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    INTERSECT       reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
+    ENDREQUEST      reduce using rule 32 (select_body -> STAR COMMA fields FROM NAME .)
 
 
 state 141
 
     (11) variables -> variables COMMA NAME . type
-    (72) type -> . int
-    (73) type -> . str
-    (74) type -> . bol
-    (75) type -> . bool
-    (76) type -> . float
+    (73) type -> . int
+    (74) type -> . str
+    (75) type -> . bol
+    (76) type -> . bool
+    (77) type -> . float
 
     int             shift and go to state 120
     str             shift and go to state 121
@@ -1912,16 +1919,16 @@ state 141
 
 state 142
 
-    (34) insert_body -> INTO NAME VALUES LBRACKET values RBRACKET .
+    (35) insert_body -> INTO NAME VALUES LBRACKET values RBRACKET .
 
-    ENDREQUEST      reduce using rule 34 (insert_body -> INTO NAME VALUES LBRACKET values RBRACKET .)
+    ENDREQUEST      reduce using rule 35 (insert_body -> INTO NAME VALUES LBRACKET values RBRACKET .)
 
 
 state 143
 
-    (44) values -> values COMMA . value
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
+    (45) values -> values COMMA . value
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
 
     NAME            shift and go to state 80
     QUOTE           shift and go to state 81
@@ -1930,25 +1937,25 @@ state 143
 
 state 144
 
-    (35) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET values RBRACKET
+    (36) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES . LBRACKET values RBRACKET
 
     LBRACKET        shift and go to state 150
 
 
 state 145
 
-    (40) expression -> expression COMMA field EQUAL . tree_expression
-    (55) tree_expression -> . value
-    (56) tree_expression -> . value operator_expression tree_expression
-    (57) tree_expression -> . operator_expression tree_expression
-    (58) tree_expression -> . LBRACKET tree_expression RBRACKET
-    (59) tree_expression -> . tree_expression operator_expression tree_expression
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (41) expression -> expression COMMA field EQUAL . tree_expression
+    (56) tree_expression -> . value
+    (57) tree_expression -> . value operator_expression tree_expression
+    (58) tree_expression -> . operator_expression tree_expression
+    (59) tree_expression -> . LBRACKET tree_expression RBRACKET
+    (60) tree_expression -> . tree_expression operator_expression tree_expression
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
     LBRACKET        shift and go to state 79
     NAME            shift and go to state 80
@@ -1965,8 +1972,8 @@ state 145
 state 146
 
     (17) join_right_table -> NAME ON field EQUAL . field
-    (49) field -> . NAME
-    (50) field -> . NAME DOT NAME
+    (50) field -> . NAME
+    (51) field -> . NAME DOT NAME
 
     NAME            shift and go to state 40
 
@@ -1989,19 +1996,19 @@ state 148
 
 state 149
 
-    (44) values -> values COMMA value .
+    (45) values -> values COMMA value .
 
-    RBRACKET        reduce using rule 44 (values -> values COMMA value .)
-    COMMA           reduce using rule 44 (values -> values COMMA value .)
+    RBRACKET        reduce using rule 45 (values -> values COMMA value .)
+    COMMA           reduce using rule 45 (values -> values COMMA value .)
 
 
 state 150
 
-    (35) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET . values RBRACKET
-    (43) values -> . value
-    (44) values -> . values COMMA value
-    (45) value -> . NAME
-    (46) value -> . QUOTE NAME QUOTE
+    (36) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET . values RBRACKET
+    (44) values -> . value
+    (45) values -> . values COMMA value
+    (46) value -> . NAME
+    (47) value -> . QUOTE NAME QUOTE
 
     NAME            shift and go to state 80
     QUOTE           shift and go to state 81
@@ -2011,16 +2018,16 @@ state 150
 
 state 151
 
-    (40) expression -> expression COMMA field EQUAL tree_expression .
-    (59) tree_expression -> tree_expression . operator_expression tree_expression
-    (68) operator_expression -> . PLUS
-    (69) operator_expression -> . MINUS
-    (70) operator_expression -> . STAR
-    (71) operator_expression -> . DIVISION
+    (41) expression -> expression COMMA field EQUAL tree_expression .
+    (60) tree_expression -> tree_expression . operator_expression tree_expression
+    (69) operator_expression -> . PLUS
+    (70) operator_expression -> . MINUS
+    (71) operator_expression -> . STAR
+    (72) operator_expression -> . DIVISION
 
-    COMMA           reduce using rule 40 (expression -> expression COMMA field EQUAL tree_expression .)
-    WHERE           reduce using rule 40 (expression -> expression COMMA field EQUAL tree_expression .)
-    ENDREQUEST      reduce using rule 40 (expression -> expression COMMA field EQUAL tree_expression .)
+    COMMA           reduce using rule 41 (expression -> expression COMMA field EQUAL tree_expression .)
+    WHERE           reduce using rule 41 (expression -> expression COMMA field EQUAL tree_expression .)
+    ENDREQUEST      reduce using rule 41 (expression -> expression COMMA field EQUAL tree_expression .)
     PLUS            shift and go to state 82
     MINUS           shift and go to state 83
     STAR            shift and go to state 84
@@ -2050,8 +2057,8 @@ state 153
 
 state 154
 
-    (35) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values . RBRACKET
-    (44) values -> values . COMMA value
+    (36) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values . RBRACKET
+    (45) values -> values . COMMA value
 
     RBRACKET        shift and go to state 155
     COMMA           shift and go to state 143
@@ -2059,9 +2066,9 @@ state 154
 
 state 155
 
-    (35) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET .
+    (36) insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET .
 
-    ENDREQUEST      reduce using rule 35 (insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET .)
+    ENDREQUEST      reduce using rule 36 (insert_body -> INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET .)
 
 WARNING: 
 WARNING: Conflicts:

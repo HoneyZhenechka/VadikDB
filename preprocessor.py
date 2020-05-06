@@ -315,22 +315,22 @@ class Preprocessor:
         if is_star:
             for table_index in [first_table_index, second_table_index]:
                 for field in self.db.tables[table_index].fields:
-                    if second_table.type == "on":
-                        result.append([table_index, field])
                     if second_table.type == "using":
                         if second_table.field.name != field.name:
                             result.append([table_index, field])
+                    else:
+                        result.append([table_index, field])
         for field in fields:
             if field.type == "field":
                 return Result.Result(True, exception_for_client.DBExceptionForClient().NoTableSpecified(field.name))
             table_index = self.get_table_index(field.name_table)
             if table_index in [first_table_index, second_table_index]:
                 if field.name in self.db.tables[table_index].fields:
-                    if second_table.type == "on":
-                        result.append([table_index, field])
                     if second_table.type == "using":
                         if second_table.field.name != field.name:
                             result.append([table_index, field])
+                    else:
+                        result.append([table_index, field])
             else:
                 return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(field.name))
         return result
@@ -369,7 +369,11 @@ class Preprocessor:
                         for first_row in first_block.iter_rows():
                             for second_row in second_block.iter_rows():
                                 if join.form == "":
-                                    if second_table.type == "on":
+                                    if (second_table.type == ""):
+                                        rows.append(self.join_rows(fields, first_row.fields_values_dict,
+                                                                   second_row.fields_values_dict,
+                                                                   first_table_index, second_table_index))
+                                    elif second_table.type == "on":
                                         if (first_row.fields_values_dict[second_table.first_field.name]
                                                 == second_row.fields_values_dict[second_table.second_field.name]):
                                             rows.append(self.join_rows(fields, first_row.fields_values_dict,
