@@ -7,46 +7,26 @@ class Logic:
 
     def __init__(self, db_filename):
         self.pr = pre.Preprocessor(db_filename)
-        self.is_transaction = False
-        self.transactions = {}
 
     def begin_transaction(self):
-        self.is_transaction = True
-
-    def begin_table_transaction(self, tree):
-        table_name = ""
-        if tree.type.lower() == "insert":
-            if self.pr.is_table_exists(tree.insert.name):
-                table_name = tree.insert.name
-        elif tree.type.lower() == "delete" or tree.type.lower() == "update":
-            if self.pr.is_table_exists(tree.name):
-                table_name = tree.name
-        if not table_name:
-            return
-        table_index = self.pr.get_table_index(table_name)
-        if table_index in self.transactions:
-            return
-        transaction_index = self.pr.db.tables[table_index].start_transaction()
-        self.transactions[table_index] = transaction_index
+        self.pr.is_transaction = True
 
     def rollback_transaction(self):
-        for table_index in self.transactions:
-            self.pr.db.tables[table_index].rollback_transaction(self.transactions[table_index])
-        self.transactions = {}
-        self.is_transaction = False
+        for table_index in self.pr.transactions:
+            self.pr.db.tables[table_index].rollback_transaction(self.pr.transactions[table_index])
+        self.pr.transactions = {}
+        self.pr.is_transaction = False
 
     def end_transaction(self):
-        for table_index in self.transactions:
-            self.pr.db.tables[table_index].end_transaction(self.transactions[table_index])
-        self.transactions = {}
-        self.is_transaction = False
+        for table_index in self.pr.transactions:
+            self.pr.db.tables[table_index].end_transaction(self.pr.transactions[table_index])
+        self.pr.transactions = {}
+        self.pr.is_transaction = False
 
     def query(self, sql_request):
         request = pars.build_tree(sql_request)
         if type(request) is Result.Result:
             return request
-        if self.is_transaction:
-            self.begin_table_transaction(request)
         try:
             if request.type.lower() == "create":
                 return self.pr.create_table(request.name, request.fields)
