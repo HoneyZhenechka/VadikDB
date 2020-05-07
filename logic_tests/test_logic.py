@@ -1,5 +1,4 @@
 import logic
-import exception
 import os
 
 fileList = [f for f in os.listdir() if f.endswith(".db_meta")]

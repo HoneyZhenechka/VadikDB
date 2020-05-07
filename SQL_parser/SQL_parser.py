@@ -298,9 +298,9 @@ def p_transaction(p):
                    | END TRANSACTION
                    | ROLLBACK'''
 
-    if p[1] == "START":
+    if p[1].lower() == "begin":
         p[0] = PTransaction("begin")
-    elif p[1] == "END":
+    elif p[1].lower() == "end":
         p[0] = PTransaction("end")
     else:
         p[0] = PTransaction("rollback")
@@ -359,9 +359,9 @@ def p_join_right_table(p):
             | NAME'''
     if len(p) == 2:
         p[0] = PRightTable(p[1])
-    elif p[2] == "ON":
+    elif p[2].lower() == "on":
         p[0] = POn(p[1], p[3], p[5])
-    elif p[2] == "USING":
+    elif p[2].lower() == "using":
         p[0] = PUsing(p[1], p[4])
 
 
