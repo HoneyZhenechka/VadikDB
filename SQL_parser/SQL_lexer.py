@@ -16,7 +16,7 @@ tokens = (
     'NOT', 'AND',
     'JOIN', 'LEFT', 'RIGHT', 'ON',
     'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER',
-    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK'
+    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK', 'AS'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -34,6 +34,7 @@ t_RIGHT = r'RIGHT'
 t_ON = r'ON'
 t_USING = r'USING'
 t_UNION = r'UNION'
+t_AS = r'AS'
 t_ALL = r'ALL'
 t_INTERSECT = r'INTERSECT'
 t_OUTER = r'OUTER'
@@ -119,6 +120,9 @@ def t_NAME(t):
 
     elif t.value.upper() == 'UNION':
         t.type = 'UNION'
+
+    elif t.value.upper() == 'AS':
+        t.type = 'AS'
 
     elif t.value.upper() == 'ALL':
         t.type = 'ALL'

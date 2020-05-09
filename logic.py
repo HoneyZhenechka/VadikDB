@@ -50,3 +50,13 @@ class Logic:
                 self.end_transaction()
         except Exception as ex:
             print(ex)
+
+#request = ("SELECT * FROM FIRST;")
+#request = ("SELECT * FROM FIRST JOIN SELECT * FROM SECOND;")
+#request = ("(SELECT * FROM FIRST JOIN (SELECT * FROM SECOND1 JOIN THIRD) AS T2) UNION (SELECT * FROM FIRST1 JOIN SECOND2);")
+#request = ("SELECT * FROM FIRST JOIN SECOND ON FIRST.id=SECOND.id;")
+#request = ("SELECT * FROM FIRST JOIN SELECT * FROM SECOND AS S ON FIRST.id=SECOND.id;")
+#request = ("SELECT * FROM FIRST JOIN (SELECT * FROM SECOND JOIN THIRD) AS S JOIN THIRD;")
+#request = ("SELECT * FROM FIRST JOIN (SELECT * FROM SECOND JOIN THIRD) AS T2 ON FIRST.id=SECOND.id;")
+#temp = pars.build_tree(request)
+#temp1 = 1

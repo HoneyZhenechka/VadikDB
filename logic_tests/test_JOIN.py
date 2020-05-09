@@ -73,11 +73,11 @@ def test_tree_select_intersect_not_error():
     log.query('CREATE TABLE THIRD (id int, name str);')
     log.query('INSERT INTO THIRD VALUES (1, "admin");')
     log.query('INSERT INTO THIRD VALUES (1, "vadic");')
-    result = log.query("SELECT * FROM FIRST JOIN SECOND USING(id, name) INTERSECT SELECT * FROM FIRST JOIN THIRD USING(id, name);")
+    result = log.query("(SELECT * FROM FIRST JOIN SECOND USING(id, name)) INTERSECT (SELECT * FROM FIRST JOIN THIRD USING(id, name));")
     assert excepted_result == result.str_for_print
 
 
 def test_tree_select_union_not_error():
     excepted_result = "\n| id | name | \n| 1 | admin | \n| 1 | admin | \n| 1 | admin | \n"
-    result = log.query("SELECT * FROM FIRST JOIN SECOND USING(id, name) UNION ALL SELECT * FROM FIRST JOIN THIRD USING(id, name);")
+    result = log.query("(SELECT * FROM FIRST JOIN SECOND USING(id, name)) UNION ALL (SELECT * FROM FIRST JOIN THIRD USING(id, name));")
     assert excepted_result == result.str_for_print

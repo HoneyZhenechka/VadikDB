@@ -11,6 +11,14 @@ class Row:
         self.fields_values_dict = fields_values_dict
 
 
+class Table:
+
+    def __init__(self, fields, rows):
+        self.type = "table"
+        self.fields = fields
+        self.rows = rows
+
+
 class Preprocessor:
 
     def __init__(self, db_filename: str):
@@ -131,53 +139,6 @@ class Preprocessor:
                         types.append(self.db.tables[table_index].types[index_of_field])
         return types
 
-    @staticmethod
-    def are_rows_equal(first_row, second_row) -> bool:
-        if len(first_row[0]) != len(second_row[0]):
-            return False
-        for i in range(len(first_row[0])):
-            if first_row[0][i] != second_row[0][i]:
-                return False
-        for i in range(len(first_row[0])):
-            if first_row[1].fields_values_dict[i][1] != second_row[1].fields_values_dict[i][1]:
-                return False
-        return True
-
-    def union(self, first_table, second_table, is_all=False):
-        if len(first_table[0]) != len(second_table[0]):
-            return Result.Result(True, exception_for_client.DBExceptionForClient().DifferentNumberOfColumns())
-        rows = [first_table[0], []]
-        if is_all:
-            for row in first_table[1]:
-                rows[1].append(row)
-            for row in second_table[1]:
-                rows[1].append(row)
-        else:
-            for first_row in first_table[1]:
-                is_unique = True
-                for row in rows[1]:
-                    if self.are_rows_equal([rows[0], first_row], [rows[0], row]):
-                        is_unique = False
-                if is_unique:
-                    rows[1].append(first_row)
-            for second_row in second_table[1]:
-                is_unique = True
-                for row in rows[1]:
-                    if self.are_rows_equal([rows[0], second_row], [rows[0], row]):
-                        is_unique = False
-                if is_unique:
-                    rows[1].append(second_row)
-        return rows
-
-    def intersect(self, first_table, second_table):
-        rows = [first_table[0], []]
-        for first_row in first_table[1]:
-            for second_row in second_table[1]:
-                if self.are_rows_equal([first_table[0], first_row], [second_table[0], second_row]):
-                    rows[1].append(first_row)
-                    break
-        return rows
-
     def get_values_with_expression(self, name: str, values: list, row, fields=()) -> list or Result.Result:
         types = self.get_types(name, values, fields)
         if len(types) == 0:
@@ -242,14 +203,15 @@ class Preprocessor:
                 if values[i].is_str:
                     values[i] = values[i].name
                 else:
-                    return Result.Result(True, exception_for_client.DBExceptionForClient().WrongFieldType(values[i].name))
+                    return Result.Result(True,
+                                         exception_for_client.DBExceptionForClient().WrongFieldType(values[i].name))
             else:
                 return []
         return values
 
     def create_table(self, name: str, fields: list = ()) -> Result:
         correct_fields = self.get_correct_fields(fields)
-        if not(type(correct_fields) is dict):
+        if not (type(correct_fields) is dict):
             return Result.Result(True, exception_for_client.DBExceptionForClient().DuplicateFields(correct_fields))
         elif self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableAlreadyExists(name))
@@ -270,32 +232,225 @@ class Preprocessor:
         else:
             return Result.Result(False)
 
+    @staticmethod
+    def are_rows_equal(first_row, second_row) -> bool:
+        if len(first_row[0]) != len(second_row[0]):
+            return False
+        for i in range(len(first_row[0])):
+            if first_row[0][i] != second_row[0][i]:
+                return False
+        for i in range(len(first_row[0])):
+            if first_row[1].fields_values_dict[i][1] != second_row[1].fields_values_dict[i][1]:
+                return False
+        return True
+
+    def union(self, first_table: Table, second_table: Table, is_all=False) -> Table or Result.Result:
+        if len(first_table.fields) != len(second_table.fields):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().DifferentNumberOfColumns())
+        table = Table(first_table.fields, [])
+        if is_all:
+            for row in first_table.rows:
+                table.rows.append(row)
+            for row in second_table.rows:
+                table.rows.append(row)
+        else:
+            for first_row in first_table.rows:
+                is_unique = True
+                for row in table.rows:
+                    if self.are_rows_equal([table.fields, first_row], [table.fields, row]):
+                        is_unique = False
+                if is_unique:
+                    table.rows.append(first_row)
+            for second_row in second_table.rows:
+                is_unique = True
+                for row in table.rows:
+                    if self.are_rows_equal([table.fields, second_row], [table.fields, row]):
+                        is_unique = False
+                if is_unique:
+                    table.rows.append(second_row)
+        return table
+
+    def intersect(self, first_table: Table, second_table: Table) -> Table:
+        table = Table(first_table.fields, [])
+        for first_row in first_table.rows:
+            for second_row in second_table.rows:
+                if self.are_rows_equal([first_table.fields, first_row], [second_table.fields, second_row]):
+                    table.rows.append(first_row)
+                    break
+        return table
+
+    def solve_join(self, root) -> Table or Result.Result:
+        join_condition = (root.getRootVal()).join_condition
+        left_token = root.getLeftChild()
+        right_token = root.getRightChild()
+
+        if left_token.getRootVal().type != "select":
+            left_table = self.solve_tree_selects(left_token)
+            right_table = self.solve_tree_selects(right_token)
+            return self.join(left_table, right_table, join_condition)
+        else:
+            if right_token.getRootVal().type == "named tree":
+                right_table = right_token.getRootVal()
+                right_table_name = right_table.name
+                right_table = self.solve_tree_selects(right_table.tree)
+            else:
+                if right_token.getRootVal().type == "name table":
+                    right_table_name = right_token.getRootVal().name
+                else:
+                    right_table_name = right_token.getRootVal().select.name
+                right_table = self.solve_tree_selects(right_token)
+            left_table = left_token.getRootVal()
+
+            if left_table.select.isStar:
+                left_table = self.solve_tree_selects(left_token)
+                return self.join(left_table, right_table, join_condition)
+
+            fields = left_table.select.fields
+            left_table.select.fields = []
+            left_table.select.isStar = True
+            left_table_name = left_table.select.name
+            left_token.setRootVal(left_table)
+            left_table = self.solve_tree_selects(left_token)
+            return self.join(left_table, right_table, join_condition, fields, left_table_name, right_table_name)
+
+    @staticmethod
+    def check_required_fields(left_table: Table, right_table: Table,
+                              fields: list, left_table_name:str, right_table_name:str) -> Result.Result:
+        for field in fields:
+            if field.type == "field":
+                return Result.Result(True, exception_for_client.DBExceptionForClient().NoTableSpecified(field.name))
+            if not (field.name_table in [left_table_name, right_table_name]):
+                return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(field.name))
+            if not (field.name in left_table.fields) or not (field.name in right_table.fields):
+                return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(field.name))
+
+    def join_rows(self, fields, first_row, second_row, first_table_name, second_table_name):
+        fields_values = []
+        for field in fields:
+            if type(field) is dict:
+                if field["name_table"] == first_table_name:
+                    fields_values.append([field["name"], self.get_value_from_row(first_row, field["name"])])
+                if field["name_table"] == second_table_name:
+                    fields_values.append([field["name"], self.get_value_from_row(second_row, field["name"])])
+            else:
+                if field.name_table == first_table_name:
+                    fields_values.append([field.name, self.get_value_from_row(first_row, field["name"])])
+                if field.name_table == second_table_name:
+                    fields_values.append([field.name, self.get_value_from_row(second_row, field["name"])])
+        new_row = Row(fields_values)
+        return new_row
+
+    @staticmethod
+    def join_fields(left_table: Table, right_table: Table, join_condition) -> list:
+        fields = []
+        for field in left_table.fields:
+            fields.append({
+                "name": field,
+                "name_table": "left"
+            })
+        for field in right_table.fields:
+            if join_condition.type == "using":
+                is_exist = False
+                for f in join_condition.fields:
+                    if f.name == field:
+                        is_exist = True
+                if not (is_exist):
+                    fields.append(
+                        {
+                            "name": field,
+                            "name_table": "right"
+                        }
+                    )
+            else:
+                fields.append({
+                            "name": field,
+                            "name_table": "right"
+                        })
+        return fields
+
+    @staticmethod
+    def get_value_from_row(row, name):
+        for field in row.fields_values_dict:
+            if field[0] == name:
+                return field[1]
+
+    def join(self, left_table: Table, right_table: Table, join_condition,
+             required_fields: list = [], left_table_name: str = "left", right_table_name: str = "right") -> Table or Result.Result:
+
+        if type(left_table) is Result.Result:
+            return left_table
+        if type(right_table) is Result.Result:
+            return right_table
+
+        if len(required_fields) == 0:
+            fields = self.join_fields(left_table, right_table, join_condition)
+            table = Table(fields, [])
+        else:
+            table = Table(required_fields, [])
+            temp = self.check_required_fields(left_table, right_table,
+                                              table.fields, left_table_name, right_table_name)
+            if type(temp) is Result.Result:
+                return temp
+
+        for first_row in left_table.rows:
+            for second_row in right_table.rows:
+                if join_condition.type == "undefined":
+                    table.rows.append(self.join_rows(table.fields, first_row,
+                                      second_row, left_table_name, right_table_name))
+                elif join_condition.type == "on":
+                    if (self.get_value_from_row(first_row, join_condition.first_field.name)
+                            == self.get_value_from_row(second_row, join_condition.second_field.name)):
+                        table.rows.append(self.join_rows(table.fields, first_row,
+                                          second_row, left_table_name, right_table_name))
+                elif join_condition.type == "using":
+                    is_right_row = True
+                    for field in join_condition.fields:
+                        if self.get_value_from_row(first_row, field.name) == self.get_value_from_row(second_row, field.name):
+                            is_right_row = False
+                    if not is_right_row:
+                        table.rows.append(self.join_rows(table.fields, first_row,
+                                          second_row, left_table_name, right_table_name))
+        for i in range(len(table.fields)):
+            if type(table.fields[i]) is dict:
+                table.fields[i] = table.fields[i]["name"]
+            else:
+                table.fields[i] = table.fields[i].name
+        return table
+
     def solve_tree_selects(self, root):
         el = root.getRootVal()
         if type(root) is Result.Result:
             return root
+        elif el.type == "tree selects":
+            return self.solve_tree_selects(el.tree)
+        elif el.type == "named tree":
+            el.tree = self.solve_tree_selects(el.tree)
+            return el
         elif el.type == "union":
             return self.union(self.solve_tree_selects(root.getLeftChild()),
                               self.solve_tree_selects(root.getRightChild()), el.is_all)
         elif el.type == "intersect":
             return self.intersect(self.solve_tree_selects(root.getLeftChild()),
                                   self.solve_tree_selects(root.getRightChild()))
+        elif el.type == "join":
+            return self.solve_join(root)
+        elif el.type == "name table":
+            return self.select(el.name, [], True, True)
         elif el.type == "select":
-            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition,
-                               el.join, el.right_table)
+            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
 
     def tree_selects(self, tree):
-        fields_and_rows = self.solve_tree_selects(tree)
-        if type(fields_and_rows) is Result.Result:
-            return fields_and_rows
+        table = self.solve_tree_selects(tree)
+        if type(table) is Result.Result:
+            return table
         result = "\n| "
-        for field in fields_and_rows[0]:
+        for field in table.fields:
             result += str(field) + " | "
         result += "\n"
-        for i in range(len(fields_and_rows[1])):
+        for i in range(len(table.rows)):
             result += "| "
-            for j in range(len(fields_and_rows[1][i].fields_values_dict)):
-                result += str(fields_and_rows[1][i].fields_values_dict[j][1]) + " | "
+            for j in range(len(table.rows[i].fields_values_dict)):
+                result += str(table.rows[i].fields_values_dict[j][1]) + " | "
             result += "\n"
         return Result.Result(False, result)
 
@@ -306,117 +461,28 @@ class Preprocessor:
             result.append([field, dictionary[field]])
         return result
 
-    @staticmethod
-    def join_rows(fields, first_dict, second_dict, first_table_index, second_table_index):
-        fields_values = []
-        for field in fields:
-            if field[0] == first_table_index:
-                fields_values.append([field[1], first_dict[field[1]]])
-            if field[0] == second_table_index:
-                fields_values.append([field[1], second_dict[field[1]]])
-        new_row = Row(fields_values)
-        return new_row
-
-    def build_fields_for_join(self, fields: list, is_star: bool,
-                              first_table_index: int, second_table_index: int,
-                              second_table) -> list or Result.Result:
-        result = []
-        if is_star:
-            for table_index in [first_table_index, second_table_index]:
-                for field in self.db.tables[table_index].fields:
-                    if second_table.type == "using":
-                        if table_index == second_table_index:
-                            field_is_exist = False
-                            for field_second in second_table.fields:
-                                if field == field_second.name:
-                                    field_is_exist = True
-                            if not field_is_exist:
-                                result.append([table_index, field])
-                        else:
-                            result.append([table_index, field])
-                    else:
-                        result.append([table_index, field])
-        for field in fields:
-            if field.type == "field":
-                return Result.Result(True, exception_for_client.DBExceptionForClient().NoTableSpecified(field.name))
-            table_index = self.get_table_index(field.name_table)
-            if table_index in [first_table_index, second_table_index]:
-                if field.name in self.db.tables[table_index].fields:
-                    if second_table.type == "using":
-                        if table_index == second_table_index:
-                            field_is_exist = False
-                            for field_second in second_table.fields:
-                                if field == field_second.name:
-                                    field_is_exist = True
-                            if not field_is_exist:
-                                result.append([table_index, field])
-                    else:
-                        result.append([table_index, field.name])
-            else:
-                return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(field.name))
-        return result
-
-    def select(self, name: str, fields: list, is_star: bool, condition, join, second_table):
+    def select(self, name: str, fields: list, is_star: bool, condition):
         if not self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
-        elif join != False and not self.is_table_exists(second_table.name):
-            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(second_table.name))
         elif type(self.is_fields_exist(name, fields)) is str:
             return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
-            if join == False:
-                table_index = self.get_table_index(name)
-                rows = []
-                for block in self.db.tables[table_index].iter_blocks():
-                    for row in block.iter_rows():
-                        if row.status == 1:
-                            if self.solve_condition(condition, row):
-                                rows.append(row)
-                fields = self.build_fields(fields, is_star, table_index)
-                transaction_index = 0
-                if self.is_transaction:
-                    self.begin_table_transaction(table_index)
-                    transaction_index = self.transactions[table_index]
-                rows = self.db.tables[table_index].select(fields, rows, transaction_index)
-                for i in range(len(rows)):
-                    rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
-                return fields, rows
-            else:
-                first_table_index = self.get_table_index(name)
-                second_table_index = self.get_table_index(second_table.name)
-                rows = []
-                fields = self.build_fields_for_join(fields, is_star,
-                                                    first_table_index, second_table_index, second_table)
-                if type(fields) is Result.Result:
-                    return fields
-                for first_block in self.db.tables[first_table_index].iter_blocks():
-                    for second_block in self.db.tables[second_table_index].iter_blocks():
-                        for first_row in first_block.iter_rows():
-                            for second_row in second_block.iter_rows():
-                                if join.form == "":
-                                    if second_table.type == "rightTable":
-                                        rows.append(self.join_rows(fields, first_row.fields_values_dict,
-                                                                   second_row.fields_values_dict,
-                                                                   first_table_index, second_table_index))
-                                    elif second_table.type == "on":
-                                        if (first_row.fields_values_dict[second_table.first_field.name]
-                                                == second_row.fields_values_dict[second_table.second_field.name]):
-                                            rows.append(self.join_rows(fields, first_row.fields_values_dict,
-                                                        second_row.fields_values_dict,
-                                                        first_table_index, second_table_index))
-                                    elif second_table.type == "using":
-                                        is_right_row = True
-                                        for field in second_table.fields:
-                                            if first_row.fields_values_dict[field.name] == second_row.fields_values_dict[field.name]:
-                                                is_right_row = False
-                                        if not is_right_row:
-                                            rows.append(self.join_rows(fields, first_row.fields_values_dict,
-                                                        second_row.fields_values_dict,
-                                                        first_table_index, second_table_index))
-                fields_for_print = []
-                for field in fields:
-                    fields_for_print.append(field[1])
-                return fields_for_print, rows
+            table_index = self.get_table_index(name)
+            rows = []
+            for block in self.db.tables[table_index].iter_blocks():
+                for row in block.iter_rows():
+                    if row.status == 1:
+                        if self.solve_condition(condition, row):
+                            rows.append(row)
+            fields = self.build_fields(fields, is_star, table_index)
+            transaction_index = 0
+            if self.is_transaction:
+                self.begin_table_transaction(table_index)
+                transaction_index = self.transactions[table_index]
+            rows = self.db.tables[table_index].select(fields, rows, transaction_index)
+            for i in range(len(rows)):
+                rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
+            return Table(fields, rows)
 
     def insert(self, name: str, fields: list, values: list):
         if not self.is_table_exists(name):
