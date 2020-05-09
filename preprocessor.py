@@ -292,7 +292,7 @@ class Preprocessor:
             if right_token.getRootVal().type == "named tree":
                 right_table = right_token.getRootVal()
                 right_table_name = right_table.name
-                right_table = self.solve_tree_selects(right_table.tree)
+                right_table = self.solve_tree_selects(right_table.tree.tree)
             else:
                 if right_token.getRootVal().type == "name table":
                     right_table_name = right_token.getRootVal().name
