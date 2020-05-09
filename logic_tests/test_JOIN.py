@@ -87,3 +87,15 @@ def test_tree_select_as_not_error():
     excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n| 1 | admin | 1 | admin | \n| 2 | notadmin | 1 | admin | \n| 2 | notadmin | 1 | admin | \n"
     result = log.query("SELECT * FROM FIRST join (SELECT * FROM FIRST JOIN THIRD USING(id, name)) AS t1;")
     assert excepted_result == result.str_for_print
+
+
+def test_tree_select_not_error():
+    excepted_result = "\n| id | name | id | name | \n| 1 | admin | 1 | admin | \n| 1 | admin | 3 | vadic | \n| 2 | notadmin | 1 | admin | \n| 2 | notadmin | 3 | vadic | \n"
+    result = log.query("SELECT * FROM FIRST JOIN SELECT * FROM SECOND;")
+    assert excepted_result == result.str_for_print
+
+
+def test_tree_select_column_not_error():
+    excepted_result = "\n| id | name | name | \n| 1 | admin | admin | \n| 1 | admin | vadic | \n| 2 | notadmin | admin | \n| 2 | notadmin | vadic | \n"
+    result = log.query("SELECT * FROM FIRST JOIN SELECT name FROM SECOND;")
+    assert excepted_result == result.str_for_print

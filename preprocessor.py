@@ -121,7 +121,7 @@ class Preprocessor:
             for field in self.db.tables[table_index].fields:
                 result.append(field)
         for field in fields:
-            result.append(field)
+            result.append(field.name)
         return result
 
     def get_types(self, name: str, values: list, fields=()) -> list:
