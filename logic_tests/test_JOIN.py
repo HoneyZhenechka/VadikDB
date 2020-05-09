@@ -99,3 +99,9 @@ def test_tree_select_column_not_error():
     excepted_result = "\n| id | name | name | \n| 1 | admin | admin | \n| 1 | admin | vadic | \n| 2 | notadmin | admin | \n| 2 | notadmin | vadic | \n"
     result = log.query("SELECT * FROM FIRST JOIN SELECT name FROM SECOND;")
     assert excepted_result == result.str_for_print
+
+
+def test_tree_select_one_column_not_error():
+    excepted_result = "\n| name | \n| admin | \n| vadic | \n| admin | \n| vadic | \n"
+    result = log.query("SELECT SECOND.name FROM FIRST JOIN SELECT name FROM SECOND;")
+    assert excepted_result == result.str_for_print
