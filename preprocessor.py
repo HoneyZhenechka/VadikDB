@@ -529,7 +529,7 @@ class Preprocessor:
         else:
             table_index = self.get_table_index(name)
             if self.db.tables[table_index].is_locked:
-                if self.current_user_index == self.locked_tables[table_index]:
+                if not self.current_user_index == self.locked_tables[table_index]:
                     return Result.Result(True, "Table is locked")
             rows = []
             new_values = []
@@ -561,7 +561,7 @@ class Preprocessor:
         else:
             table_index = self.get_table_index(name)
             if self.db.tables[table_index].is_locked:
-                if self.current_user_index == self.locked_tables[table_index]:
+                if not self.current_user_index == self.locked_tables[table_index]:
                     return Result.Result(True, "Table is locked")
             rows_indices = []
             for block in self.db.tables[table_index].iter_blocks():

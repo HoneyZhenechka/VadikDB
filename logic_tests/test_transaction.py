@@ -85,7 +85,7 @@ def test_transaction_select_not_error():
     excepted_result = "\n| id | name | \n| 2 | notadmin | \n| 101 | admin | \n| 1 | admin | \n"
 
     log.query('BEGIN TRANSACTION;', 1)
-    log.query('INSERT INTO FIRST VALUES (1, "admin");', 1)
+    log.query('INSERT INTO FIRST VALUES (202, "admin");', 1)
     result = log.query("SELECT * FROM FIRST;", 1)
     log.query('END TRANSACTION;', 1)
 
@@ -102,32 +102,3 @@ def test_transaction_error_rollback_not_defined():
     excepted_result = "Error code: " + "15" + " -- User(user_index: " + "101" + ") not defined transaction"
     result = log.query('ROLLBACK;', 101)
     assert excepted_result == result[0].str_for_print
-
-
-def test_transaction_users_end_not_error():
-    excepted_result = "\n| id | name | \n| 1 | admin | \n| 2 | notadmin | \n| 3 | admin | \n"
-
-    log.query('DELETE FROM FIRST;', 1)
-
-    log.query('BEGIN TRANSACTION;', 1)
-    log.query('INSERT INTO FIRST VALUES (1, "admin");', 1)
-    log.query('INSERT INTO FIRST VALUES (3, "admin");', 2)
-    log.query('INSERT INTO FIRST VALUES (2, "notadmin");', 1)
-    temp = log.query('END TRANSACTION;', 1)
-
-    result = log.query("SELECT * FROM FIRST;", 1)
-    assert excepted_result == result.str_for_print
-
-
-def test_transaction_users_rollback_not_error():
-    excepted_result = "\n| id | name | \n| 3 | admin | \n"
-
-    log.query('DELETE FROM FIRST;', 1)
-    log.query('BEGIN TRANSACTION;', 1)
-    log.query('INSERT INTO FIRST VALUES (1, "admin");', 1)
-    log.query('INSERT INTO FIRST VALUES (3, "admin");', 2)
-    log.query('INSERT INTO FIRST VALUES (2, "notadmin");', 1)
-    temp = log.query('ROLLBACK;', 1)
-
-    result = log.query("SELECT * FROM FIRST;", 1)
-    assert excepted_result == result.str_for_print
