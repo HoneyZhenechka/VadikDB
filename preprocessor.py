@@ -25,18 +25,25 @@ class Preprocessor:
         self.first_table_name = ""
         self.second_table_name = ""
         self.table_count = 0
-        self.is_transaction = False
-        self.transactions = {}
+        self.users = []
+        self.current_user_index = 0
         if db_filename == "":
             self.db = eng.Database()
         else:
             self.db = eng.Database(False, db_filename)
 
+    def get_user(self, user_index):
+        for user in self.users:
+            if user.user_index == user_index:
+                return user
+
     def begin_table_transaction(self, table_index):
-        if table_index in self.transactions:
+        user = self.get_user(self.current_user_index)
+        if table_index in user.transactions:
             return
         transaction_index = self.db.tables[table_index].start_transaction()
-        self.transactions[table_index] = transaction_index
+        self.db.tables[table_index].is_locked = True
+        user.transactions[table_index] = transaction_index
 
     @staticmethod
     def get_correct_fields(fields=()) -> dict or list:
@@ -476,9 +483,10 @@ class Preprocessor:
                             rows.append(row)
             fields = self.build_fields(fields, is_star, table_index)
             transaction_index = 0
-            if self.is_transaction:
+            user = self.get_user(self.current_user_index)
+            if user.is_transaction:
                 self.begin_table_transaction(table_index)
-                transaction_index = self.transactions[table_index]
+                transaction_index = user.transactions[table_index]
             rows = self.db.tables[table_index].select(fields, rows, transaction_index)
             for i in range(len(rows)):
                 rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
@@ -501,9 +509,10 @@ class Preprocessor:
                     fields.append(self.db.tables[table_index].fields[i])
             if len(new_values) != 0:
                 transaction_index = 0
-                if self.is_transaction:
+                user = self.get_user(self.current_user_index)
+                if user.is_transaction:
                     self.begin_table_transaction(table_index)
-                    transaction_index = self.transactions[table_index]
+                    transaction_index = user.transactions[table_index]
                 self.db.tables[table_index].insert(fields, new_values, -1, transaction_index)
             return Result.Result(False)
 
@@ -531,9 +540,10 @@ class Preprocessor:
                 fields[i] = fields[i].name
             sorted(rows, key=lambda row: row.transaction_end)
             transaction_index = 0
-            if self.is_transaction:
+            user = self.get_user(self.current_user_index)
+            if user.is_transaction:
                 self.begin_table_transaction(table_index)
-                transaction_index = self.transactions[table_index]
+                transaction_index = user.transactions[table_index]
             self.db.tables[table_index].update(fields, new_values, rows, transaction_index)
             return Result.Result(False)
 
@@ -549,8 +559,9 @@ class Preprocessor:
                         if self.solve_condition(condition, row):
                             rows_indices.append(row.index_in_file)
             transaction_index = 0
-            if self.is_transaction:
+            user = self.get_user(self.current_user_index)
+            if user.is_transaction:
                 self.begin_table_transaction(table_index)
-                transaction_index = self.transactions[table_index]
+                transaction_index = user.transactions[table_index]
             self.db.tables[table_index].delete(rows_indices, transaction_index)
             return Result.Result(False)

@@ -1,6 +1,15 @@
 import SQL_parser.SQL_parser as pars
 import preprocessor as pre
 import Result
+import exception_for_client
+
+
+class User:
+
+    def __init__(self, user_index):
+        self.user_index = user_index
+        self.is_transaction = False
+        self.transactions = {}
 
 
 class Logic:
@@ -8,22 +17,48 @@ class Logic:
     def __init__(self, db_filename):
         self.pr = pre.Preprocessor(db_filename)
 
-    def begin_transaction(self):
-        self.pr.is_transaction = True
+    def begin_transaction(self, user_index):
+        user = self.pr.get_user(user_index)
+        user.is_transaction = True
+        return Result.Result(False, "")
 
-    def rollback_transaction(self):
-        for table_index in self.pr.transactions:
-            self.pr.db.tables[table_index].rollback_transaction(self.pr.transactions[table_index])
-        self.pr.transactions = {}
-        self.pr.is_transaction = False
+    def rollback_transaction(self, user_index):
+        user = self.pr.get_user(user_index)
+        if not user.is_transaction:
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TransactionNotDefined(user_index))
+        for table_index in user.transactions:
+            self.pr.db.tables[table_index].rollback_transaction(user.transactions[table_index])
+            self.pr.db.tables[table_index].is_locked = False
+        user.transactions = {}
+        user.is_transaction = False
+        return Result.Result(False, "")
 
-    def end_transaction(self):
-        for table_index in self.pr.transactions:
-            self.pr.db.tables[table_index].end_transaction(self.pr.transactions[table_index])
-        self.pr.transactions = {}
-        self.pr.is_transaction = False
+    def end_transaction(self, user_index):
+        user = self.pr.get_user(user_index)
+        if not user.is_transaction:
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TransactionNotDefined(user_index))
+        for table_index in user.transactions:
+            self.pr.db.tables[table_index].end_transaction(user.transactions[table_index])
+            self.pr.db.tables[table_index].is_locked = False
+        user.transactions = {}
+        user.is_transaction = False
+        return Result.Result(False, "")
 
-    def query(self, sql_request):
+    def check_user(self, user_index):
+        for user in self.pr.users:
+            if user.user_index == user_index:
+                return False
+        return True
+
+    def add_user(self, user_index):
+        self.pr.users.append(User(user_index))
+
+    def query(self, sql_request, user_index=0):
+
+        if self.check_user(user_index):
+            self.add_user(user_index)
+        self.pr.current_user_index = user_index
+
         request = pars.build_tree(sql_request)
         if type(request) is Result.Result:
             return request
@@ -43,20 +78,10 @@ class Logic:
             elif request.type.lower() == "delete":
                 return self.pr.delete(request.name, request.condition)
             elif request.type.lower() == "begin":
-                self.begin_transaction()
+                return self.begin_transaction(user_index)
             elif request.type.lower() == "rollback":
-                self.rollback_transaction()
+                return self.rollback_transaction(user_index)
             elif request.type.lower() == "end":
-                self.end_transaction()
+                return self.end_transaction(user_index)
         except Exception as ex:
             print(ex)
-
-#request = ("SELECT * FROM FIRST;")
-#request = ("SELECT * FROM FIRST JOIN SELECT * FROM SECOND;")
-#request = ("(SELECT * FROM FIRST JOIN (SELECT * FROM SECOND1 JOIN THIRD) AS T2) UNION (SELECT * FROM FIRST1 JOIN SECOND2);")
-#request = ("SELECT * FROM FIRST JOIN SECOND ON FIRST.id=SECOND.id;")
-#request = ("SELECT * FROM FIRST JOIN SELECT * FROM SECOND AS S ON FIRST.id=SECOND.id;")
-#request = ("SELECT * FROM FIRST JOIN (SELECT * FROM SECOND JOIN THIRD) AS S JOIN THIRD;")
-#request = ("SELECT * FROM FIRST JOIN (SELECT * FROM SECOND JOIN THIRD) AS T2 ON FIRST.id=SECOND.id;")
-#temp = pars.build_tree(request)
-#temp1 = 1
