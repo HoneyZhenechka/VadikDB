@@ -507,7 +507,7 @@ class Preprocessor:
                 return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
             table_index = self.get_table_index(name)
             if self.db.tables[table_index].is_locked:
-                if self.current_user_index == self.locked_tables[table_index]:
+                if not self.current_user_index == self.locked_tables[table_index]:
                     return Result.Result(True, "Table is locked")
             if len(fields) == 0:
                 for i in range(len(values)):
