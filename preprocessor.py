@@ -27,6 +27,7 @@ class Preprocessor:
         self.table_count = 0
         self.users = []
         self.current_user_index = 0
+        self.locked_tables = {}
         if db_filename == "":
             self.db = eng.Database()
         else:
@@ -43,6 +44,7 @@ class Preprocessor:
             return
         transaction_index = self.db.tables[table_index].start_transaction()
         self.db.tables[table_index].is_locked = True
+        self.locked_tables[table_index] = self.current_user_index
         user.transactions[table_index] = transaction_index
 
     @staticmethod
@@ -91,7 +93,7 @@ class Preprocessor:
                     if root.getRootVal().name in row.fields_values_dict:
                         value = row.fields_values_dict[root.getRootVal().name]
                     else:
-                        return Result.Result(True, exception_for_client.DBExceptionForClient.FieldNotExists(root.getRootVal().name))
+                        return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(root.getRootVal().name))
         return value
 
     def solve_comparison(self, root, row) -> bool or Result.Result:
@@ -504,6 +506,9 @@ class Preprocessor:
             if not len(new_values):
                 return Result.Result(True, exception_for_client.DBExceptionForClient().InvalidDataType())
             table_index = self.get_table_index(name)
+            if self.db.tables[table_index].is_locked:
+                if self.current_user_index == self.locked_tables[table_index]:
+                    return Result.Result(True, "Table is locked")
             if len(fields) == 0:
                 for i in range(len(values)):
                     fields.append(self.db.tables[table_index].fields[i])
@@ -523,6 +528,9 @@ class Preprocessor:
             return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(name, fields)))
         else:
             table_index = self.get_table_index(name)
+            if self.db.tables[table_index].is_locked:
+                if self.current_user_index == self.locked_tables[table_index]:
+                    return Result.Result(True, "Table is locked")
             rows = []
             new_values = []
             for block in self.db.tables[table_index].iter_blocks():
@@ -552,6 +560,9 @@ class Preprocessor:
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         else:
             table_index = self.get_table_index(name)
+            if self.db.tables[table_index].is_locked:
+                if self.current_user_index == self.locked_tables[table_index]:
+                    return Result.Result(True, "Table is locked")
             rows_indices = []
             for block in self.db.tables[table_index].iter_blocks():
                 for row in block.iter_rows():
