@@ -3,6 +3,7 @@ import engine.db_structure as eng
 import typing
 import Result
 import exception_for_client
+from datetime import datetime
 
 
 class Row:
@@ -444,9 +445,10 @@ class Preprocessor:
         elif el.type == "join":
             return self.solve_join(root)
         elif el.type == "name table":
-            return self.select(el.name, [], True, True)
+            return self.select(el.name, [], True, True, False, None, None)
         elif el.type == "select":
-            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition)
+            return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition, el.is_versioning,
+                                el.from_date, el.to_date)
 
     def tree_selects(self, tree):
         table = self.solve_tree_selects(tree)
@@ -470,7 +472,7 @@ class Preprocessor:
             result.append([field, dictionary[field]])
         return result
 
-    def select(self, name: str, fields: list, is_star: bool, condition):
+    def select(self, name: str, fields: list, is_star: bool, condition, is_versioning, from_date, to_date):
         if not self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
         elif type(self.is_fields_exist(name, fields)) is str:
@@ -489,7 +491,14 @@ class Preprocessor:
             if user.is_transaction:
                 self.begin_table_transaction(table_index)
                 transaction_index = user.transactions[table_index]
-            rows = self.db.tables[table_index].select(fields, rows, transaction_index)
+            if is_versioning:
+                from_date = datetime(from_date.year, from_date.month, from_date.day, from_date.hour,
+                                     from_date.minute, from_date.second, from_date.millisecond)
+                to_date = datetime(to_date.year, to_date.month, to_date.day, to_date.hour,
+                                   to_date.minute, to_date.second, to_date.millisecond)
+                rows = self.db.tables[table_index].select(fields, rows, transaction_index, from_date, to_date)
+            else:
+                rows = self.db.tables[table_index].select(fields, rows, transaction_index)
             for i in range(len(rows)):
                 rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
             return Table(fields, rows)

@@ -5,6 +5,7 @@ from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
 import Result
 import exception_for_client
+from datetime import datetime
 
 
 class Struct:
@@ -138,10 +139,13 @@ class PDrop(Struct):
 
 class PSelect(Struct):
 
-    def __init__(self, select_body, condition=True):
+    def __init__(self, select_body, condition=True, is_versioning=False, from_date=None, to_date=None):
         self.type = "select"
         self.select = select_body
         self.condition = condition
+        self.is_versioning = is_versioning
+        self.from_date = from_date
+        self.to_date = to_date
 
 
 class PSelectBody(Struct):
@@ -262,6 +266,18 @@ class PNamedTree(Struct):
         self.type = "named tree"
         self.tree = tree
         self.name = name
+
+
+class PDate(Struct):
+
+    def __init__(self, year, month, day, hour=0, minute=0, second=0, millisecond=0):
+        self.year = int(year)
+        self.month = int(month)
+        self.day = int(day)
+        self.hour = int(hour)
+        self.minute = int(minute)
+        self.second = int(second)
+        self.millisecond = int(millisecond)
 
 
 def p_start(p):
@@ -447,13 +463,42 @@ def p_name_table(p):
 
 
 def p_select(p):
-    '''select : SELECT select_body condition
+    '''select : SELECT select_body condition FOR SYSTEM TIME FROM date TO date
+              | SELECT select_body FOR SYSTEM TIME FROM date TO date
+              | SELECT select_body condition
               | SELECT select_body'''
 
     if len(p) == 3:
         p[0] = PSelect(p[2])
     elif len(p) == 4:
         p[0] = PSelect(p[2], p[3])
+    elif len(p) == 10:
+        p[0] = PSelect(p[2], True, True, p[7], p[9])
+    elif len(p) == 11:
+        p[0] = PSelect(p[2], p[3], True, p[7], p[9])
+
+
+def p_date(p):
+    '''date : NAME HYPHEN NAME HYPHEN NAME NAME COLON NAME COLON NAME
+            | NAME HYPHEN NAME HYPHEN NAME NAME COLON NAME
+            | NAME HYPHEN NAME HYPHEN NAME NAME
+            | NAME HYPHEN NAME HYPHEN NAME
+            | NAME HYPHEN NAME'''
+
+    if len(p) == 11:
+        millisecond = p[10][3:9]
+        second = p[10][0:2]
+        if not millisecond:
+            millisecond = 0
+        p[0] = PDate(p[1], p[3], p[5], p[6], p[8], second, millisecond)
+    elif len(p) == 9:
+        p[0] = PDate(p[1], p[3], p[5], p[6], p[8])
+    elif len(p) == 7:
+        p[0] = PDate(p[1], p[3], p[5], p[6])
+    elif len(p) == 6:
+        p[0] = PDate(p[1], p[3], p[5])
+    elif len(p) == 4:
+        p[0] = PDate(datetime.now().year, p[3], p[5])
 
 
 def p_select_body(p):

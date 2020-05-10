@@ -16,7 +16,8 @@ tokens = (
     'NOT', 'AND',
     'JOIN', 'LEFT', 'RIGHT', 'ON',
     'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER',
-    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK', 'AS'
+    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK', 'AS',
+    'FOR', 'SYSTEM', 'TIME', 'TO', 'COLON', 'HYPHEN'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -42,6 +43,12 @@ t_BEGIN = r'BEGIN'
 t_END = r'END'
 t_TRANSACTION = r'TRANSACTION'
 t_ROLLBACK = r'ROLLBACK'
+t_FOR = r'FOR'
+t_SYSTEM = r'SYSTEM'
+t_TIME = r'TIME'
+t_TO = r'TO'
+t_COLON = r'\:'
+t_HYPHEN = r'\-'
 
 
 t_TABLE = r'TABLE'
@@ -54,8 +61,8 @@ t_VALUES = r'VALUES'
 
 t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
-t_COMMA = r','
-t_DOT = r'.'
+t_COMMA = r'\,'
+t_DOT = r'\.'
 t_ENDREQUEST = r'\;'
 t_PLUS = r'\+'
 t_MINUS = r'\-'
@@ -99,6 +106,12 @@ def t_NAME(t):
 
     elif t.value == ',':
         t.type = 'COMMA'
+
+    elif t.value == ':':
+        t.type = 'COLON'
+
+    elif t.value == '-':
+        t.type = 'HYPHEN'
 
     elif t.value == '.':
         t.type = 'DOT'
@@ -162,6 +175,18 @@ def t_NAME(t):
 
     elif t.value.upper() == 'VALUES':
         t.type = 'VALUES'
+
+    elif t.value == 'FOR':
+        t.type = 'FOR'
+
+    elif t.value == 'SYSTEM':
+        t.type = 'SYSTEM'
+
+    elif t.value == 'TIME':
+        t.type = 'TIME'
+
+    elif t.value == 'TO':
+        t.type = 'TO'
 
     elif t.value == '+':
         t.type = 'PLUS'
