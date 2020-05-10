@@ -110,10 +110,11 @@ def build_tree_expression(elements):
 
 class PCreate(Struct):
 
-    def __init__(self, name="", fields=()):
+    def __init__(self, name="", fields=(), is_versioning=False):
         self.name = name
         self.type = "create"
         self.fields = fields
+        self.is_versioning = is_versioning
 
 
 class PShow(Struct):
@@ -313,9 +314,13 @@ def p_create(p):
 
 
 def p_create_body(p):
-    '''create_body : TABLE NAME LBRACKET variables RBRACKET'''
+    '''create_body :  TABLE NAME LBRACKET variables RBRACKET WITH LBRACKET VERSIONING EQUAL ON RBRACKET
+                    | TABLE NAME LBRACKET variables RBRACKET'''
 
-    p[0] = PCreate(p[2], p[4])
+    if len(p) > 6:
+        p[0] = PCreate(p[2], p[4], True)
+    else:
+        p[0] = PCreate(p[2], p[4])
 
 
 def p_variables(p):

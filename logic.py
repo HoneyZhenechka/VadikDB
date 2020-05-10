@@ -81,7 +81,7 @@ class Logic:
             return request
         try:
             if request.type.lower() == "create":
-                result = self.pr.create_table(request.name, request.fields)
+                result = self.pr.create_table(request.name, request.fields, request.is_versioning)
                 result.user_index = user_index
             elif request.type.lower() == "show":
                 result = self.pr.show_create_table(request.name)

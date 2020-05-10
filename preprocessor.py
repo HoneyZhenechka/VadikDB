@@ -219,14 +219,14 @@ class Preprocessor:
                 return []
         return values
 
-    def create_table(self, name: str, fields: list = ()) -> Result:
+    def create_table(self, name: str, fields: list = (), is_versioning: bool = False) -> Result:
         correct_fields = self.get_correct_fields(fields)
         if not (type(correct_fields) is dict):
             return Result.Result(True, exception_for_client.DBExceptionForClient().DuplicateFields(correct_fields))
         elif self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableAlreadyExists(name))
         else:
-            self.db.create_table(name, correct_fields)
+            self.db.create_table(name, correct_fields, is_versioning)
             return Result.Result(False)
 
     def show_create_table(self, name: str) -> Result:
