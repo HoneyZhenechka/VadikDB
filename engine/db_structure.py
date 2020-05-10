@@ -440,7 +440,6 @@ class Table:
                start_time: datetime = None, end_time: datetime = None) -> typing.List:
         selected_rows = []
         if self.is_versioning and (isinstance(start_time, datetime)) and (isinstance(end_time, datetime)):
-            # Захардкодил джоин, т.к. он отсутвует в логике (уберу, когда появится)
             for transaction_info in self.transaction_registry.iter_transactions():
                 tr_id = transaction_info["tr_id"]
                 tr_start_time = convert_timestamp_to_datetime(transaction_info["tr_start"])

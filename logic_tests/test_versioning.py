@@ -12,10 +12,10 @@ log = logic.Logic("Testing.vdb")
 time_list = []
 
 
-def test_transaction_users_end_not_error():
+def test_versioning_now_not_error():
     excepted_result = "\n| id | name | \n| 1 | admin | \n"
 
-    log.query("CREATE TABLE FIRST (id int, name str);", 1)
+    log.query("CREATE TABLE FIRST (id int, name str) WITH (VERSIONING = ON);", 1)
     log.query('INSERT INTO FIRST VALUES (1, "admin");', 1)
 
     time_list.append(datetime.now())
@@ -28,8 +28,8 @@ def test_transaction_users_end_not_error():
     assert excepted_result == result.str_for_print
 
 
-def test_transaction_users_rollback_not_error():
-    time.sleep(2)
+def test_versioning_previous_not_error():
+    time.sleep(1)
     log.query("DELETE FROM FIRST;")
 
     time_list.append(datetime.now())
