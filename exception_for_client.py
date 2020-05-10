@@ -60,3 +60,11 @@ class DBExceptionForClient(Exception):
     def DifferentNumberOfColumns(self):
         self.error_code = "13"
         return "Error code: " + self.error_code + " -- The used SELECT statements have a different number of columns"
+
+    def NoTableSpecified(self, field):
+        self.error_code = "14"
+        return "Error code: " + self.error_code + " -- The field: " + field + " does not have a table"
+
+    def TransactionNotDefined(self, user_index):
+        self.error_code = "15"
+        return "Error code: " + self.error_code + " -- User(user_index: " + str(user_index) + ") not defined transaction"

@@ -5,6 +5,7 @@ from pythonds.basic.stack import Stack
 from pythonds.trees.binaryTree import BinaryTree
 import Result
 import exception_for_client
+from datetime import datetime
 
 
 class Struct:
@@ -18,34 +19,6 @@ class Struct:
     def __iter__(self):
         for i in self.__dict__.keys():
             yield i
-
-
-def build_tree_selects(elements):
-    stack = Stack()
-    tree = BinaryTree('')
-    if len(elements) == 1:
-        tree.setRootVal(elements[0])
-        return tree
-    for i in range(len(elements)):
-        if i == 0:
-            stack.push(tree)
-            tree.insertLeft('')
-            tree = tree.getLeftChild()
-        if type(elements[i]) is PSelect:
-            tree.setRootVal(elements[i])
-            tree = stack.pop()
-        else:
-            if tree.getRootVal() != "":
-                stack.push(tree)
-                tree = tree.getRightChild()
-                tree.insertLeft(tree.getRootVal())
-            tree.setRootVal(elements[i])
-            tree.insertRight('')
-            stack.push(tree)
-            tree = tree.getRightChild()
-    for i in range(stack.size()):
-        tree = stack.pop()
-    return tree
 
 
 def build_tree_condition(elements):
@@ -166,10 +139,13 @@ class PDrop(Struct):
 
 class PSelect(Struct):
 
-    def __init__(self, select_body, condition=True):
+    def __init__(self, select_body, condition=True, is_versioning=False, from_date=None, to_date=None):
         self.type = "select"
         self.select = select_body
         self.condition = condition
+        self.is_versioning = is_versioning
+        self.from_date = from_date
+        self.to_date = to_date
 
 
 class PSelectBody(Struct):
@@ -197,11 +173,11 @@ class PInsertBody(Struct):
 
 class PUpdate(Struct):
 
-    def __init__(self, name="", set=((),()), condition=True):
+    def __init__(self, name="", fields_values=((), ()), condition=True):
         self.name = name
         self.type = "update"
-        self.fields = set[0]
-        self.values = set[1]
+        self.fields = fields_values[0]
+        self.values = fields_values[1]
         self.condition = condition
 
 
@@ -213,27 +189,33 @@ class PDelete(Struct):
         self.condition = condition
 
 
+class PUndefined(Struct):
+
+    def __init__(self):
+        self.type = "undefined"
+
+
 class PJoin(Struct):
 
-    def __init__(self, form=""):
+    def __init__(self, join_condition=PUndefined(), form=""):
         self.form = form
         self.type = "join"
+        self.join_condition = join_condition
 
 
 class POn(Struct):
 
-    def __init__(self, name, condition):
+    def __init__(self, first_field, second_field):
         self.type = "on"
-        self.name = name
-        self.condition = condition
+        self.first_field = first_field
+        self.second_field = second_field
 
 
 class PUsing(Struct):
 
-    def __init__(self, name, field):
+    def __init__(self, fields):
         self.type = "using"
-        self.name = name
-        self.field = field
+        self.fields = fields
 
 
 class PUnion(Struct):
@@ -249,11 +231,19 @@ class PIntersect(Struct):
         self.type = "intersect"
 
 
-class PField(Struct):
+class PNameTable(Struct):
 
     def __init__(self, name):
+        self.type = "name table"
+        self.name = name
+
+
+class PField(Struct):
+
+    def __init__(self, name, is_str=False):
         self.type = "field"
         self.name = name
+        self.is_str = is_str
 
 
 class PFieldOfTable(Struct):
@@ -264,6 +254,32 @@ class PFieldOfTable(Struct):
         self.name = name
 
 
+class PTransaction(Struct):
+
+    def __init__(self, name):
+        self.type = name
+
+
+class PNamedTree(Struct):
+
+    def __init__(self, tree, name):
+        self.type = "named tree"
+        self.tree = tree
+        self.name = name
+
+
+class PDate(Struct):
+
+    def __init__(self, year, month, day, hour=0, minute=0, second=0, millisecond=0):
+        self.year = int(year)
+        self.month = int(month)
+        self.day = int(day)
+        self.hour = int(hour)
+        self.minute = int(minute)
+        self.second = int(second)
+        self.millisecond = int(millisecond)
+
+
 def p_start(p):
     '''start : create ENDREQUEST
              | show ENDREQUEST
@@ -271,10 +287,23 @@ def p_start(p):
              | tree_selects ENDREQUEST
              | insert ENDREQUEST
              | update ENDREQUEST
-             | delete ENDREQUEST'''
-
+             | delete ENDREQUEST
+             | transaction ENDREQUEST'''
 
     p[0] = p[1]
+
+
+def p_transaction(p):
+    '''transaction : BEGIN TRANSACTION
+                   | END TRANSACTION
+                   | ROLLBACK'''
+
+    if p[1].lower() == "begin":
+        p[0] = PTransaction("begin")
+    elif p[1].lower() == "end":
+        p[0] = PTransaction("end")
+    else:
+        p[0] = PTransaction("rollback")
 
 
 def p_create(p):
@@ -284,14 +313,14 @@ def p_create(p):
 
 
 def p_create_body(p):
-    '''create_body : TABLE NAME LBRACKET values RBRACKET'''
+    '''create_body : TABLE NAME LBRACKET variables RBRACKET'''
 
     p[0] = PCreate(p[2], p[4])
 
 
-def p_values(p):
-    '''values : NAME type
-              | values COMMA NAME type'''
+def p_variables(p):
+    '''variables : NAME type
+              | variables COMMA NAME type'''
 
     if len(p) == 3:
         p[0] = []
@@ -313,27 +342,6 @@ def p_drop(p):
     p[0] = PDrop(p[3])
 
 
-def p_tree_selects(p):
-    '''tree_selects : nested_selects'''
-
-    p[0] = PTreeSelects(build_tree_selects(p[1]))
-
-
-def p_nested_selects(p):
-    '''nested_selects : select join join_right_table
-                    | nested_selects union nested_selects
-                    | nested_selects intersect nested_selects
-                    | select'''
-
-    p[0] = []
-    for i in range(len(p) - 1):
-        if type(p[i + 1]) is list:
-            for el in p[i + 1]:
-                p[0].append(el)
-        else:
-            p[0].append(p[i + 1])
-
-
 def p_join(p):
     '''join : JOIN
             | LEFT OUTER JOIN
@@ -343,15 +351,6 @@ def p_join(p):
         p[0] = PJoin()
     else:
         p[0] = PJoin(p[1] + p[2])
-
-
-def p_join_right_table(p):
-    '''join_right_table : NAME ON tree_condition
-            | NAME USING LBRACKET field RBRACKET'''
-    if p[2] == "ON":
-        p[0] = POn(p[1], p[3])
-    elif p[2] == "USING":
-        p[0] = PUsing(p[1], p[4])
 
 
 def p_union(p):
@@ -370,14 +369,136 @@ def p_intersect(p):
     p[0] = PIntersect()
 
 
+def p_tree_selects(p):
+    '''tree_selects :   LBRACKET tree_selects RBRACKET union LBRACKET tree_selects RBRACKET
+                    |   LBRACKET tree_selects RBRACKET intersect LBRACKET tree_selects RBRACKET
+                    |   LBRACKET tree_selects RBRACKET join LBRACKET tree_selects RBRACKET join_condition
+                    |   LBRACKET tree_selects RBRACKET join LBRACKET tree_selects RBRACKET
+                    |   LBRACKET tree_selects RBRACKET union select
+                    |   LBRACKET tree_selects RBRACKET intersect select
+                    |   LBRACKET tree_selects RBRACKET join select join_condition
+                    |   LBRACKET tree_selects RBRACKET join select
+                    |   LBRACKET tree_selects RBRACKET join name_table join_condition
+                    |   LBRACKET tree_selects RBRACKET join name_table
+                    |   select union LBRACKET tree_selects RBRACKET
+                    |   select intersect LBRACKET tree_selects RBRACKET
+                    |   select join LBRACKET tree_selects RBRACKET AS name_table join_condition
+                    |   select join LBRACKET tree_selects RBRACKET AS name_table
+                    |   select union select
+                    |   select intersect select
+                    |   select join select join_condition
+                    |   select join select
+                    |   select join name_table join_condition
+                    |   select join name_table
+                    |   select'''
+
+    tree = BinaryTree('')
+
+    if len(p) == 2:
+        tree.setRootVal(p[1])
+        p[0] = tree
+    elif len(p) == 4:
+        tree.insertLeft(p[1])
+        tree.setRootVal(p[2])
+        tree.insertRight(p[3])
+    elif len(p) == 5:
+        tree.insertLeft(p[1])
+        temp = p[2]
+        temp.join_condition = p[4]
+        tree.setRootVal(temp)
+        tree.insertRight(p[3])
+    elif len(p) == 6:
+        if p[1] == "(":
+            tree.insertLeft(p[2])
+            tree.setRootVal(p[4])
+            tree.insertRight(p[5])
+        else:
+            tree.insertLeft(p[1])
+            tree.setRootVal(p[2])
+            tree.insertRight(p[4])
+    elif len(p) == 7:
+        tree.insertLeft(p[2])
+        temp = p[4]
+        temp.join_condition = p[6]
+        tree.setRootVal(temp)
+        tree.insertRight(p[5])
+    elif len(p) == 8:
+        if p[5] == "(":
+            tree.insertLeft(p[2])
+            tree.setRootVal(p[4])
+            tree.insertRight(p[6])
+        else:
+            tree.insertLeft(p[1])
+            tree.setRootVal(p[2])
+            tree.insertRight(PNamedTree(p[4], p[7]))
+    elif len(p) == 9:
+        if p[5] == "(":
+            tree.insertLeft(p[2])
+            temp = p[4]
+            temp.join_condition = p[8]
+            tree.setRootVal(temp)
+            tree.insertRight(p[6])
+        else:
+            tree.insertLeft(p[1])
+            temp = p[2]
+            temp.join_condition = p[8]
+            tree.setRootVal(temp)
+            tree.insertRight(PNamedTree(p[4], p[7]))
+    p[0] = PTreeSelects(tree)
+
+
+def p_join_right_table(p):
+    '''join_condition : ON field EQUAL field
+            | USING LBRACKET fields RBRACKET'''
+    if p[1].lower() == "on":
+        p[0] = POn(p[2], p[4])
+    elif p[1].lower() == "using":
+        p[0] = PUsing(p[3])
+
+
+def p_name_table(p):
+    '''name_table : NAME'''
+
+    p[0] = PNameTable(p[1])
+
+
 def p_select(p):
-    '''select : SELECT select_body
-              | SELECT select_body condition'''
+    '''select : SELECT select_body condition FOR SYSTEM TIME FROM date TO date
+              | SELECT select_body FOR SYSTEM TIME FROM date TO date
+              | SELECT select_body condition
+              | SELECT select_body'''
 
     if len(p) == 3:
         p[0] = PSelect(p[2])
-    else:
+    elif len(p) == 4:
         p[0] = PSelect(p[2], p[3])
+    elif len(p) == 10:
+        p[0] = PSelect(p[2], True, True, p[7], p[9])
+    elif len(p) == 11:
+        p[0] = PSelect(p[2], p[3], True, p[7], p[9])
+
+
+def p_date(p):
+    '''date : NAME HYPHEN NAME HYPHEN NAME NAME COLON NAME COLON NAME
+            | NAME HYPHEN NAME HYPHEN NAME NAME COLON NAME
+            | NAME HYPHEN NAME HYPHEN NAME NAME
+            | NAME HYPHEN NAME HYPHEN NAME
+            | NAME HYPHEN NAME'''
+
+    if len(p) == 11:
+        millisecond = p[10][3:9]
+        second = p[10][0:2]
+        if not millisecond:
+            millisecond = 0
+        p[0] = PDate(p[1], p[3], p[5], p[6], p[8], second, millisecond)
+    elif len(p) == 9:
+        p[0] = PDate(p[1], p[3], p[5], p[6], p[8])
+    elif len(p) == 7:
+        p[0] = PDate(p[1], p[3], p[5], p[6])
+    elif len(p) == 6:
+        p[0] = PDate(p[1], p[3], p[5])
+    elif len(p) == 4:
+        p[0] = PDate(datetime.now().year, p[3], p[5])
 
 
 def p_select_body(p):
@@ -400,8 +521,8 @@ def p_insert(p):
 
 
 def p_insert_body(p):
-    '''insert_body : INTO NAME VALUES LBRACKET fields RBRACKET
-                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET fields RBRACKET'''
+    '''insert_body : INTO NAME VALUES LBRACKET values RBRACKET
+                   | INTO NAME LBRACKET fields RBRACKET VALUES LBRACKET values RBRACKET'''
 
     if len(p) == 7:
         p[0] = PInsertBody(p[2], [], p[5])
@@ -446,6 +567,28 @@ def p_delete(p):
         p[0] = PDelete(p[3])
     else:
         p[0] = PDelete(p[3], p[4])
+
+
+def p_values(p):
+    '''values : value
+              | values COMMA value'''
+
+    if len(p) == 2:
+        p[0] = []
+        p[0].append(p[1])
+    else:
+        p[0] = p[1]
+        p[0].append(p[3])
+
+
+def p_value(p):
+    '''value : NAME
+             | QUOTE NAME QUOTE'''
+
+    if len(p) == 2:
+        p[0] = PField(p[1])
+    else:
+        p[0] = PField(p[2], True)
 
 
 def p_fields(p):
@@ -503,8 +646,8 @@ def p_tree_comparison(p):
 
 
 def p_tree_expression(p):
-    '''tree_expression : field
-            | field operator_expression tree_expression
+    '''tree_expression : value
+            | value operator_expression tree_expression
             | operator_expression tree_expression
             | LBRACKET tree_expression RBRACKET
             | tree_expression operator_expression tree_expression'''

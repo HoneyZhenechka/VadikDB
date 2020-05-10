@@ -9,13 +9,15 @@ tokens = (
     'NAME', 'VALUES',
     'int', 'str', 'bol', 'bool', 'float',
     'EQUAL', 'RBRACKET',
-    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION',
+    'LBRACKET', 'COMMA', 'DOT', 'ENDREQUEST', 'PLUS', 'MINUS', 'DIVISION', 'QUOTE',
     'STAR', 'NOT_EQUAL', 'GREATER_THAN',
     'LESS_THAN', 'GREATER_THAN_OR_EQUAL',
     'LESS_THAN_OR_EQUAL', 'OR',
     'NOT', 'AND',
     'JOIN', 'LEFT', 'RIGHT', 'ON',
-    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER'
+    'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER',
+    'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK', 'AS',
+    'FOR', 'SYSTEM', 'TIME', 'TO', 'COLON', 'HYPHEN'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -33,9 +35,20 @@ t_RIGHT = r'RIGHT'
 t_ON = r'ON'
 t_USING = r'USING'
 t_UNION = r'UNION'
+t_AS = r'AS'
 t_ALL = r'ALL'
 t_INTERSECT = r'INTERSECT'
 t_OUTER = r'OUTER'
+t_BEGIN = r'BEGIN'
+t_END = r'END'
+t_TRANSACTION = r'TRANSACTION'
+t_ROLLBACK = r'ROLLBACK'
+t_FOR = r'FOR'
+t_SYSTEM = r'SYSTEM'
+t_TIME = r'TIME'
+t_TO = r'TO'
+t_COLON = r'\:'
+t_HYPHEN = r'\-'
 
 
 t_TABLE = r'TABLE'
@@ -48,13 +61,14 @@ t_VALUES = r'VALUES'
 
 t_RBRACKET = r'\)'
 t_LBRACKET = r'\('
-t_COMMA = r','
-t_DOT = r'.'
+t_COMMA = r'\,'
+t_DOT = r'\.'
 t_ENDREQUEST = r'\;'
 t_PLUS = r'\+'
 t_MINUS = r'\-'
 t_STAR = r'\*'
 t_DIVISION = r'\/'
+t_QUOTE = r'\'|\"'
 
 t_EQUAL = r'\='
 t_NOT_EQUAL = r'!='
@@ -93,6 +107,12 @@ def t_NAME(t):
     elif t.value == ',':
         t.type = 'COMMA'
 
+    elif t.value == ':':
+        t.type = 'COLON'
+
+    elif t.value == '-':
+        t.type = 'HYPHEN'
+
     elif t.value == '.':
         t.type = 'DOT'
 
@@ -114,6 +134,9 @@ def t_NAME(t):
     elif t.value.upper() == 'UNION':
         t.type = 'UNION'
 
+    elif t.value.upper() == 'AS':
+        t.type = 'AS'
+
     elif t.value.upper() == 'ALL':
         t.type = 'ALL'
 
@@ -122,6 +145,18 @@ def t_NAME(t):
 
     elif t.value.upper() == 'OUTER':
         t.type = 'OUTER'
+
+    elif t.value.upper() == 'BEGIN':
+        t.type = 'BEGIN'
+
+    elif t.value.upper() == 'END':
+        t.type = 'END'
+
+    elif t.value.upper() == 'TRANSACTION':
+        t.type = 'TRANSACTION'
+
+    elif t.value.upper() == 'ROLLBACK':
+        t.type = 'ROLLBACK'
 
     elif t.value.upper() == 'TABLE':
         t.type = 'TABLE'
@@ -141,6 +176,18 @@ def t_NAME(t):
     elif t.value.upper() == 'VALUES':
         t.type = 'VALUES'
 
+    elif t.value == 'FOR':
+        t.type = 'FOR'
+
+    elif t.value == 'SYSTEM':
+        t.type = 'SYSTEM'
+
+    elif t.value == 'TIME':
+        t.type = 'TIME'
+
+    elif t.value == 'TO':
+        t.type = 'TO'
+
     elif t.value == '+':
         t.type = 'PLUS'
 
@@ -152,6 +199,9 @@ def t_NAME(t):
 
     elif t.value == '/':
         t.type = 'DIVISION'
+
+    elif t.value == r'\'|\"':
+        t.type = "QUOTE"
 
     elif t.value.upper() == '=':
         t.type = 'EQUAL'
@@ -219,6 +269,6 @@ def t_error(t):
     t.lexer.skip(1)
 
 
-t_ignore = ''' ' " '''
+t_ignore = '''  '''
 
 lexer = lex.lex(reflags=re.UNICODE | re.DOTALL)

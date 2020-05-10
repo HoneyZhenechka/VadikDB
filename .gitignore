@@ -116,3 +116,6 @@ TestResults
 *.vdb
 *.log
 *.rg
+*.storage
+*.db_meta
+*.table_meta
