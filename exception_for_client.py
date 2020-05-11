@@ -68,3 +68,11 @@ class DBExceptionForClient(Exception):
     def TransactionNotDefined(self, user_index):
         self.error_code = "15"
         return "Error code: " + self.error_code + " -- User(user_index: " + str(user_index) + ") not defined transaction"
+
+    def IndexAlreadyExists(self, table_name):
+        self.error_code = "16"
+        return "Error code: " + self.error_code + " -- Index " + table_name + " already exists!"
+
+    def IndexNotExists(self, table_name):
+        self.error_code = "17"
+        return "Error code: " + self.error_code + " -- Index " + table_name + " not exists!"

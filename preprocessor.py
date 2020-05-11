@@ -20,6 +20,15 @@ class Table:
         self.rows = rows
 
 
+class Index:
+
+    def __init__(self, index_name, index_id, table_name, fields):
+        self.index_name = index_name
+        self.index_id = index_id
+        self.table_name = table_name
+        self.fields = fields
+
+
 class Preprocessor:
 
     def __init__(self, db_filename: str):
@@ -27,6 +36,7 @@ class Preprocessor:
         self.second_table_name = ""
         self.table_count = 0
         self.users = []
+        self.indices = []
         self.current_user_index = 0
         self.locked_tables = {}
         if db_filename == "":
@@ -47,6 +57,67 @@ class Preprocessor:
         self.db.tables[table_index].is_locked = True
         self.locked_tables[table_index] = self.current_user_index
         user.transactions[table_index] = transaction_index
+
+    def get_index(self, index_name, table_name):
+        for index in self.indices:
+            if index.index_name == index_name and index.table_name == table_name:
+                return index
+
+    def is_index_exist(self, index_name, table_name):
+        for index in self.indices:
+            if index.index_name == index_name and index.table_name == table_name:
+                return True
+        return False
+
+    def get_index_for_select(self, table_name, fields):
+        table_index = self.get_table_index(table_name)
+        for index in self.db.tables[table_index].indexes:
+            is_right = True
+            for field_first in index.fields:
+                for field_second in fields:
+                    if field_first != field_second:
+                        return False
+            if is_right:
+                return index
+
+    def create_index(self, index_name, table_name, fields):
+        if not self.is_table_exists(table_name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(table_name))
+        elif type(self.is_fields_exist(table_name, fields)) is str:
+            return Result.Result(True, exception_for_client.DBExceptionForClient().FieldNotExists(self.is_fields_exist(table_name, fields)))
+        elif self.is_index_exist(index_name, table_name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().IndexAlreadyExists(index_name))
+        table_index = self.get_table_index(table_name)
+        fields_for_eng = []
+        for field in fields:
+            fields_for_eng.append(field.name)
+        index_id = self.db.tables[table_index].create_index(fields_for_eng)
+        self.indices.append(Index(index_name, index_id, table_name, fields_for_eng))
+        return Result.Result(False, "")
+
+    def drop_index(self, index_name, table_name):
+        if not self.is_table_exists(table_name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(table_name))
+        elif not self.is_index_exist(index_name, table_name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().IndexNotExists(index_name))
+        index_id = self.get_index(index_name, table_name)
+        table_index = self.get_table_index(table_name)
+        self.db.tables[table_index].delete_index(index_id)
+        indices = []
+        for index in self.indices:
+            if not(index.index_name == index_name and index.table_name == table_name):
+                indices.append(index)
+        self.indices = indices
+        return Result.Result(False, "")
+
+    def show_index(self, table_name):
+        if not self.is_table_exists(table_name):
+            return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(table_name))
+        str_for_print = "\n| index name | \n"
+        for index in self.indices:
+            if index.table_name == table_name:
+                str_for_print += "| " + index.index_name + " | \n"
+        return Result.Result(False, str_for_print)
 
     @staticmethod
     def get_correct_fields(fields=()) -> dict or list:
@@ -480,27 +551,39 @@ class Preprocessor:
         else:
             table_index = self.get_table_index(name)
             rows = []
-            for block in self.db.tables[table_index].iter_blocks():
-                for row in block.iter_rows():
-                    if row.status == 1:
-                        if self.solve_condition(condition, row):
-                            rows.append(row)
             fields = self.build_fields(fields, is_star, table_index)
-            transaction_index = 0
-            user = self.get_user(self.current_user_index)
-            if user.is_transaction:
-                self.begin_table_transaction(table_index)
-                transaction_index = user.transactions[table_index]
-            if is_versioning:
-                from_date = datetime(from_date.year, from_date.month, from_date.day, from_date.hour,
-                                     from_date.minute, from_date.second, from_date.millisecond)
-                to_date = datetime(to_date.year, to_date.month, to_date.day, to_date.hour,
-                                   to_date.minute, to_date.second, to_date.millisecond)
-                rows = self.db.tables[table_index].select(fields, rows, transaction_index, from_date, to_date)
+            index = self.get_index_for_select(name, fields)
+            if not (index):
+                for block in self.db.tables[table_index].iter_blocks():
+                    for row in block.iter_rows():
+                        if row.status == 1:
+                            if self.solve_condition(condition, row):
+                                rows.append(row)
+                transaction_index = 0
+                user = self.get_user(self.current_user_index)
+                if user.is_transaction:
+                    self.begin_table_transaction(table_index)
+                    transaction_index = user.transactions[table_index]
+                if is_versioning:
+                    from_date = datetime(from_date.year, from_date.month, from_date.day, from_date.hour,
+                                         from_date.minute, from_date.second, from_date.millisecond)
+                    to_date = datetime(to_date.year, to_date.month, to_date.day, to_date.hour,
+                                       to_date.minute, to_date.second, to_date.millisecond)
+                    rows = self.db.tables[table_index].select(fields, rows, transaction_index, from_date, to_date)
+                else:
+                    rows = self.db.tables[table_index].select(fields, rows, transaction_index)
+                for i in range(len(rows)):
+                    rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
             else:
-                rows = self.db.tables[table_index].select(fields, rows, transaction_index)
-            for i in range(len(rows)):
-                rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
+                ind = 0
+                keys = index.data_dict.keys()
+                for values in keys:
+                    fields_values_dict = []
+                    for value in values:
+                        fields_values_dict.append([fields[ind], value])
+                        ind += 1
+                    ind = 0
+                    rows.append(Row(fields_values_dict))
             return Table(fields, rows)
 
     def insert(self, name: str, fields: list, values: list):

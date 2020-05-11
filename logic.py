@@ -118,6 +118,15 @@ class Logic:
                 result = self.end_transaction(user_index)
                 result.user_index = user_index
                 result = self.check_queue(result)
+            elif request.type.lower() == "create index":
+                result = self.pr.create_index(request.index_name, request.table_name, request.fields)
+                result.user_index = user_index
+            elif request.type.lower() == "drop index":
+                result = self.pr.drop_index(request.index_name, request.table_name)
+                result.user_index = user_index
+            elif request.type.lower() == "show index":
+                result = self.pr.show_index(request.table_name)
+                result.user_index = user_index
             else:
                 result = Result.Result(True, "Function does not exist", user_index)
             return result

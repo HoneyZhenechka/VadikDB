@@ -281,6 +281,30 @@ class PDate(Struct):
         self.millisecond = int(millisecond)
 
 
+class PCreateIndex(Struct):
+
+    def __init__(self, index_name, table_name, fields):
+        self.type = "create index"
+        self.index_name = index_name
+        self.table_name = table_name
+        self.fields = fields
+
+
+class PShowIndex(Struct):
+
+    def __init__(self, table_name):
+        self.type = "show index"
+        self.table_name = table_name
+
+
+class PDropIndex(Struct):
+
+    def __init__(self, index_name, table_name):
+        self.type = "drop index"
+        self.index_name = index_name
+        self.table_name = table_name
+
+
 def p_start(p):
     '''start : create ENDREQUEST
              | show ENDREQUEST
@@ -308,9 +332,13 @@ def p_transaction(p):
 
 
 def p_create(p):
-    '''create : CREATE create_body'''
+    '''create :   CREATE INDEX NAME ON NAME LBRACKET fields RBRACKET
+                | CREATE create_body'''
 
-    p[0] = p[2]
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = PCreateIndex(p[3], p[5], p[7])
 
 
 def p_create_body(p):
@@ -336,15 +364,23 @@ def p_variables(p):
 
 
 def p_show(p):
-    '''show : SHOW CREATE TABLE NAME'''
+    '''show :  SHOW INDEX NAME
+             | SHOW CREATE TABLE NAME'''
 
-    p[0] = PShow(p[4])
+    if len(p) == 5:
+        p[0] = PShow(p[4])
+    else:
+        p[0] = PShowIndex(p[3])
 
 
 def p_drop(p):
-    '''drop : DROP TABLE NAME'''
+    '''drop : DROP INDEX NAME ON NAME
+            | DROP TABLE NAME'''
 
-    p[0] = PDrop(p[3])
+    if len(p) == 4:
+        p[0] = PDrop(p[3])
+    else:
+        p[0] = PDropIndex(p[3], p[5])
 
 
 def p_join(p):

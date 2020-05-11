@@ -17,7 +17,8 @@ tokens = (
     'JOIN', 'LEFT', 'RIGHT', 'ON',
     'USING', 'UNION', 'ALL', 'INTERSECT', 'OUTER',
     'BEGIN', 'END', 'TRANSACTION', 'ROLLBACK', 'AS',
-    'FOR', 'SYSTEM', 'TIME', 'TO', 'COLON', 'HYPHEN', 'WITH', 'VERSIONING', 'ON'
+    'FOR', 'SYSTEM', 'TIME', 'TO', 'COLON', 'HYPHEN', 'WITH', 'VERSIONING', 'ON',
+    'INDEX'
 )
 
 ident = r'\d+\.\d+|\w+'
@@ -52,6 +53,7 @@ t_HYPHEN = r'\-'
 t_WITH = r'WITH'
 t_VERSIONING = r'VERSIONING'
 r_ON = r'ON'
+r_INDEX = r'INDEX'
 
 
 t_TABLE = r'TABLE'
@@ -163,6 +165,9 @@ def t_NAME(t):
 
     elif t.value.upper() == 'END':
         t.type = 'END'
+
+    elif t.value.upper() == 'INDEX':
+        t.type = 'INDEX'
 
     elif t.value.upper() == 'TRANSACTION':
         t.type = 'TRANSACTION'
