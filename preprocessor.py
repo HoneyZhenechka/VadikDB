@@ -543,6 +543,59 @@ class Preprocessor:
             result.append([field, dictionary[field]])
         return result
 
+    @staticmethod
+    def check_where_condition(condition, fields):
+        if condition == True:
+            return False
+        elif not (condition.getRootVal() in ["=", ">", "<", ">=", "<="]):
+            return False
+        elif (condition.getLeftChild().getRootVal().type == "field") and \
+                (condition.getRightChild().getRootVal().type == "field"):
+            return True
+
+    def get_rows_for_value(self, index, table_index, fields, index_in_sorted_dict):
+        rows = []
+        value = index.data_dict.peekitem(index_in_sorted_dict)[0][0]
+        row_indices = index.data_dict.peekitem(index_in_sorted_dict)[1]
+        for row_id in row_indices:
+            row = eng.Row(self.db.tables[table_index], row_id)
+            row.fields_values_dict[fields[0]] = value
+            rows.append(row)
+        return rows
+
+    def get_rows_using_index(self, index, condition, table_index, fields):
+        result = []
+        index_in_sorted_dict = index.data_dict.bisect_left((int(condition.getRightChild().getRootVal().name),))
+        if condition.getRootVal() == "=":
+            result = self.get_rows_for_value(index, table_index, fields, index_in_sorted_dict)
+        elif condition.getRootVal() == ">":
+            index_in_sorted_dict += 1
+            while index_in_sorted_dict < len(index.data_dict):
+                rows = self.get_rows_for_value(index, table_index, fields, index_in_sorted_dict)
+                index_in_sorted_dict += 1
+                for row in rows:
+                    result.append(row)
+        elif condition.getRootVal() == ">=":
+            while index_in_sorted_dict < len(index.data_dict):
+                rows = self.get_rows_for_value(index, table_index, fields, index_in_sorted_dict)
+                index_in_sorted_dict += 1
+                for row in rows:
+                    result.append(row)
+        elif condition.getRootVal() == "<":
+            while index_in_sorted_dict >= 0:
+                rows = self.get_rows_for_value(index, table_index, fields, index_in_sorted_dict)
+                index_in_sorted_dict -= 1
+                for row in rows:
+                    result.append(row)
+        elif condition.getRootVal() == "<=":
+            index_in_sorted_dict -= 1
+            while index_in_sorted_dict >= 0:
+                rows = self.get_rows_for_value(index, table_index, fields, index_in_sorted_dict)
+                index_in_sorted_dict -= 1
+                for row in rows:
+                    result.append(row)
+        return result
+
     def select(self, name: str, fields: list, is_star: bool, condition, is_versioning, from_date, to_date):
         if not self.is_table_exists(name):
             return Result.Result(True, exception_for_client.DBExceptionForClient().TableNotExists(name))
@@ -553,37 +606,29 @@ class Preprocessor:
             rows = []
             fields = self.build_fields(fields, is_star, table_index)
             index = self.get_index_for_select(name, fields)
-            if not (index):
+            if not (index) or not self.check_where_condition(condition, fields):
                 for block in self.db.tables[table_index].iter_blocks():
                     for row in block.iter_rows():
                         if row.status == 1:
                             if self.solve_condition(condition, row):
                                 rows.append(row)
-                transaction_index = 0
-                user = self.get_user(self.current_user_index)
-                if user.is_transaction:
-                    self.begin_table_transaction(table_index)
-                    transaction_index = user.transactions[table_index]
-                if is_versioning:
-                    from_date = datetime(from_date.year, from_date.month, from_date.day, from_date.hour,
-                                         from_date.minute, from_date.second, from_date.millisecond)
-                    to_date = datetime(to_date.year, to_date.month, to_date.day, to_date.hour,
-                                       to_date.minute, to_date.second, to_date.millisecond)
-                    rows = self.db.tables[table_index].select(fields, rows, transaction_index, from_date, to_date)
-                else:
-                    rows = self.db.tables[table_index].select(fields, rows, transaction_index)
-                for i in range(len(rows)):
-                    rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
             else:
-                ind = 0
-                keys = index.data_dict.keys()
-                for values in keys:
-                    fields_values_dict = []
-                    for value in values:
-                        fields_values_dict.append([fields[ind], value])
-                        ind += 1
-                    ind = 0
-                    rows.append(Row(fields_values_dict))
+                rows = self.get_rows_using_index(index, condition, table_index, fields)
+            transaction_index = 0
+            user = self.get_user(self.current_user_index)
+            if user.is_transaction:
+                self.begin_table_transaction(table_index)
+                transaction_index = user.transactions[table_index]
+            if is_versioning:
+                from_date = datetime(from_date.year, from_date.month, from_date.day, from_date.hour,
+                                     from_date.minute, from_date.second, from_date.millisecond)
+                to_date = datetime(to_date.year, to_date.month, to_date.day, to_date.hour,
+                                   to_date.minute, to_date.second, to_date.millisecond)
+                rows = self.db.tables[table_index].select(fields, rows, transaction_index, from_date, to_date)
+            else:
+                rows = self.db.tables[table_index].select(fields, rows, transaction_index)
+            for i in range(len(rows)):
+                rows[i] = Row(self.dict_to_list(rows[i].fields_values_dict))
             return Table(fields, rows)
 
     def insert(self, name: str, fields: list, values: list):

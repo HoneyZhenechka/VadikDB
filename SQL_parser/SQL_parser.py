@@ -712,12 +712,12 @@ def p_operator_condition(p):
 
 
 def p_operator_comparison(p):
-    '''operator_comparison : EQUAL
+    '''operator_comparison :  GREATER_THAN_OR_EQUAL
+                            | LESS_THAN_OR_EQUAL
                             | NOT_EQUAL
+                            | EQUAL
                             | GREATER_THAN
-                            | LESS_THAN
-                            | GREATER_THAN_OR_EQUAL
-                            | LESS_THAN_OR_EQUAL'''
+                            | LESS_THAN'''
 
     p[0] = p[1]
 

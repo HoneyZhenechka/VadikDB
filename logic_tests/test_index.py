@@ -14,25 +14,20 @@ time_list = []
 
 def test_index():
     log.query("CREATE TABLE FIRST (id int, name str);", 1)
-    log.query('INSERT INTO FIRST VALUES (10, "first");', 1)
-    log.query('INSERT INTO FIRST VALUES (20, "second");', 1)
-    log.query('INSERT INTO FIRST VALUES (30, "third");', 1)
-    log.query('INSERT INTO FIRST VALUES (40, "first");', 1)
-    log.query('INSERT INTO FIRST VALUES (50, "second");', 1)
-    log.query('INSERT INTO FIRST VALUES (60, "third");', 1)
-    log.query('INSERT INTO FIRST VALUES (70, "first");', 1)
-    log.query('INSERT INTO FIRST VALUES (80, "second");', 1)
-    log.query('INSERT INTO FIRST VALUES (90, "third");', 1)
+    for i in range(50):
+        request = 'INSERT INTO FIRST VALUES (' + str(i) + ', "first");'
+        log.query(request, 1)
+        log.query(request, 1)
 
     begin_first_time = datetime.now()
-    temp1 = log.query("SELECT id FROM FIRST;", 1)
+    temp1 = log.query("SELECT id FROM FIRST WHERE id = 49;", 1)
     end_first_time = datetime.now()
     first_time = end_first_time - begin_first_time
 
     log.query("CREATE INDEX ind1 ON FIRST (id);", 1)
 
     begin_second_time = datetime.now()
-    temp2 = log.query("SELECT id FROM FIRST;", 1)
+    temp2 = log.query("SELECT id FROM FIRST WHERE id = 49;", 1)
     end_second_time = datetime.now()
     second_time = end_second_time - begin_second_time
 

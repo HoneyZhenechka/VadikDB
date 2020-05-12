@@ -99,12 +99,12 @@ Rule 89    tree_expression -> LBRACKET tree_expression RBRACKET
 Rule 90    tree_expression -> tree_expression operator_expression tree_expression
 Rule 91    operator_condition -> AND
 Rule 92    operator_condition -> OR
-Rule 93    operator_comparison -> EQUAL
-Rule 94    operator_comparison -> NOT_EQUAL
-Rule 95    operator_comparison -> GREATER_THAN
-Rule 96    operator_comparison -> LESS_THAN
-Rule 97    operator_comparison -> GREATER_THAN_OR_EQUAL
-Rule 98    operator_comparison -> LESS_THAN_OR_EQUAL
+Rule 93    operator_comparison -> GREATER_THAN_OR_EQUAL
+Rule 94    operator_comparison -> LESS_THAN_OR_EQUAL
+Rule 95    operator_comparison -> NOT_EQUAL
+Rule 96    operator_comparison -> EQUAL
+Rule 97    operator_comparison -> GREATER_THAN
+Rule 98    operator_comparison -> LESS_THAN
 Rule 99    operator_expression -> PLUS
 Rule 100   operator_expression -> MINUS
 Rule 101   operator_expression -> STAR
@@ -130,11 +130,11 @@ DOT                  : 81
 DROP                 : 20 21
 END                  : 10
 ENDREQUEST           : 1 2 3 4 5 6 7 8
-EQUAL                : 14 49 70 71 93
+EQUAL                : 14 49 70 71 96
 FOR                  : 52 53
 FROM                 : 52 53 61 62 63 72 73
-GREATER_THAN         : 95
-GREATER_THAN_OR_EQUAL : 97
+GREATER_THAN         : 97
+GREATER_THAN_OR_EQUAL : 93
 HYPHEN               : 56 56 57 57 58 58 59 59 60
 INDEX                : 12 18 20
 INSERT               : 64
@@ -143,12 +143,12 @@ INTO                 : 65 66
 JOIN                 : 22 23 24
 LBRACKET             : 12 14 14 15 28 28 29 29 30 30 31 31 32 33 34 35 36 37 38 39 40 41 50 65 66 66 89
 LEFT                 : 23
-LESS_THAN            : 96
-LESS_THAN_OR_EQUAL   : 98
+LESS_THAN            : 98
+LESS_THAN_OR_EQUAL   : 94
 MINUS                : 100
 NAME                 : 12 12 14 15 16 17 18 19 20 20 21 51 56 56 56 56 56 56 57 57 57 57 57 58 58 58 58 59 59 59 60 60 61 62 63 65 66 68 69 72 73 76 77 80 81 81
 NOT                  : 
-NOT_EQUAL            : 94
+NOT_EQUAL            : 95
 ON                   : 12 14 20 49
 OR                   : 92
 OUTER                : 23 24
@@ -1501,23 +1501,23 @@ state 112
 
     (85) tree_comparison -> tree_expression . operator_comparison tree_expression
     (90) tree_expression -> tree_expression . operator_expression tree_expression
-    (93) operator_comparison -> . EQUAL
-    (94) operator_comparison -> . NOT_EQUAL
-    (95) operator_comparison -> . GREATER_THAN
-    (96) operator_comparison -> . LESS_THAN
-    (97) operator_comparison -> . GREATER_THAN_OR_EQUAL
-    (98) operator_comparison -> . LESS_THAN_OR_EQUAL
+    (93) operator_comparison -> . GREATER_THAN_OR_EQUAL
+    (94) operator_comparison -> . LESS_THAN_OR_EQUAL
+    (95) operator_comparison -> . NOT_EQUAL
+    (96) operator_comparison -> . EQUAL
+    (97) operator_comparison -> . GREATER_THAN
+    (98) operator_comparison -> . LESS_THAN
     (99) operator_expression -> . PLUS
     (100) operator_expression -> . MINUS
     (101) operator_expression -> . STAR
     (102) operator_expression -> . DIVISION
 
-    EQUAL           shift and go to state 155
-    NOT_EQUAL       shift and go to state 156
-    GREATER_THAN    shift and go to state 157
-    LESS_THAN       shift and go to state 158
-    GREATER_THAN_OR_EQUAL shift and go to state 159
-    LESS_THAN_OR_EQUAL shift and go to state 160
+    GREATER_THAN_OR_EQUAL shift and go to state 155
+    LESS_THAN_OR_EQUAL shift and go to state 156
+    NOT_EQUAL       shift and go to state 157
+    EQUAL           shift and go to state 158
+    GREATER_THAN    shift and go to state 159
+    LESS_THAN       shift and go to state 160
     PLUS            shift and go to state 118
     MINUS           shift and go to state 119
     STAR            shift and go to state 120
@@ -1539,12 +1539,12 @@ state 113
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 86 (tree_expression -> value .)
-    NOT_EQUAL       reduce using rule 86 (tree_expression -> value .)
-    GREATER_THAN    reduce using rule 86 (tree_expression -> value .)
-    LESS_THAN       reduce using rule 86 (tree_expression -> value .)
     GREATER_THAN_OR_EQUAL reduce using rule 86 (tree_expression -> value .)
     LESS_THAN_OR_EQUAL reduce using rule 86 (tree_expression -> value .)
+    NOT_EQUAL       reduce using rule 86 (tree_expression -> value .)
+    EQUAL           reduce using rule 86 (tree_expression -> value .)
+    GREATER_THAN    reduce using rule 86 (tree_expression -> value .)
+    LESS_THAN       reduce using rule 86 (tree_expression -> value .)
     RBRACKET        reduce using rule 86 (tree_expression -> value .)
     COMMA           reduce using rule 86 (tree_expression -> value .)
     WHERE           reduce using rule 86 (tree_expression -> value .)
@@ -1633,12 +1633,12 @@ state 116
     MINUS           reduce using rule 76 (value -> NAME .)
     STAR            reduce using rule 76 (value -> NAME .)
     DIVISION        reduce using rule 76 (value -> NAME .)
-    EQUAL           reduce using rule 76 (value -> NAME .)
-    NOT_EQUAL       reduce using rule 76 (value -> NAME .)
-    GREATER_THAN    reduce using rule 76 (value -> NAME .)
-    LESS_THAN       reduce using rule 76 (value -> NAME .)
     GREATER_THAN_OR_EQUAL reduce using rule 76 (value -> NAME .)
     LESS_THAN_OR_EQUAL reduce using rule 76 (value -> NAME .)
+    NOT_EQUAL       reduce using rule 76 (value -> NAME .)
+    EQUAL           reduce using rule 76 (value -> NAME .)
+    GREATER_THAN    reduce using rule 76 (value -> NAME .)
+    LESS_THAN       reduce using rule 76 (value -> NAME .)
     RBRACKET        reduce using rule 76 (value -> NAME .)
     COMMA           reduce using rule 76 (value -> NAME .)
     WHERE           reduce using rule 76 (value -> NAME .)
@@ -2207,80 +2207,80 @@ state 154
 
 state 155
 
-    (93) operator_comparison -> EQUAL .
+    (93) operator_comparison -> GREATER_THAN_OR_EQUAL .
 
-    LBRACKET        reduce using rule 93 (operator_comparison -> EQUAL .)
-    NAME            reduce using rule 93 (operator_comparison -> EQUAL .)
-    QUOTE           reduce using rule 93 (operator_comparison -> EQUAL .)
-    PLUS            reduce using rule 93 (operator_comparison -> EQUAL .)
-    MINUS           reduce using rule 93 (operator_comparison -> EQUAL .)
-    STAR            reduce using rule 93 (operator_comparison -> EQUAL .)
-    DIVISION        reduce using rule 93 (operator_comparison -> EQUAL .)
+    LBRACKET        reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    NAME            reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    QUOTE           reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    PLUS            reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    MINUS           reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    STAR            reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    DIVISION        reduce using rule 93 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
 
 
 state 156
 
-    (94) operator_comparison -> NOT_EQUAL .
+    (94) operator_comparison -> LESS_THAN_OR_EQUAL .
 
-    LBRACKET        reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    NAME            reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    QUOTE           reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    PLUS            reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    MINUS           reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    STAR            reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
-    DIVISION        reduce using rule 94 (operator_comparison -> NOT_EQUAL .)
+    LBRACKET        reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    NAME            reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    QUOTE           reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    PLUS            reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    MINUS           reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    STAR            reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    DIVISION        reduce using rule 94 (operator_comparison -> LESS_THAN_OR_EQUAL .)
 
 
 state 157
 
-    (95) operator_comparison -> GREATER_THAN .
+    (95) operator_comparison -> NOT_EQUAL .
 
-    LBRACKET        reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    NAME            reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    QUOTE           reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    PLUS            reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    MINUS           reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    STAR            reduce using rule 95 (operator_comparison -> GREATER_THAN .)
-    DIVISION        reduce using rule 95 (operator_comparison -> GREATER_THAN .)
+    LBRACKET        reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    NAME            reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    QUOTE           reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    PLUS            reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    MINUS           reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    STAR            reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
+    DIVISION        reduce using rule 95 (operator_comparison -> NOT_EQUAL .)
 
 
 state 158
 
-    (96) operator_comparison -> LESS_THAN .
+    (96) operator_comparison -> EQUAL .
 
-    LBRACKET        reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    NAME            reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    QUOTE           reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    PLUS            reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    MINUS           reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    STAR            reduce using rule 96 (operator_comparison -> LESS_THAN .)
-    DIVISION        reduce using rule 96 (operator_comparison -> LESS_THAN .)
+    LBRACKET        reduce using rule 96 (operator_comparison -> EQUAL .)
+    NAME            reduce using rule 96 (operator_comparison -> EQUAL .)
+    QUOTE           reduce using rule 96 (operator_comparison -> EQUAL .)
+    PLUS            reduce using rule 96 (operator_comparison -> EQUAL .)
+    MINUS           reduce using rule 96 (operator_comparison -> EQUAL .)
+    STAR            reduce using rule 96 (operator_comparison -> EQUAL .)
+    DIVISION        reduce using rule 96 (operator_comparison -> EQUAL .)
 
 
 state 159
 
-    (97) operator_comparison -> GREATER_THAN_OR_EQUAL .
+    (97) operator_comparison -> GREATER_THAN .
 
-    LBRACKET        reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    NAME            reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    QUOTE           reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    PLUS            reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    MINUS           reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    STAR            reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
-    DIVISION        reduce using rule 97 (operator_comparison -> GREATER_THAN_OR_EQUAL .)
+    LBRACKET        reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    NAME            reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    QUOTE           reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    PLUS            reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    MINUS           reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    STAR            reduce using rule 97 (operator_comparison -> GREATER_THAN .)
+    DIVISION        reduce using rule 97 (operator_comparison -> GREATER_THAN .)
 
 
 state 160
 
-    (98) operator_comparison -> LESS_THAN_OR_EQUAL .
+    (98) operator_comparison -> LESS_THAN .
 
-    LBRACKET        reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    NAME            reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    QUOTE           reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    PLUS            reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    MINUS           reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    STAR            reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
-    DIVISION        reduce using rule 98 (operator_comparison -> LESS_THAN_OR_EQUAL .)
+    LBRACKET        reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    NAME            reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    QUOTE           reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    PLUS            reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    MINUS           reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    STAR            reduce using rule 98 (operator_comparison -> LESS_THAN .)
+    DIVISION        reduce using rule 98 (operator_comparison -> LESS_THAN .)
 
 
 state 161
@@ -2323,12 +2323,12 @@ state 162
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
     GREATER_THAN_OR_EQUAL reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
     LESS_THAN_OR_EQUAL reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
+    EQUAL           reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
     RBRACKET        reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
     COMMA           reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
     WHERE           reduce using rule 88 (tree_expression -> operator_expression tree_expression .)
@@ -2657,12 +2657,12 @@ state 192
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
     GREATER_THAN_OR_EQUAL reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
     LESS_THAN_OR_EQUAL reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
+    EQUAL           reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
     RBRACKET        reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
     COMMA           reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
     WHERE           reduce using rule 90 (tree_expression -> tree_expression operator_expression tree_expression .)
@@ -2702,12 +2702,12 @@ state 193
   ! shift/reduce conflict for MINUS resolved as shift
   ! shift/reduce conflict for STAR resolved as shift
   ! shift/reduce conflict for DIVISION resolved as shift
-    EQUAL           reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
-    NOT_EQUAL       reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
-    GREATER_THAN    reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
-    LESS_THAN       reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
     GREATER_THAN_OR_EQUAL reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
     LESS_THAN_OR_EQUAL reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
+    NOT_EQUAL       reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
+    EQUAL           reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
+    GREATER_THAN    reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
+    LESS_THAN       reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
     RBRACKET        reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
     COMMA           reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
     WHERE           reduce using rule 87 (tree_expression -> value operator_expression tree_expression .)
@@ -2738,12 +2738,12 @@ state 194
 
     (89) tree_expression -> LBRACKET tree_expression RBRACKET .
 
-    EQUAL           reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    NOT_EQUAL       reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    GREATER_THAN    reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
-    LESS_THAN       reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
     GREATER_THAN_OR_EQUAL reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
     LESS_THAN_OR_EQUAL reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    NOT_EQUAL       reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    EQUAL           reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    GREATER_THAN    reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
+    LESS_THAN       reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
     PLUS            reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
     MINUS           reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
     STAR            reduce using rule 89 (tree_expression -> LBRACKET tree_expression RBRACKET .)
@@ -2772,12 +2772,12 @@ state 195
     MINUS           reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     STAR            reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     DIVISION        reduce using rule 77 (value -> QUOTE NAME QUOTE .)
-    EQUAL           reduce using rule 77 (value -> QUOTE NAME QUOTE .)
-    NOT_EQUAL       reduce using rule 77 (value -> QUOTE NAME QUOTE .)
-    GREATER_THAN    reduce using rule 77 (value -> QUOTE NAME QUOTE .)
-    LESS_THAN       reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     GREATER_THAN_OR_EQUAL reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     LESS_THAN_OR_EQUAL reduce using rule 77 (value -> QUOTE NAME QUOTE .)
+    NOT_EQUAL       reduce using rule 77 (value -> QUOTE NAME QUOTE .)
+    EQUAL           reduce using rule 77 (value -> QUOTE NAME QUOTE .)
+    GREATER_THAN    reduce using rule 77 (value -> QUOTE NAME QUOTE .)
+    LESS_THAN       reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     RBRACKET        reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     COMMA           reduce using rule 77 (value -> QUOTE NAME QUOTE .)
     WHERE           reduce using rule 77 (value -> QUOTE NAME QUOTE .)
