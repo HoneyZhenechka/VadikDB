@@ -519,7 +519,7 @@ class Preprocessor:
             return self.select(el.name, [], True, True, False, None, None)
         elif el.type == "select":
             return self.select(el.select.name, el.select.fields, el.select.isStar, el.condition, el.is_versioning,
-                                el.from_date, el.to_date)
+                               el.from_date, el.to_date)
 
     def tree_selects(self, tree):
         table = self.solve_tree_selects(tree)
@@ -614,6 +614,7 @@ class Preprocessor:
                                 rows.append(row)
             else:
                 rows = self.get_rows_using_index(index, condition, table_index, fields)
+            rows.sort(key=lambda x: x.index_in_file)
             transaction_index = 0
             user = self.get_user(self.current_user_index)
             if user.is_transaction:
